@@ -1,2 +1,0 @@
-# tivipal
-my website

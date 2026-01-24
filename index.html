@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tivipal | Device Portal</title>
+    <style>
+        :root { --primary: #e50914; --bg: #0f1216; --card: #1a1d23; --input: #252932; --success: #4CAF50; --warning: #ffcc00; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { background: var(--card); padding: 2rem; border-radius: 15px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.7); border: 1px solid #333; }
+        .logo { color: var(--primary); font-size: 2.2rem; font-weight: bold; margin-bottom: 5px; letter-spacing: 2px; }
+        .subtitle { color: #aaa; font-size: 0.9rem; margin-bottom: 25px; }
+        .section-title { font-size: 0.8rem; text-transform: uppercase; color: var(--primary); font-weight: bold; margin: 25px 0 10px; text-align: left; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #444; background: var(--input); color: white; box-sizing: border-box; font-size: 1rem; outline: none; }
+        input:focus { border-color: var(--primary); }
+        .btn { width: 100%; padding: 12px; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 1rem; margin-top: 8px; }
+        .btn-primary { background: var(--primary); }
+        .btn-secondary { background: #444; margin-top: 5px; font-size: 0.85rem; }
+        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+        .status-box { margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 0.9rem; min-height: 20px; display: none; background: rgba(255,255,255,0.05); }
+        #paypal-button-container { margin-top: 20px; display: none; }
+        .divider { margin: 25px 0; border-top: 1px dashed #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">TIVIPAL</div>
+        <div class="subtitle">Official Device Management Portal</div>
+        
+        <input type="text" id="deviceId" placeholder="Enter Device ID (from TV app)">
+        <button class="btn btn-secondary" onclick="checkStatus()">🔍 Check Device Status</button>
+        <div id="statusBox" class="status-box"></div>
+
+        <div class="section-title">Update Playlist</div>
+        <input type="text" id="m3uUrl" placeholder="Paste M3U URL here">
+        <button class="btn btn-primary" onclick="uploadPlaylist()">Sync to TV</button>
+
+        <div class="divider"></div>
+
+        <div class="section-title">License Activation</div>
+        <div id="pay-zone">
+            <p id="license-info" style="font-size: 0.85rem; color: #bbb;">Unlock lifetime access for £5.99</p>
+            <button id="show-pay-btn" class="btn btn-primary" onclick="showPayment()">Buy Lifetime License</button>
+            <div id="paypal-button-container"></div>
+        </div>
+    </div>
+
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=GBP"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // !!! REPLACE THESE WITH YOUR FIREBASE CONFIG !!!
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "tivipal-project.firebaseapp.com",
+            projectId: "tivipal-project",
+            storageBucket: "tivipal-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:12345:web:abcde"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Auto-fill ID from URL
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('id')) { document.getElementById('deviceId').value = params.get('id'); }
+        };
+
+        // NEW: CHECK STATUS LOGIC
+        window.checkStatus = async () => {
+            const id = document.getElementById('deviceId').value.trim();
+            const box = document.getElementById('statusBox');
+            if (!id) return alert("Enter Device ID first!");
+
+            box.style.display = 'block';
+            box.innerHTML = "Checking...";
+
+            try {
+                const docSnap = await getDoc(doc(db, "playlists", id));
+                if (!docSnap.exists()) {
+                    box.style.color = var(--warning);
+                    box.innerHTML = "Device not found. Please open the app on your TV first.";
+                } else {
+                    const data = docSnap.data();
+                    if (data.isPaid) {
+                        box.style.color = "#4CAF50";
+                        box.innerHTML = "✅ Lifetime License: <b>ACTIVE</b>";
+                        document.getElementById('pay-zone').style.display = 'none';
+                    } else {
+                        const daysLeft = Math.ceil(( (data.startDate || Date.now()) + (7*24*60*60*1000) - Date.now() ) / (1000*60*60*24));
+                        box.style.color = daysLeft > 0 ? "#ffcc00" : "#ff4444";
+                        box.innerHTML = daysLeft > 0 ? `⏳ Trial: <b>${daysLeft} days remaining</b>` : "❌ Trial: <b>EXPIRED</b>";
+                    }
+                }
+            } catch (e) { box.innerHTML = "Error checking status."; }
+        };
+
+        // PLAYLIST SYNC
+        window.uploadPlaylist = async () => {
+            const id = document.getElementById('deviceId').value.trim();
+            const url = document.getElementById('m3uUrl').value.trim();
+            if (!id || !url) return alert("Please fill in both fields.");
+
+            try {
+                await setDoc(doc(db, "playlists", id), { m3u_url: url, updatedAt: Date.now() }, { merge: true });
+                alert("Playlist synced! Refresh your TV app.");
+            } catch (e) { alert("Error: " + e.message); }
+        };
+
+        // PAYMENT
+        window.showPayment = () => {
+            const id = document.getElementById('deviceId').value.trim();
+            if (!id) return alert("Enter Device ID first!");
+            document.getElementById('show-pay-btn').style.display = 'none';
+            document.getElementById('paypal-button-container').style.display = 'block';
+
+            paypal.Buttons({
+                createOrder: (data, actions) => {
+                    return actions.order.create({
+                        purchase_units: [{ amount: { value: '5.99' }, description: `Tivipal License: ${id}` }]
+                    });
+                },
+                onApprove: (data, actions) => {
+                    return actions.order.capture().then(async (details) => {
+                        await updateDoc(doc(db, "playlists", id), { isPaid: true, paidAt: Date.now() });
+                        alert('Payment Success! Your TV is now activated.');
+                        window.location.reload();
+                    });
+                }
+            }).render('#paypal-button-container');
+        };
+    </script>
+</body>
+</html>
