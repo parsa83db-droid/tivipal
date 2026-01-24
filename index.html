@@ -3,168 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tivipal | Premium IPTV Player for Tizen</title>
+    <title>tivipal | Premium IPTV Player Portal</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=GBP"></script>
+
     <style>
         :root { 
             --primary: #1A73E8; 
             --bg: #0b0d11; 
-            --card: rgba(22, 26, 33, 0.85); 
-            --input: #1e2229; 
-            --success: #00c853; 
+            --card: rgba(22, 26, 33, 0.95); 
             --text-main: #ffffff;
             --text-dim: #9ca3af;
         }
 
-        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        * { box-sizing: border-box; transition: all 0.3s ease; }
         body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
 
-        /* --- Navbar --- */
-        .navbar { padding: 20px 10%; display: flex; justify-content: space-between; align-items: center; position: absolute; width: 100%; z-index: 10; background: linear-gradient(to bottom, rgba(11,13,17,0.8) 0%, transparent 100%); }
-        .logo { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; cursor: pointer; }
-        .logo .tivi { color: #FFFFFF; } /* tivi is white */
-        .logo .pal { color: var(--primary); } /* pal is blue */
+        /* --- UI Components --- */
+        .navbar { padding: 25px 10%; display: flex; justify-content: space-between; align-items: center; position: absolute; width: 100%; z-index: 10; }
+        .logo { font-size: 1.9rem; font-weight: 800; letter-spacing: -1.5px; cursor: pointer; }
+        .logo .pal { color: var(--primary); }
 
-        /* --- Hero Section with GENERATED BACKDROP --- */
         .hero { 
-            position: relative; 
-            padding: 200px 10% 120px; 
-            text-align: center; 
-            /* REPLACED WITH GENERATED IMAGE PATH */
-            background: url('hero-bg.jpg') no-repeat center center; 
-            background-size: cover; 
-            min-height: 90vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+            position: relative; padding: 220px 10% 140px; text-align: center; 
+            background: url('hero-bg.jpg') no-repeat center center; background-size: cover; 
+            min-height: 90vh; display: flex; align-items: center; justify-content: center; 
         }
-        
-        /* Dark overlay for text readability */
         .hero::before { 
-            content: ""; 
-            position: absolute; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: radial-gradient(circle, rgba(11,13,17,0.2) 0%, rgba(11,13,17,0.95) 100%); 
-            z-index: 1; 
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: radial-gradient(circle, rgba(11,13,17,0.3) 0%, rgba(11,13,17,1) 90%); z-index: 1; 
         }
+        .hero-content { position: relative; z-index: 2; max-width: 800px; }
 
-        .hero-content { position: relative; z-index: 2; max-width: 900px; }
-        .hero h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; line-height: 1.1; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .hero p { font-size: 1.25rem; color: #eee; margin-bottom: 40px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .btn-main { background: var(--primary); color: white; padding: 18px 45px; border-radius: 50px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3); }
 
-        .btn-main { background: var(--primary); color: white; padding: 18px 45px; border-radius: 50px; font-weight: 700; border: none; cursor: pointer; font-size: 1.1rem; box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3); }
-        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(26, 115, 232, 0.5); }
+        /* --- Modal & Portal UI --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #161a21; width: 100%; max-width: 500px; padding: 40px; border-radius: 36px; border: 1px solid #333; position: relative; }
+        .close-modal { position: absolute; top: 20px; right: 25px; font-size: 1.8rem; color: #555; cursor: pointer; border: none; background: none; }
 
-        /* --- Content Sections --- */
-        .features { padding: 80px 10%; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; position: relative; z-index: 3; margin-top: -60px; }
-        .feat-card { background: var(--card); padding: 40px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-        .feat-card h3 { color: var(--primary); margin-top: 0; font-size: 1.4rem; }
-
-        /* --- Modal Logic --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(15px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: #161a21; width: 100%; max-width: 550px; padding: 40px; border-radius: 32px; position: relative; border: 1px solid #333; max-height: 90vh; overflow-y: auto; }
-        .close-modal { position: absolute; top: 20px; right: 25px; font-size: 1.8rem; color: #666; cursor: pointer; border: none; background: none; }
+        /* Tabs for M3U / Xtream */
+        .tab-container { display: flex; gap: 10px; margin-bottom: 20px; background: #0b0d11; padding: 6px; border-radius: 14px; border: 1px solid #222; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 700; border-radius: 10px; }
+        .tab-btn.active { background: var(--primary); color: white; }
 
         .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin: 25px 0 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        input, textarea { width: 100%; padding: 16px; margin: 10px 0; border-radius: 14px; border: 1px solid #333; background: #1e2229; color: white; font-size: 1rem; outline: none; }
-        .btn-action { width: 100%; padding: 16px; border: none; color: white; font-weight: 700; border-radius: 14px; cursor: pointer; margin-top: 10px; font-size: 1rem; }
-        .bg-blue { background: var(--primary); }
-        .bg-grey { background: #333; }
-
-        .policy-text { font-size: 0.85rem; color: #bbb; line-height: 1.6; }
-        .policy-text h4 { color: var(--primary); margin: 15px 0 5px; }
-
-        footer { padding: 80px 10% 40px; text-align: center; border-top: 1px solid #1a1d23; color: #444; font-size: 0.85rem; }
-        .footer-links { margin-top: 20px; }
-        .footer-links a { color: #555; text-decoration: none; margin: 0 15px; font-weight: 600; }
-        .footer-links a:hover { color: var(--primary); }
-
-        @media (max-width: 768px) { .hero h1 { font-size: 2.4rem; } .navbar { padding: 15px 5%; } }
+        input { width: 100%; padding: 16px; margin: 8px 0; border-radius: 14px; border: 1px solid #333; background: #1e2229; color: white; font-size: 1rem; outline: none; }
+        .btn-action { width: 100%; padding: 18px; border: none; color: white; font-weight: 700; border-radius: 14px; cursor: pointer; margin-top: 15px; }
+        
+        .status-box { margin-top: 15px; padding: 15px; border-radius: 12px; display: none; background: #0b0d11; border: 1px solid #222; font-size: 0.9rem; text-align: center; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="logo" onclick="window.location.href='/'"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-        <button class="btn-main" style="padding: 10px 25px; font-size: 0.9rem;" onclick="openPortal('main')">Device Portal</button>
+        <div class="logo" onclick="window.location.reload()"><span class="tivi">tivi</span><span class="pal">pal</span></div>
+        <button class="btn-main" onclick="openPortal('main')">Device Portal</button>
     </nav>
 
     <section class="hero">
         <div class="hero-content">
-            <h1>The Premium Player for <br><span class="pal">Samsung Smart TV</span></h1>
-            <p>Master your streaming experience with our unique 3-layer navigation and effortless Cloud Sync technology.</p>
-            <button class="btn-main" onclick="openPortal('main')">Sync & Activate Device</button>
+            <h1>Premium Player for <br><span class="pal">Samsung Smart TV</span></h1>
+            <p>Sync your playlists and manage your device activation remotely.</p>
+            <button class="btn-main" onclick="openPortal('main')">Manage Device</button>
         </div>
-    </section>
-
-    <section class="features">
-        <div class="feat-card"><h3>Instant Cloud Sync</h3><p>Remote playlist management. Upload your links here and start watching on your TV instantly.</p></div>
-        <div class="feat-card"><h3>Premium 3-Layer UI</h3><p>A sophisticated collapsible interface designed for speed and clarity on the big screen.</p></div>
-        <div class="feat-card"><h3>No Bloatware</h3><p>We provide the player, you provide the content. A clean, high-performance legal experience.</p></div>
     </section>
 
     <div id="portal-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="close-modal" onclick="closePortal()">✕</button>
             
-            <div id="view-main" class="portal-view">
-                <div class="logo" style="margin-bottom: 25px; text-align: center;"><span class="tivi" style="color:white">tivi</span><span class="pal">pal</span> Portal</div>
+            <div id="view-main">
+                <div class="logo" style="text-align: center; margin-bottom: 20px;">tivi<span class="pal">pal</span> Portal</div>
                 
-                <div class="section-title">Device ID</div>
+                <div class="section-title">Step 1: Identify Device</div>
                 <input type="text" id="deviceId" placeholder="TP-XXXXXX">
-                <button class="btn-action bg-grey" onclick="checkStatus()">🔍 Check Status</button>
-                <div id="statusBox" style="margin-top:12px; padding:15px; border-radius:12px; display:none; background:#0b0d11; border:1px solid #222; font-size:0.9rem;"></div>
+                <button class="btn-action" style="background: #333;" onclick="checkStatus()">🔍 Check Activation</button>
+                <div id="statusBox" class="status-box"></div>
 
-                <div class="section-title">Cloud Sync</div>
-                <input type="text" id="m3uUrl" placeholder="Enter M3U or Xtream Link">
-                <button class="btn-action bg-blue" onclick="uploadPlaylist()">Sync to TV</button>
-
-                <div class="section-title">Activation</div>
-                <div id="pay-zone">
-                    <p style="font-size: 0.85rem; color: #666; text-align: center; margin: 8px 0;">Lifetime License: £5.99</p>
-                    <button id="show-pay-btn" class="btn-action bg-blue" onclick="showPayment()">Purchase License</button>
-                    <div id="paypal-button-container"></div>
+                <div class="section-title">Step 2: Playlist Sync</div>
+                
+                <div class="tab-container">
+                    <button id="tab-m3u" class="tab-btn active" onclick="switchTab('m3u')">M3U URL</button>
+                    <button id="tab-xtream" class="tab-btn" onclick="switchTab('xtream')">Xtream Codes</button>
                 </div>
-                <div style="text-align: center; margin-top: 25px;">
-                    <a href="javascript:void(0)" onclick="openPortal('support')" style="color: var(--primary); font-size: 0.85rem; text-decoration: none; font-weight: 600;">Contact Support</a>
-                </div>
-            </div>
 
-            <div id="view-support" class="portal-view" style="display: none;">
-                <div class="section-title">Contact Support</div>
-                <input type="email" id="supportEmail" placeholder="Your Email">
-                <textarea id="supportMessage" rows="5" placeholder="Please describe your issue..."></textarea>
-                <button class="btn-action bg-blue" onclick="sendSupportEmail()">Send Message</button>
-                <button class="btn-action bg-grey" style="margin-top: 10px;" onclick="openPortal('main')">Back to Portal</button>
-            </div>
-
-            <div id="view-privacy" class="portal-view" style="display: none;">
-                <div class="section-title">Privacy Policy</div>
-                <div class="policy-text">
-                    <p>Last Updated: January 2026</p>
-                    <h4>1. Data Handling</h4>
-                    <p>We store your Device ID and playlist URL exclusively to enable syncing. No personal identities are tracked.</p>
-                    <h4>2. Content Disclaimer</h4>
-                    <p>tivipal is a video player. We do not provide, host, or manage any TV channels or media content.</p>
-                    <h4>3. Security</h4>
-                    <p>All financial transactions are handled via PayPal. tivipal never sees or stores your payment details.</p>
+                <div id="form-m3u">
+                    <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
                 </div>
-                <button class="btn-action bg-grey" style="margin-top: 20px;" onclick="openPortal('main')">Back</button>
+
+                <div id="form-xtream" style="display: none;">
+                    <input type="text" id="xtreamHost" placeholder="Server URL (e.g. http://provider.com:80)">
+                    <input type="text" id="xtreamUser" placeholder="Username">
+                    <input type="password" id="xtreamPass" placeholder="Password">
+                </div>
+
+                <button class="btn-action" style="background: var(--primary);" onclick="uploadPlaylist()">Update TV App</button>
+
+                <div class="section-title">Step 3: Lifetime License</div>
+                <div id="pay-zone" style="text-align: center;">
+                    <p style="color: #666; font-size: 0.85rem;">One-time fee: £5.99</p>
+                    <button id="show-pay-btn" class="btn-action" style="background: var(--primary);" onclick="showPayment()">Purchase Activation</button>
+                    <div id="paypal-button-container" style="margin-top: 15px;"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <footer>
-        <div class="logo" style="margin-bottom: 10px; font-size: 1.4rem;"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-        <p>&copy; 2026 tivipal | Dedicated IPTV Solutions for Tizen.</p>
-        <div class="footer-links">
-            <a href="javascript:void(0)" onclick="openPortal('privacy')">Privacy Policy</a>
-            <a href="javascript:void(0)" onclick="openPortal('support')">Support</a>
-        </div>
-    </footer>
-
-    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=GBP"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -180,64 +129,67 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        let activeTab = 'm3u';
 
-        window.openPortal = (view) => {
-            document.getElementById('portal-modal').style.display = 'flex';
-            document.querySelectorAll('.portal-view').forEach(v => v.style.display = 'none');
-            document.getElementById('view-' + view).style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        };
+        window.openPortal = () => document.getElementById('portal-modal').style.display = 'flex';
+        window.closePortal = () => document.getElementById('portal-modal').style.display = 'none';
 
-        window.closePortal = () => {
-            document.getElementById('portal-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        };
-
-        window.onload = () => {
-            const params = new URLSearchParams(window.location.search);
-            if (params.has('view')) openPortal(params.get('view'));
-            if (params.has('id')) {
-                openPortal('main');
-                document.getElementById('deviceId').value = params.get('id');
-                checkStatus();
-            }
+        window.switchTab = (mode) => {
+            activeTab = mode;
+            document.getElementById('form-m3u').style.display = mode === 'm3u' ? 'block' : 'none';
+            document.getElementById('form-xtream').style.display = mode === 'xtream' ? 'block' : 'none';
+            document.getElementById('tab-m3u').classList.toggle('active', mode === 'm3u');
+            document.getElementById('tab-xtream').classList.toggle('active', mode === 'xtream');
         };
 
         window.checkStatus = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
             const box = document.getElementById('statusBox');
             if (!id) return;
-            box.style.display = 'block'; box.innerHTML = "Authenticating...";
-            try {
-                const docSnap = await getDoc(doc(db, "playlists", id));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.isPaid) { box.style.color = "#00c853"; box.innerHTML = "✅ License Status: ACTIVE"; document.getElementById('pay-zone').style.display = 'none'; }
-                    else { box.style.color = "#ffcc00"; box.innerHTML = "⏳ Trial Period Active"; }
-                } else { box.style.color = "#ffcc00"; box.innerHTML = "Device not registered in cloud."; }
-            } catch (e) { box.innerHTML = "Server connection error."; }
+            box.style.display = 'block'; box.innerHTML = "Checking...";
+            const snap = await getDoc(doc(db, "playlists", id));
+            if (snap.exists() && snap.data().isPaid) {
+                box.style.color = "#00c853"; box.innerHTML = "✅ License Active";
+                document.getElementById('pay-zone').style.display = 'none';
+            } else {
+                box.style.color = "#ffcc00"; box.innerHTML = snap.exists() ? "⏳ Trial Active" : "Device not found.";
+            }
         };
 
         window.uploadPlaylist = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            const url = document.getElementById('m3uUrl').value.trim();
-            if (!id || !url) return alert("Please enter ID and Link");
-            try { await setDoc(doc(db, "playlists", id), { m3u_url: url, updatedAt: Date.now() }, { merge: true }); alert("Cloud Sync Successful!"); } catch (e) { alert("Sync failed."); }
+            if (!id) return alert("Enter Device ID");
+            
+            let data = { updatedAt: Date.now(), mode: activeTab };
+            if (activeTab === 'm3u') {
+                data.m3u_url = document.getElementById('m3uUrl').value.trim();
+                data.xtream = null;
+            } else {
+                data.xtream = {
+                    host: document.getElementById('xtreamHost').value.trim(),
+                    user: document.getElementById('xtreamUser').value.trim(),
+                    pass: document.getElementById('xtreamPass').value.trim()
+                };
+                data.m3u_url = null;
+            }
+
+            try {
+                // If security rules are active, this only works if the ID already exists
+                await setDoc(doc(db, "playlists", id), data, { merge: true });
+                alert("Success! Restart the TV app.");
+            } catch (e) { alert("Sync failed. Ensure Device ID is correct and registered."); }
         };
 
         window.showPayment = () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            if (!id) return alert("Device ID required for payment.");
+            if (!id) return alert("Enter ID first");
             document.getElementById('show-pay-btn').style.display = 'none';
-            document.getElementById('paypal-button-container').style.display = 'block';
             paypal.Buttons({
-                createOrder: (data, actions) => { return actions.order.create({ purchase_units: [{ amount: { value: '5.99' }, description: `License Activation: ${id}` }] }); },
-                onApprove: (data, actions) => {
-                    return actions.order.capture().then(async () => {
-                        await updateDoc(doc(db, "playlists", id), { isPaid: true, paidAt: Date.now() });
-                        window.location.reload();
-                    });
-                }
+                createOrder: (data, actions) => actions.order.create({ purchase_units: [{ amount: { value: '5.99' }, description: `tivipal: ${id}` }] }),
+                onApprove: (data, actions) => actions.order.capture().then(async () => {
+                    await updateDoc(doc(db, "playlists", id), { isPaid: true });
+                    window.location.reload();
+                })
             }).render('#paypal-button-container');
         };
     </script>
