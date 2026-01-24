@@ -123,7 +123,7 @@
         .feat-card h3 { color: var(--primary); margin-top: 0; font-size: 1.5rem; margin-bottom: 15px; }
         .feat-card p { font-size: 1rem; color: var(--text-dim); line-height: 1.7; }
 
-        /* --- Modal Portal --- */
+        /* --- Modal System --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.94); backdrop-filter: blur(20px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
         .modal-content { background: #161a21; width: 100%; max-width: 550px; padding: 45px; border-radius: 36px; position: relative; border: 1px solid #333; max-height: 92vh; overflow-y: auto; }
         .close-modal { position: absolute; top: 25px; right: 30px; font-size: 2rem; color: #555; cursor: pointer; border: none; background: none; }
@@ -139,8 +139,12 @@
         .bg-blue { background: var(--primary); }
         .bg-grey { background: #333; }
 
-        /* Support Button Styling */
         .support-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: 600; }
+
+        /* --- Cookie Banner --- */
+        .cookie-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; background: #161a21; border: 1px solid #333; padding: 20px 30px; border-radius: 20px; display: none; align-items: center; justify-content: space-between; z-index: 2000; box-shadow: 0 10px 40px rgba(0,0,0,0.8); gap: 20px; }
+        .cookie-text { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; }
+        .btn-cookie { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 0.85rem; }
 
         footer { padding: 100px 10% 60px; text-align: center; border-top: 1px solid #1a1d23; color: #555; font-size: 0.9rem; }
         .footer-links a { color: #666; text-decoration: none; margin: 0 18px; font-weight: 600; font-size: 0.85rem; }
@@ -149,6 +153,7 @@
             .hero h1 { font-size: 2.8rem; } 
             .platform-row { padding: 15px 20px; }
             .platform-name { font-size: 0.95rem; }
+            .cookie-banner { flex-direction: column; text-align: center; bottom: 10px; }
         }
     </style>
 </head>
@@ -156,14 +161,14 @@
 
     <nav class="navbar">
         <div class="logo" onclick="window.location.href='/'"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-        <button class="btn-main" style="padding: 12px 28px; font-size: 0.9rem;" onclick="openPortal('main')">Portal Access</button>
+        <button class="btn-main" style="padding: 12px 28px; font-size: 0.9rem;" onclick="openPortal()">Portal Access</button>
     </nav>
 
     <section class="hero">
         <div class="hero-content">
             <h1>The Gold Standard for <br><span class="pal">Smart TVs</span></h1>
             <p>Experience seamless streaming with the most advanced 3-layer player. Manage playlists remotely and activate your device instantly.</p>
-            <button class="btn-main" onclick="openPortal('main')">Sync & Manage Device</button>
+            <button class="btn-main" onclick="openPortal()">Sync & Manage Device</button>
         </div>
     </section>
 
@@ -223,48 +228,66 @@
 
     <div id="portal-modal" class="modal-overlay">
         <div class="modal-content">
-            <button class="close-modal" onclick="closePortal()">✕</button>
-            <div id="view-main" class="portal-view">
-                <div class="logo" style="margin-bottom: 30px; text-align: center;"><span class="tivi" style="color:white">tivi</span><span class="pal">pal</span> Portal</div>
-                
-                <div class="section-title">Device Identification</div>
-                <input type="text" id="deviceId" placeholder="TP-XXXXXX">
-                <button class="btn-action bg-grey" onclick="checkStatus()">🔍 Check Activation</button>
-                <div id="statusBox" style="margin-top:15px; padding:18px; border-radius:14px; display:none; background:#0b0d11; border:1px solid #222; font-size:0.9rem; line-height: 1.5;"></div>
+            <button class="close-modal" onclick="closeModals()">✕</button>
+            <div class="logo" style="margin-bottom: 30px; text-align: center;"><span class="tivi" style="color:white">tivi</span><span class="pal">pal</span> Portal</div>
+            
+            <div class="section-title">Device Identification</div>
+            <input type="text" id="deviceId" placeholder="TP-XXXXXX">
+            <button class="btn-action bg-grey" onclick="checkStatus()">🔍 Check Activation</button>
+            <div id="statusBox" style="margin-top:15px; padding:18px; border-radius:14px; display:none; background:#0b0d11; border:1px solid #222; font-size:0.9rem; line-height: 1.5;"></div>
 
-                <div class="section-title">Remote Playlist Sync</div>
-                <div class="tab-container">
-                    <button id="tab-m3u" class="tab-btn active" onclick="switchTab('m3u')">M3U URL</button>
-                    <button id="tab-xtream" class="tab-btn" onclick="switchTab('xtream')">Xtream Codes</button>
-                </div>
+            <div class="section-title">Remote Playlist Sync</div>
+            <div class="tab-container">
+                <button id="tab-m3u" class="tab-btn active" onclick="switchTab('m3u')">M3U URL</button>
+                <button id="tab-xtream" class="tab-btn" onclick="switchTab('xtream')">Xtream Codes</button>
+            </div>
 
-                <div id="form-m3u">
-                    <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
-                </div>
+            <div id="form-m3u">
+                <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
+            </div>
 
-                <div id="form-xtream" style="display: none;">
-                    <input type="text" id="xtreamHost" placeholder="Server URL (e.g., http://dns.com:80)">
-                    <input type="text" id="xtreamUser" placeholder="Username">
-                    <input type="password" id="xtreamPass" placeholder="Password">
-                </div>
+            <div id="form-xtream" style="display: none;">
+                <input type="text" id="xtreamHost" placeholder="Server URL (e.g., http://dns.com:80)">
+                <input type="text" id="xtreamUser" placeholder="Username">
+                <input type="password" id="xtreamPass" placeholder="Password">
+            </div>
 
-                <button class="btn-action bg-blue" onclick="uploadPlaylist()">Update TV App</button>
+            <button class="btn-action bg-blue" onclick="uploadPlaylist()">Update TV App</button>
 
-                <div class="section-title">License Activation</div>
-                <div id="pay-zone">
-                    <p style="font-size: 0.9rem; color: #94a3b8; text-align: center; margin: 10px 0;">Lifetime Activation: £5.99</p>
-                    <button id="show-pay-btn" class="btn-action bg-blue" onclick="showPayment()">Buy Lifetime License</button>
-                    <div id="paypal-button-container" style="margin-top: 15px;"></div>
-                </div>
+            <div class="section-title">License Activation</div>
+            <div id="pay-zone">
+                <p style="font-size: 0.9rem; color: #94a3b8; text-align: center; margin: 10px 0;">Lifetime Activation: £5.99</p>
+                <button id="show-pay-btn" class="btn-action bg-blue" onclick="showPayment()">Buy Lifetime License</button>
+                <div id="paypal-button-container" style="margin-top: 15px;"></div>
             </div>
         </div>
+    </div>
+
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModals()">✕</button>
+            <h2 style="color:var(--primary)">Privacy Policy</h2>
+            <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
+                <p><strong>Last Updated: January 2026</strong></p>
+                <p>At tivipal, we prioritize your privacy. We do not provide, host, or store any media content. Our app and portal function solely as a management tool for your personal IPTV playlists.</p>
+                <p><strong>Data We Collect:</strong> We store your Device ID and the playlist details (URL or Xtream credentials) you provide to allow your Smart TV app to sync with our cloud server.</p>
+                <p><strong>Usage:</strong> Your information is never shared with third parties. Playlist data is used exclusively to facilitate streaming on your own device.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="cookie-banner" class="cookie-banner">
+        <div class="cookie-text">
+            We use essential cookies to ensure the portal functions correctly and to remember your session. By continuing to use tivipal, you agree to our <a href="javascript:void(0)" onclick="openPrivacy()" style="color:var(--primary)">Privacy Policy</a>.
+        </div>
+        <button class="btn-cookie" onclick="acceptCookies()">Accept</button>
     </div>
 
     <footer>
         <div class="logo" style="margin-bottom: 15px; font-size: 1.5rem;"><span class="tivi">tivi</span><span class="pal">pal</span></div>
         <p>&copy; 2026 tivipal | The ultimate IPTV player for Smart TVs.</p>
         <div class="footer-links">
-            <a href="javascript:void(0)" onclick="openPortal('privacy')">Privacy Policy</a>
+            <a href="javascript:void(0)" onclick="openPrivacy()">Privacy Policy</a>
             <a href="javascript:void(0)" onclick="contactSupport()">Contact Support</a>
         </div>
     </footer>
@@ -286,13 +309,31 @@
         const db = getFirestore(app);
         let activeTab = 'm3u';
 
-        window.openPortal = (view) => {
+        // Check for Cookie Acceptance
+        window.addEventListener('load', () => {
+            if (!localStorage.getItem('cookiesAccepted')) {
+                document.getElementById('cookie-banner').style.display = 'flex';
+            }
+        });
+
+        window.acceptCookies = () => {
+            localStorage.setItem('cookiesAccepted', 'true');
+            document.getElementById('cookie-banner').style.display = 'none';
+        };
+
+        window.openPortal = () => {
             document.getElementById('portal-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         };
 
-        window.closePortal = () => {
+        window.openPrivacy = () => {
+            document.getElementById('privacy-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeModals = () => {
             document.getElementById('portal-modal').style.display = 'none';
+            document.getElementById('privacy-modal').style.display = 'none';
             document.body.style.overflow = 'auto';
         };
 
