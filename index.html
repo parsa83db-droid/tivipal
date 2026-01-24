@@ -15,6 +15,7 @@
     <style>
         :root { 
             --primary: #1A73E8; 
+            --glow: rgba(26, 115, 232, 0.6);
             --bg: #0b0d11; 
             --card: rgba(22, 26, 33, 0.88); 
             --input: #1e2229; 
@@ -41,12 +42,11 @@
         .logo .tivi { color: #FFFFFF; }
         .logo .pal { color: var(--primary); }
 
-        /* --- Hero Section with Custom Backdrop --- */
+        /* --- Hero Section --- */
         .hero { 
             position: relative; 
             padding: 220px 10% 120px; 
             text-align: center; 
-            /* Integrated your professional backdrop image here */
             background: url('https://i.ibb.co/14cTHPq/background.jpg') no-repeat center center; 
             background-size: cover; 
             min-height: 85vh; 
@@ -55,7 +55,6 @@
             justify-content: center; 
         }
         
-        /* Deep radial gradient to make the UI pop against the background */
         .hero::before { 
             content: ""; 
             position: absolute; 
@@ -87,8 +86,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
-            max-width: 550px;
+            gap: 20px;
+            max-width: 650px;
             margin: 40px auto 0;
         }
         .platform-row { 
@@ -96,17 +95,41 @@
             align-items: center; 
             justify-content: space-between;
             width: 100%;
-            padding: 18px 25px;
+            padding: 15px 30px;
             background: rgba(255,255,255,0.03);
-            border-radius: 20px;
+            border-radius: 24px;
             border: 1px solid rgba(255,255,255,0.08);
         }
-        .platform-info { display: flex; align-items: center; gap: 20px; }
-        .store-badge { height: 32px; width: 32px; object-fit: contain; }
-        .platform-name { font-weight: 600; font-size: 1.1rem; color: #fff; }
-        .badge-label { font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- Enhanced Logo Tile with Glow --- */
+        .logo-tile {
+            background: white;
+            width: 65px; /* Slightly larger */
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            padding: 10px;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px var(--glow); /* Glow Effect */
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px var(--glow); }
+            50% { box-shadow: 0 0 25px var(--glow); transform: scale(1.02); }
+            100% { box-shadow: 0 0 10px var(--glow); }
+        }
+
+        .store-badge { width: 100%; height: 100%; object-fit: contain; }
+
+        .platform-info { display: flex; align-items: center; gap: 25px; }
+        .platform-name { font-weight: 600; font-size: 1.2rem; color: #fff; }
+        .badge-label { font-size: 0.8rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
         .label-soon { color: #555 !important; }
-        .platform-row.coming-soon { opacity: 0.6; background: rgba(255,255,255,0.01); }
+        .platform-row.coming-soon { opacity: 0.5; background: rgba(255,255,255,0.01); }
+        .platform-row.coming-soon .logo-tile { box-shadow: none; animation: none; background: #e0e0e0; }
 
         /* --- Features --- */
         .features { padding: 80px 10%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 35px; position: relative; z-index: 3; background: #0b0d11; }
@@ -150,7 +173,8 @@
         @media (max-width: 768px) { 
             .hero h1 { font-size: 2.8rem; } 
             .platform-row { padding: 15px 20px; }
-            .platform-name { font-size: 0.95rem; }
+            .platform-name { font-size: 1rem; }
+            .logo-tile { width: 50px; height: 50px; }
             .cookie-banner { flex-direction: column; text-align: center; bottom: 10px; }
         }
     </style>
@@ -177,7 +201,9 @@
         <div class="platforms-list">
             <div class="platform-row">
                 <div class="platform-info">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Samsung_Galaxy_A8_2018_logo.png" class="store-badge" alt="Samsung">
+                    <div class="logo-tile">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Samsung_Galaxy_A8_2018_logo.png" class="store-badge" alt="Samsung">
+                    </div>
                     <span class="platform-name">Smart TV (Tizen)</span>
                 </div>
                 <span class="badge-label">Available Now</span>
@@ -185,7 +211,9 @@
 
             <div class="platform-row coming-soon">
                 <div class="platform-info">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/archive/5/59/20190528211053%21LG_WebOS_New.svg" class="store-badge" alt="LG">
+                    <div class="logo-tile">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/archive/5/59/20190528211053%21LG_WebOS_New.svg" class="store-badge" alt="LG">
+                    </div>
                     <span class="platform-name">LG Smart TV (webOS)</span>
                 </div>
                 <span class="badge-label label-soon">Coming Soon</span>
@@ -193,7 +221,9 @@
 
             <div class="platform-row coming-soon">
                 <div class="platform-info">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/New_Android_TV_logo_%28redesign%29.svg" class="store-badge" alt="Android">
+                    <div class="logo-tile">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/New_Android_TV_logo_%28redesign%29.svg" class="store-badge" alt="Android">
+                    </div>
                     <span class="platform-name">Android TV / Google TV</span>
                 </div>
                 <span class="badge-label label-soon">Coming Soon</span>
@@ -201,7 +231,9 @@
 
             <div class="platform-row coming-soon">
                 <div class="platform-info">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/800px-Apple_logo_black.svg.png" class="store-badge" alt="Apple">
+                    <div class="logo-tile">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/800px-Apple_logo_black.svg.png" class="store-badge" alt="Apple">
+                    </div>
                     <span class="platform-name">Apple TV (tvOS)</span>
                 </div>
                 <span class="badge-label label-soon">Coming Soon</span>
@@ -265,14 +297,9 @@
         <div class="modal-content">
             <button class="close-modal" onclick="closeModals()">✕</button>
             <h2 style="color:var(--primary); margin-bottom: 20px;">Privacy Policy</h2>
-            <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1; max-height: 60vh; overflow-y: auto; padding-right: 10px;">
+            <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1; max-height: 60vh; overflow-y: auto;">
                 <p><strong>Last Updated: January 24, 2026</strong></p>
-                <h3 style="color:white; font-size: 1.1rem;">1. Pure Player Commitment</h3>
-                <p>tivipal is a video player application. We <strong>do not</strong> provide, host, or transmit any media content.</p>
-                <h3 style="color:white; font-size: 1.1rem;">2. Data Collection</h3>
-                <p>We collect only Device IDs and playlist credentials provided by you for the sole purpose of remote synchronization.</p>
-                <h3 style="color:white; font-size: 1.1rem;">3. Data Security</h3>
-                <p>All data is secured via Google Firebase and is never shared with third parties.</p>
+                <p>We collect Device IDs and playlist credentials provided by you solely for the purpose of remote synchronization. We do not host any media content.</p>
             </div>
         </div>
     </div>
