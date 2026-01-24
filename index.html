@@ -44,11 +44,11 @@
         /* --- Hero Section --- */
         .hero { 
             position: relative; 
-            padding: 220px 10% 140px; 
+            padding: 220px 10% 100px; 
             text-align: center; 
             background: url('hero-bg.jpg') no-repeat center center; 
             background-size: cover; 
-            min-height: 95vh; 
+            min-height: 80vh; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -79,8 +79,17 @@
         }
         .btn-main:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(26, 115, 232, 0.6); }
 
+        /* --- Store / Platform Badges --- */
+        .platforms { padding: 40px 10%; text-align: center; position: relative; z-index: 5; }
+        .platforms-grid { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; align-items: center; margin-top: 20px; }
+        .store-badge { width: 180px; opacity: 0.9; cursor: pointer; transition: 0.3s; }
+        .store-badge:hover { opacity: 1; transform: scale(1.05); }
+        .store-badge.coming-soon { opacity: 0.4; filter: grayscale(1); cursor: default; }
+        .store-badge.coming-soon:hover { transform: none; }
+        .badge-label { font-size: 0.7rem; color: var(--primary); font-weight: 800; text-transform: uppercase; margin-top: 8px; display: block; letter-spacing: 1px; }
+
         /* --- Features --- */
-        .features { padding: 80px 10%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 35px; position: relative; z-index: 3; margin-top: -80px; }
+        .features { padding: 60px 10%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 35px; position: relative; z-index: 3; }
         .feat-card { 
             background: var(--card); 
             padding: 50px 40px; 
@@ -104,24 +113,18 @@
         .bg-blue { background: var(--primary); }
         .bg-grey { background: #333; }
 
-        /* --- Toggle Tabs --- */
         .tab-container { display: flex; gap: 10px; margin-bottom: 15px; background: #0b0d11; padding: 6px; border-radius: 16px; border: 1px solid #222; }
         .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 700; border-radius: 12px; font-size: 0.9rem; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        .policy-text { font-size: 0.9rem; color: #cbd5e1; line-height: 1.7; }
-        .policy-text h4 { color: var(--primary); margin: 20px 0 8px; }
-
         footer { padding: 100px 10% 60px; text-align: center; border-top: 1px solid #1a1d23; color: #555; font-size: 0.9rem; }
         .footer-links { margin-top: 25px; }
         .footer-links a { color: #666; text-decoration: none; margin: 0 18px; font-weight: 600; font-size: 0.85rem; }
-        .footer-links a:hover { color: var(--primary); }
 
         @media (max-width: 768px) { 
             .hero h1 { font-size: 2.8rem; } 
-            .hero p { font-size: 1.1rem; }
-            .navbar { padding: 20px 5%; }
-            .features { margin-top: 0; padding: 40px 5%; }
+            .platforms-grid { gap: 20px; }
+            .store-badge { width: 140px; }
         }
     </style>
 </head>
@@ -134,9 +137,27 @@
 
     <section class="hero">
         <div class="hero-content">
-            <h1>The Gold Standard for <br><span class="pal">Smart TVs</span></h1>
-            <p>Experience seamless streaming with the most advanced 3-layer player for smart TVs. Manage playlists remotely and activate your device instantly.</p>
+            <h1>The Gold Standard for <br><span class="pal">Samsung Smart TV</span></h1>
+            <p>Experience seamless streaming with the most advanced 3-layer player for Tizen. Manage playlists remotely and activate your device instantly.</p>
             <button class="btn-main" onclick="openPortal('main')">Sync & Manage Device</button>
+        </div>
+    </section>
+
+    <section class="platforms">
+        <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 10px;">Available on Samsung Smart TV. More platforms coming soon.</p>
+        <div class="platforms-grid">
+            <div class="platform-item">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/0/07/SamsungTV_Apps_logo.png" class="store-badge" alt="Samsung TV Store">
+                <span class="badge-label">Available Now</span>
+            </div>
+            <div class="platform-item">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" class="store-badge coming-soon" alt="Android TV">
+                <span class="badge-label" style="color:#555">Coming Soon</span>
+            </div>
+            <div class="platform-item">
+                <img src="https://developer.apple.com/assets/elements/badges/download-on-the-tvos-app-store.svg" class="store-badge coming-soon" alt="Apple TV">
+                <span class="badge-label" style="color:#555">Coming Soon</span>
+            </div>
         </div>
     </section>
 
@@ -223,7 +244,7 @@
 
     <footer>
         <div class="logo" style="margin-bottom: 15px; font-size: 1.5rem;"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-        <p>&copy; 2026 tivipal | The ultimate IPTV player for Smart TVs.</p>
+        <p>&copy; 2026 tivipal | The ultimate IPTV player for Samsung Smart TVs.</p>
         <div class="footer-links">
             <a href="javascript:void(0)" onclick="openPortal('privacy')">Privacy Policy</a>
             <a href="javascript:void(0)" onclick="openPortal('support')">Contact Support</a>
@@ -268,16 +289,6 @@
             document.getElementById('tab-xtream').classList.toggle('active', mode === 'xtream');
         };
 
-        window.onload = () => {
-            const params = new URLSearchParams(window.location.search);
-            if (params.has('view')) openPortal(params.get('view'));
-            if (params.has('id')) {
-                openPortal('main');
-                document.getElementById('deviceId').value = params.get('id');
-                checkStatus();
-            }
-        };
-
         window.checkStatus = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
             const box = document.getElementById('statusBox');
@@ -307,14 +318,14 @@
                 const url = document.getElementById('m3uUrl').value.trim();
                 if (!url) return alert("Please enter M3U URL");
                 payload.m3u_url = url;
-                payload.xtream = null; // Clear old xtream data
+                payload.xtream = null; 
             } else {
                 const host = document.getElementById('xtreamHost').value.trim();
                 const user = document.getElementById('xtreamUser').value.trim();
                 const pass = document.getElementById('xtreamPass').value.trim();
                 if (!host || !user || !pass) return alert("Please fill all Xtream fields");
                 payload.xtream = { host, user, pass };
-                payload.m3u_url = null; // Clear old m3u data
+                payload.m3u_url = null;
             }
 
             try { 
