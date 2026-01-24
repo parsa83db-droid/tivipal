@@ -139,6 +139,9 @@
         .bg-blue { background: var(--primary); }
         .bg-grey { background: #333; }
 
+        /* Support Button Styling */
+        .support-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: 600; }
+
         footer { padding: 100px 10% 60px; text-align: center; border-top: 1px solid #1a1d23; color: #555; font-size: 0.9rem; }
         .footer-links a { color: #666; text-decoration: none; margin: 0 18px; font-weight: 600; font-size: 0.85rem; }
 
@@ -227,7 +230,7 @@
                 <div class="section-title">Device Identification</div>
                 <input type="text" id="deviceId" placeholder="TP-XXXXXX">
                 <button class="btn-action bg-grey" onclick="checkStatus()">🔍 Check Activation</button>
-                <div id="statusBox" style="margin-top:15px; padding:18px; border-radius:14px; display:none; background:#0b0d11; border:1px solid #222; font-size:0.9rem;"></div>
+                <div id="statusBox" style="margin-top:15px; padding:18px; border-radius:14px; display:none; background:#0b0d11; border:1px solid #222; font-size:0.9rem; line-height: 1.5;"></div>
 
                 <div class="section-title">Remote Playlist Sync</div>
                 <div class="tab-container">
@@ -308,13 +311,23 @@
             box.style.display = 'block'; box.innerHTML = "Checking database...";
             try {
                 const docSnap = await getDoc(doc(db, "playlists", id));
-                if (docSnap.exists() && docSnap.data().isPaid) {
-                    box.style.color = "#00c853"; box.innerHTML = "✅ Lifetime License Active";
-                    document.getElementById('pay-zone').style.display = 'none';
+                if (docSnap.exists()) {
+                    if (docSnap.data().isPaid) {
+                        box.style.color = "#00c853"; 
+                        box.innerHTML = "✅ Lifetime License Active";
+                        document.getElementById('pay-zone').style.display = 'none';
+                    } else {
+                        box.style.color = "#ffcc00"; 
+                        box.innerHTML = "⏳ Trial Active / Activation Required";
+                    }
                 } else {
-                    box.style.color = "#ffcc00"; box.innerHTML = "⏳ Trial Active / Activation Required";
+                    box.style.color = "#ffcc00";
+                    box.innerHTML = "ℹ️ ID not found. Enter your playlist below to register.";
                 }
-            } catch (e) { box.innerHTML = "Error connecting to Firebase."; }
+            } catch (e) { 
+                box.style.color = "#ff4d4d";
+                box.innerHTML = "❌ Connection Refused. <br>Please <span class='support-link' onclick='contactSupport()'>contact support</span> to whitelist this ID.";
+            }
         };
 
         window.uploadPlaylist = async () => {
@@ -333,7 +346,14 @@
             try {
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
                 alert("Success! Restart the TV app.");
-            } catch (e) { alert("Update failed."); }
+            } catch (e) { 
+                alert("Upload failed. If this is a new ID, please contact support for manual activation.");
+            }
+        };
+
+        window.contactSupport = () => {
+            const id = document.getElementById('deviceId').value.trim().toUpperCase() || "NEW_ID";
+            window.location.href = `mailto:support@tivipal.com?subject=ID Activation Request: ${id}&body=Hello, I need to activate my Device ID: ${id}`;
         };
 
         window.showPayment = () => {
