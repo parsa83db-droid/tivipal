@@ -48,7 +48,7 @@
             text-align: center; 
             background: url('hero-bg.jpg') no-repeat center center; 
             background-size: cover; 
-            min-height: 80vh; 
+            min-height: 70vh; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -79,33 +79,36 @@
         }
         .btn-main:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(26, 115, 232, 0.6); }
 
-        /* --- Platforms Section --- */
-        .platforms { padding: 60px 10%; text-align: center; position: relative; z-index: 5; background: #0b0d11; }
-        .platforms-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 40px; 
-            max-width: 1000px; 
-            margin: 30px auto 0; 
-            align-items: center; 
+        /* --- Vertical Platforms Section --- */
+        .platforms { padding: 80px 10%; text-align: center; position: relative; z-index: 5; background: #0b0d11; }
+        .platforms-list { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            max-width: 550px;
+            margin: 40px auto 0;
         }
-        .platform-item { 
+        .platform-row { 
             display: flex; 
-            flex-direction: column; 
             align-items: center; 
-            justify-content: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 18px 25px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
         }
+        .platform-info { display: flex; align-items: center; gap: 20px; }
         .store-badge { 
-            height: 50px; 
-            width: auto; 
+            height: 32px; 
+            width: 32px; 
             object-fit: contain; 
-            margin-bottom: 12px;
         }
-        .store-badge.coming-soon { 
-            opacity: 0.35; 
-        }
+        .platform-name { font-weight: 600; font-size: 1.1rem; color: #fff; }
         .badge-label { font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .label-soon { color: #444 !important; }
+        .label-soon { color: #555 !important; }
+        .platform-row.coming-soon { opacity: 0.6; background: rgba(255,255,255,0.01); }
 
         /* --- Features --- */
         .features { padding: 80px 10%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 35px; position: relative; z-index: 3; }
@@ -141,7 +144,8 @@
 
         @media (max-width: 768px) { 
             .hero h1 { font-size: 2.8rem; } 
-            .platforms-grid { grid-template-columns: repeat(2, 1fr); gap: 25px; }
+            .platform-row { padding: 15px 20px; }
+            .platform-name { font-size: 0.95rem; }
         }
     </style>
 </head>
@@ -161,22 +165,39 @@
     </section>
 
     <section class="platforms">
-        <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 5px;">Compatible Platforms</p>
-        <div class="platforms-grid">
-            <div class="platform-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Samsung_Galaxy_A8_2018_logo.png" class="store-badge" alt="Samsung Smart TV">
+        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 10px;">Supported Platforms</h2>
+        <p style="font-size: 1rem; color: var(--text-dim);">Find tivipal in your TV's official app store.</p>
+        
+        <div class="platforms-list">
+            <div class="platform-row">
+                <div class="platform-info">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Samsung_Galaxy_A8_2018_logo.png" class="store-badge" alt="Samsung">
+                    <span class="platform-name">Smart TV (Tizen)</span>
+                </div>
                 <span class="badge-label">Available Now</span>
             </div>
-            <div class="platform-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/archive/5/59/20190528211053%21LG_WebOS_New.svg" class="store-badge coming-soon" alt="LG webOS">
+
+            <div class="platform-row coming-soon">
+                <div class="platform-info">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/archive/5/59/20190528211053%21LG_WebOS_New.svg" class="store-badge" alt="LG">
+                    <span class="platform-name">LG Smart TV (webOS)</span>
+                </div>
                 <span class="badge-label label-soon">Coming Soon</span>
             </div>
-            <div class="platform-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/New_Android_TV_logo_%28redesign%29.svg" class="store-badge coming-soon" alt="Android TV">
+
+            <div class="platform-row coming-soon">
+                <div class="platform-info">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/New_Android_TV_logo_%28redesign%29.svg" class="store-badge" alt="Android">
+                    <span class="platform-name">Android TV / Google TV</span>
+                </div>
                 <span class="badge-label label-soon">Coming Soon</span>
             </div>
-            <div class="platform-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/800px-Apple_logo_black.svg.png" class="store-badge coming-soon" alt="Apple TV">
+
+            <div class="platform-row coming-soon">
+                <div class="platform-info">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/800px-Apple_logo_black.svg.png" class="store-badge" alt="Apple">
+                    <span class="platform-name">Apple TV (tvOS)</span>
+                </div>
                 <span class="badge-label label-soon">Coming Soon</span>
             </div>
         </div>
