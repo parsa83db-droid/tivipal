@@ -13,9 +13,10 @@
             --success: #4CAF50; 
             --warning: #ffcc00; 
             --error: #ff4444;
+            --text-dim: #888;
         }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .container { background: var(--card); padding: 2.5rem; border-radius: 15px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.7); border: 1px solid #333; }
+        .container { background: var(--card); padding: 2.5rem; border-radius: 15px; width: 100%; max-width: 480px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.7); border: 1px solid #333; }
         
         .logo { font-size: 2.8rem; font-weight: bold; margin-bottom: 5px; letter-spacing: 1px; cursor: default; }
         .logo .tivi { color: var(--primary); }
@@ -35,7 +36,12 @@
         .status-box { margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 0.95rem; min-height: 20px; display: none; background: rgba(255,255,255,0.03); border: 1px solid #333; line-height: 1.5; }
         #paypal-button-container { margin-top: 20px; display: none; }
         .divider { margin: 30px 0; border-top: 1px dashed #333; }
-        .footer-text { font-size: 0.75rem; color: #666; margin-top: 25px; }
+
+        /* Disclaimer Styling */
+        .disclaimer-section { margin-top: 30px; text-align: left; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid #222; }
+        .disclaimer-title { color: var(--primary); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .disclaimer-text { color: var(--text-dim); font-size: 0.78rem; line-height: 1.4; margin-bottom: 10px; }
+        .footer-text { font-size: 0.75rem; color: #555; margin-top: 25px; border-top: 1px solid #222; padding-top: 15px; }
     </style>
 </head>
 <body>
@@ -55,11 +61,22 @@
 
         <div class="section-title">License Activation</div>
         <div id="pay-zone">
-            <p id="license-info" style="font-size: 0.85rem; color: #bbb;">Lifetime access for a one-time payment of £5.99</p>
+            <p id="license-info" style="font-size: 0.85rem; color: #bbb;">Unlock Lifetime Access for a one-time fee of <b>£5.99</b></p>
             <button id="show-pay-btn" class="btn btn-primary" onclick="showPayment()">Buy Lifetime License</button>
             <div id="paypal-button-container"></div>
         </div>
-        <div class="footer-text">&copy; 2026 tivipal OTT Pro Developers</div>
+
+        <div class="disclaimer-section">
+            <span class="disclaimer-title">App Policy & Legal Disclaimer</span>
+            <p class="disclaimer-text">
+                <b>No Content Provided:</b> tivipal is strictly a media player software. We do NOT host, provide, or sell any IPTV subscriptions, channels, or playlists. Users are solely responsible for providing their own legally acquired content.
+            </p>
+            <p class="disclaimer-text">
+                <b>Trial Policy:</b> Each device receives a one-time 7-day free trial upon first launch. The activation fee is for the software license only and is non-refundable once the trial period has concluded.
+            </p>
+        </div>
+
+        <div class="footer-text">© 2026 tivipal | Software Activation Portal</div>
     </div>
 
     <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=GBP"></script>
@@ -68,7 +85,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Verified Firebase Config for tivipal-cee03
+        // Verified Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAx4WCxuXMgXqUp1CxwjHx9Ydd5s8IQTiQ",
             authDomain: "tivipal-cee03.firebaseapp.com",
@@ -81,16 +98,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Auto-fill ID from URL (for QR code scans)
         window.onload = () => {
             const params = new URLSearchParams(window.location.search);
             if (params.has('id')) { 
                 document.getElementById('deviceId').value = params.get('id');
-                checkStatus(); // Auto-check if coming from QR
+                checkStatus();
             }
         };
 
-        // STATUS CHECKER
         window.checkStatus = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
             const box = document.getElementById('statusBox');
@@ -103,35 +118,30 @@
                 const docSnap = await getDoc(doc(db, "playlists", id));
                 if (!docSnap.exists()) {
                     box.style.color = "var(--warning)";
-                    box.innerHTML = "<b>Device not found.</b><br>Please open the tivipal app on your TV first to register this ID.";
+                    box.innerHTML = "<b>Device not found.</b><br>Please open the tivipal app on your TV first.";
                 } else {
                     const data = docSnap.data();
                     if (data.isPaid) {
                         box.style.color = "var(--success)";
-                        box.innerHTML = "✅ <b>Lifetime License: ACTIVE</b><br>Your device is fully activated. Enjoy!";
+                        box.innerHTML = "✅ <b>Lifetime License: ACTIVE</b><br>Enjoy your premium access!";
                         document.getElementById('pay-zone').style.display = 'none';
                     } else {
                         const startTime = data.startDate || Date.now();
                         const expiryTime = startTime + (7 * 24 * 60 * 60 * 1000);
-                        const msLeft = expiryTime - Date.now();
-                        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+                        const daysLeft = Math.ceil((expiryTime - Date.now()) / (1000 * 60 * 60 * 24));
 
                         if (daysLeft > 0) {
                             box.style.color = "var(--warning)";
-                            box.innerHTML = `⏳ <b>Trial Mode</b><br>You have <b>${daysLeft} days</b> remaining in your free trial.`;
+                            box.innerHTML = `⏳ <b>Trial Mode</b><br>Your trial expires in <b>${daysLeft} days</b>.`;
                         } else {
                             box.style.color = "var(--error)";
-                            box.innerHTML = "❌ <b>Trial Expired</b><br>Your 7-day trial has ended. Please activate below.";
+                            box.innerHTML = "❌ <b>Trial Expired</b><br>Please activate your license below.";
                         }
                     }
                 }
-            } catch (e) { 
-                box.innerHTML = "Connection Error. Please check your internet."; 
-                console.error(e);
-            }
+            } catch (e) { box.innerHTML = "Connection Error."; }
         };
 
-        // PLAYLIST SYNC
         window.uploadPlaylist = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
             const url = document.getElementById('m3uUrl').value.trim();
@@ -142,40 +152,27 @@
                     m3u_url: url, 
                     updatedAt: Date.now() 
                 }, { merge: true });
-                alert("Success! Your playlist has been sent to the TV.");
-            } catch (e) { alert("Sync Error: " + e.message); }
+                alert("Success! Your playlist has been synced.");
+            } catch (e) { alert("Sync Error."); }
         };
 
-        // PAYPAL ACTIVATION
         window.showPayment = () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            if (!id) return alert("Enter Device ID first to ensure we activate the right TV!");
-            
+            if (!id) return alert("Enter Device ID first!");
             document.getElementById('show-pay-btn').style.display = 'none';
             document.getElementById('paypal-button-container').style.display = 'block';
 
             paypal.Buttons({
                 createOrder: (data, actions) => {
                     return actions.order.create({
-                        purchase_units: [{ 
-                            amount: { value: '5.99' }, 
-                            description: `tivipal Lifetime License: ${id}` 
-                        }]
+                        purchase_units: [{ amount: { value: '5.99' }, description: `tivipal License: ${id}` }]
                     });
                 },
                 onApprove: (data, actions) => {
                     return actions.order.capture().then(async (details) => {
-                        try {
-                            await updateDoc(doc(db, "playlists", id), { 
-                                isPaid: true, 
-                                paidAt: Date.now(),
-                                payerEmail: details.payer.email_address
-                            });
-                            alert('Activation Successful! Your TV app will unlock automatically.');
-                            window.location.reload();
-                        } catch (err) {
-                            alert("Payment received, but database update failed. Screenshot this and contact support.");
-                        }
+                        await updateDoc(doc(db, "playlists", id), { isPaid: true, paidAt: Date.now() });
+                        alert('Payment Success! Your TV is now activated.');
+                        window.location.reload();
                     });
                 }
             }).render('#paypal-button-container');
