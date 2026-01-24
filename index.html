@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tivipal | Premium IPTV Player for Tizen</title>
+    <title>tivipal | Premium IPTV Player for Smart TVs</title>
     
     <link rel="icon" type="image/png" href="favicon.png">
     
@@ -44,7 +44,7 @@
         /* --- Hero Section --- */
         .hero { 
             position: relative; 
-            padding: 220px 10% 100px; 
+            padding: 220px 10% 60px; 
             text-align: center; 
             background: url('hero-bg.jpg') no-repeat center center; 
             background-size: cover; 
@@ -79,17 +79,36 @@
         }
         .btn-main:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(26, 115, 232, 0.6); }
 
-        /* --- Store / Platform Badges --- */
-        .platforms { padding: 40px 10%; text-align: center; position: relative; z-index: 5; }
-        .platforms-grid { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; align-items: center; margin-top: 20px; }
-        .store-badge { width: 180px; opacity: 0.9; cursor: pointer; transition: 0.3s; }
-        .store-badge:hover { opacity: 1; transform: scale(1.05); }
-        .store-badge.coming-soon { opacity: 0.4; filter: grayscale(1); cursor: default; }
-        .store-badge.coming-soon:hover { transform: none; }
-        .badge-label { font-size: 0.7rem; color: var(--primary); font-weight: 800; text-transform: uppercase; margin-top: 8px; display: block; letter-spacing: 1px; }
+        /* --- Platforms Section --- */
+        .platforms { padding: 60px 10%; text-align: center; position: relative; z-index: 5; background: #0b0d11; }
+        .platforms-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 40px; 
+            max-width: 1000px; 
+            margin: 30px auto 0; 
+            align-items: center; 
+        }
+        .platform-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+        }
+        .store-badge { 
+            height: 50px; 
+            width: auto; 
+            object-fit: contain; 
+            margin-bottom: 12px;
+        }
+        .store-badge.coming-soon { 
+            opacity: 0.35; 
+        }
+        .badge-label { font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .label-soon { color: #444 !important; }
 
         /* --- Features --- */
-        .features { padding: 60px 10%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 35px; position: relative; z-index: 3; }
+        .features { padding: 80px 10%; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 35px; position: relative; z-index: 3; }
         .feat-card { 
             background: var(--card); 
             padding: 50px 40px; 
@@ -107,24 +126,22 @@
         .close-modal { position: absolute; top: 25px; right: 30px; font-size: 2rem; color: #555; cursor: pointer; border: none; background: none; }
 
         .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin: 30px 0 12px; border-bottom: 1px solid #333; padding-bottom: 6px; letter-spacing: 1px; }
-        input, textarea { width: 100%; padding: 18px; margin: 10px 0; border-radius: 16px; border: 1px solid #333; background: #1e2229; color: white; font-size: 1rem; outline: none; }
-        input:focus { border-color: var(--primary); background: #252a33; }
-        .btn-action { width: 100%; padding: 18px; border: none; color: white; font-weight: 700; border-radius: 16px; cursor: pointer; margin-top: 15px; font-size: 1.1rem; }
-        .bg-blue { background: var(--primary); }
-        .bg-grey { background: #333; }
-
+        input { width: 100%; padding: 18px; margin: 10px 0; border-radius: 16px; border: 1px solid #333; background: #1e2229; color: white; font-size: 1rem; outline: none; }
+        
         .tab-container { display: flex; gap: 10px; margin-bottom: 15px; background: #0b0d11; padding: 6px; border-radius: 16px; border: 1px solid #222; }
         .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 700; border-radius: 12px; font-size: 0.9rem; }
         .tab-btn.active { background: var(--primary); color: white; }
 
+        .btn-action { width: 100%; padding: 18px; border: none; color: white; font-weight: 700; border-radius: 16px; cursor: pointer; margin-top: 15px; font-size: 1.1rem; }
+        .bg-blue { background: var(--primary); }
+        .bg-grey { background: #333; }
+
         footer { padding: 100px 10% 60px; text-align: center; border-top: 1px solid #1a1d23; color: #555; font-size: 0.9rem; }
-        .footer-links { margin-top: 25px; }
         .footer-links a { color: #666; text-decoration: none; margin: 0 18px; font-weight: 600; font-size: 0.85rem; }
 
         @media (max-width: 768px) { 
             .hero h1 { font-size: 2.8rem; } 
-            .platforms-grid { gap: 20px; }
-            .store-badge { width: 140px; }
+            .platforms-grid { grid-template-columns: repeat(2, 1fr); gap: 25px; }
         }
     </style>
 </head>
@@ -137,26 +154,30 @@
 
     <section class="hero">
         <div class="hero-content">
-            <h1>The Gold Standard for <br><span class="pal">Samsung Smart TV</span></h1>
-            <p>Experience seamless streaming with the most advanced 3-layer player for Tizen. Manage playlists remotely and activate your device instantly.</p>
+            <h1>The Gold Standard for <br><span class="pal">Smart TVs</span></h1>
+            <p>Experience seamless streaming with the most advanced 3-layer player. Manage playlists remotely and activate your device instantly.</p>
             <button class="btn-main" onclick="openPortal('main')">Sync & Manage Device</button>
         </div>
     </section>
 
     <section class="platforms">
-        <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 10px;">Available on Samsung Smart TV. More platforms coming soon.</p>
+        <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 5px;">Compatible Platforms</p>
         <div class="platforms-grid">
             <div class="platform-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/0/07/SamsungTV_Apps_logo.png" class="store-badge" alt="Samsung TV Store">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Samsung_Logo.svg/1024px-Samsung_Logo.svg.png" class="store-badge" alt="Samsung Smart TV">
                 <span class="badge-label">Available Now</span>
             </div>
             <div class="platform-item">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" class="store-badge coming-soon" alt="Android TV">
-                <span class="badge-label" style="color:#555">Coming Soon</span>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/LG_logo_%282015%29.svg/1024px-LG_logo_%282015%29.svg.png" class="store-badge coming-soon" alt="LG webOS">
+                <span class="badge-label label-soon">Coming Soon</span>
             </div>
             <div class="platform-item">
-                <img src="https://developer.apple.com/assets/elements/badges/download-on-the-tvos-app-store.svg" class="store-badge coming-soon" alt="Apple TV">
-                <span class="badge-label" style="color:#555">Coming Soon</span>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Android_Robot.svg/1024px-Android_Robot.svg.png" class="store-badge coming-soon" alt="Android TV">
+                <span class="badge-label label-soon">Coming Soon</span>
+            </div>
+            <div class="platform-item">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/800px-Apple_logo_black.svg.png" class="store-badge coming-soon" alt="Apple TV">
+                <span class="badge-label label-soon">Coming Soon</span>
             </div>
         </div>
     </section>
@@ -168,7 +189,7 @@
         </div>
         <div class="feat-card">
             <h3>Layered Navigation</h3>
-            <p>Our unique 3-layer collapsible UI offers the fastest browsing experience, optimized specifically for Samsung remotes.</p>
+            <p>Our unique 3-layer collapsible UI offers the fastest browsing experience, optimized specifically for smart TV remotes.</p>
         </div>
         <div class="feat-card">
             <h3>Pure Performance</h3>
@@ -179,7 +200,6 @@
     <div id="portal-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="close-modal" onclick="closePortal()">✕</button>
-            
             <div id="view-main" class="portal-view">
                 <div class="logo" style="margin-bottom: 30px; text-align: center;"><span class="tivi" style="color:white">tivi</span><span class="pal">pal</span> Portal</div>
                 
@@ -189,7 +209,6 @@
                 <div id="statusBox" style="margin-top:15px; padding:18px; border-radius:14px; display:none; background:#0b0d11; border:1px solid #222; font-size:0.9rem;"></div>
 
                 <div class="section-title">Remote Playlist Sync</div>
-                
                 <div class="tab-container">
                     <button id="tab-m3u" class="tab-btn active" onclick="switchTab('m3u')">M3U URL</button>
                     <button id="tab-xtream" class="tab-btn" onclick="switchTab('xtream')">Xtream Codes</button>
@@ -213,38 +232,13 @@
                     <button id="show-pay-btn" class="btn-action bg-blue" onclick="showPayment()">Buy Lifetime License</button>
                     <div id="paypal-button-container" style="margin-top: 15px;"></div>
                 </div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="javascript:void(0)" onclick="openPortal('support')" style="color: var(--primary); font-size: 0.9rem; text-decoration: none; font-weight: 600;">Need help? Contact Support</a>
-                </div>
-            </div>
-
-            <div id="view-support" class="portal-view" style="display: none;">
-                <div class="section-title">Technical Support</div>
-                <input type="email" id="supportEmail" placeholder="Your Email Address">
-                <textarea id="supportMessage" rows="6" placeholder="Describe the issue you're facing..."></textarea>
-                <button class="btn-action bg-blue" onclick="sendSupportEmail()">Submit Request</button>
-                <button class="btn-action bg-grey" style="margin-top: 10px;" onclick="openPortal('main')">Back to Portal</button>
-            </div>
-
-            <div id="view-privacy" class="portal-view" style="display: none;">
-                <div class="section-title">Privacy & Terms</div>
-                <div class="policy-text">
-                    <p>Last Updated: January 2026</p>
-                    <h4>1. Data Usage</h4>
-                    <p>We only store Device IDs and Playlist URLs to facilitate cloud syncing. We do not collect personal data or viewing logs.</p>
-                    <h4>2. No-Content Policy</h4>
-                    <p>tivipal is a video player only. We do not provide, host, or curate any media content or TV channels.</p>
-                    <h4>3. Secure Payments</h4>
-                    <p>All activations are processed securely via PayPal. No financial data is ever stored on our servers.</p>
-                </div>
-                <button class="btn-action bg-grey" style="margin-top: 25px;" onclick="openPortal('main')">Close Policy</button>
             </div>
         </div>
     </div>
 
     <footer>
         <div class="logo" style="margin-bottom: 15px; font-size: 1.5rem;"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-        <p>&copy; 2026 tivipal | The ultimate IPTV player for Samsung Smart TVs.</p>
+        <p>&copy; 2026 tivipal | The ultimate IPTV player for Smart TVs.</p>
         <div class="footer-links">
             <a href="javascript:void(0)" onclick="openPortal('privacy')">Privacy Policy</a>
             <a href="javascript:void(0)" onclick="openPortal('support')">Contact Support</a>
@@ -266,13 +260,10 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
         let activeTab = 'm3u';
 
         window.openPortal = (view) => {
             document.getElementById('portal-modal').style.display = 'flex';
-            document.querySelectorAll('.portal-view').forEach(v => v.style.display = 'none');
-            document.getElementById('view-' + view).style.display = 'block';
             document.body.style.overflow = 'hidden';
         };
 
@@ -293,60 +284,47 @@
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
             const box = document.getElementById('statusBox');
             if (!id) return;
-            box.style.display = 'block'; box.innerHTML = "Verifying Device...";
+            box.style.display = 'block'; box.innerHTML = "Checking database...";
             try {
                 const docSnap = await getDoc(doc(db, "playlists", id));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.isPaid) { 
-                        box.style.color = "#00c853"; 
-                        box.innerHTML = "✅ Lifetime License: ACTIVE"; 
-                        document.getElementById('pay-zone').style.display = 'none'; 
-                    }
-                    else { box.style.color = "#ffcc00"; box.innerHTML = "⏳ Trial Active. Activation Required."; }
-                } else { box.style.color = "#ffcc00"; box.innerHTML = "Device ID not found. Open app on TV first."; }
-            } catch (e) { box.innerHTML = "Connectivity Error."; }
+                if (docSnap.exists() && docSnap.data().isPaid) {
+                    box.style.color = "#00c853"; box.innerHTML = "✅ Lifetime License Active";
+                    document.getElementById('pay-zone').style.display = 'none';
+                } else {
+                    box.style.color = "#ffcc00"; box.innerHTML = "⏳ Trial Active / Activation Required";
+                }
+            } catch (e) { box.innerHTML = "Error connecting to Firebase."; }
         };
 
         window.uploadPlaylist = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            if (!id) return alert("Please enter Device ID");
-
-            let payload = { updatedAt: Date.now(), connectionType: activeTab };
-
+            if (!id) return alert("Enter Device ID");
+            let data = { updatedAt: Date.now(), mode: activeTab };
             if (activeTab === 'm3u') {
-                const url = document.getElementById('m3uUrl').value.trim();
-                if (!url) return alert("Please enter M3U URL");
-                payload.m3u_url = url;
-                payload.xtream = null; 
+                data.m3u_url = document.getElementById('m3uUrl').value.trim();
             } else {
-                const host = document.getElementById('xtreamHost').value.trim();
-                const user = document.getElementById('xtreamUser').value.trim();
-                const pass = document.getElementById('xtreamPass').value.trim();
-                if (!host || !user || !pass) return alert("Please fill all Xtream fields");
-                payload.xtream = { host, user, pass };
-                payload.m3u_url = null;
+                data.xtream = {
+                    host: document.getElementById('xtreamHost').value.trim(),
+                    user: document.getElementById('xtreamUser').value.trim(),
+                    pass: document.getElementById('xtreamPass').value.trim()
+                };
             }
-
-            try { 
-                await setDoc(doc(db, "playlists", id), payload, { merge: true }); 
-                alert("Cloud Sync Successful! Restart the app on your TV."); 
-            } catch (e) { alert("Sync failed. Check your internet."); }
+            try {
+                await setDoc(doc(db, "playlists", id), data, { merge: true });
+                alert("Success! Restart the TV app.");
+            } catch (e) { alert("Update failed."); }
         };
 
         window.showPayment = () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            if (!id) return alert("Enter Device ID before purchasing.");
+            if (!id) return alert("Enter ID first");
             document.getElementById('show-pay-btn').style.display = 'none';
-            document.getElementById('paypal-button-container').style.display = 'block';
             paypal.Buttons({
-                createOrder: (data, actions) => { return actions.order.create({ purchase_units: [{ amount: { value: '5.99' }, description: `tivipal Activation: ${id}` }] }); },
-                onApprove: (data, actions) => {
-                    return actions.order.capture().then(async () => {
-                        await updateDoc(doc(db, "playlists", id), { isPaid: true, paidAt: Date.now() });
-                        window.location.reload();
-                    });
-                }
+                createOrder: (data, actions) => actions.order.create({ purchase_units: [{ amount: { value: '5.99' }, description: `tivipal: ${id}` }] }),
+                onApprove: (data, actions) => actions.order.capture().then(async () => {
+                    await updateDoc(doc(db, "playlists", id), { isPaid: true });
+                    window.location.reload();
+                })
             }).render('#paypal-button-container');
         };
     </script>
