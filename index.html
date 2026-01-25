@@ -288,7 +288,7 @@
                 <input type="password" id="xtreamPass" placeholder="Password">
             </div>
 
-            <button class="btn-action bg-blue" onclick="uploadPlaylist()">Update TV App</button>
+            <button id="updateBtn" class="btn-action bg-blue" onclick="uploadPlaylist()">Update TV App</button>
 
             <div class="section-title">License Activation</div>
             <div id="pay-zone">
@@ -342,6 +342,36 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         let activeTab = 'm3u';
+
+        // --- NEW: M3U Parser Function ---
+        async function parseM3U(url) {
+            const proxy = "https://corsproxy.io/?";
+            const response = await fetch(proxy + encodeURIComponent(url));
+            if (!response.ok) throw new Error("Failed to download M3U");
+            const text = await response.text();
+            const channels = [];
+            const lines = text.split('\n');
+            let currentChannel = null;
+
+            for (let line of lines) {
+                line = line.trim();
+                if (line.startsWith("#EXTINF:")) {
+                    const name = line.split(',').pop() || "Unknown";
+                    const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+                    const groupMatch = line.match(/group-title="([^"]+)"/);
+                    currentChannel = {
+                        name: name,
+                        logo: logoMatch ? logoMatch[1] : "",
+                        category: groupMatch ? groupMatch[1] : "General"
+                    };
+                } else if (line.startsWith("http") && currentChannel) {
+                    currentChannel.url = line;
+                    channels.push(currentChannel);
+                    currentChannel = null;
+                }
+            }
+            return channels;
+        }
 
         window.addEventListener('load', () => {
             if (!localStorage.getItem('cookiesAccepted')) {
@@ -416,21 +446,38 @@
 
         window.uploadPlaylist = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
+            const btn = document.getElementById('updateBtn');
             if (!id) return alert("Enter Device ID");
+            
+            btn.disabled = true;
+            btn.innerText = "Processing M3U...";
+            
             let data = { updatedAt: Date.now(), mode: activeTab };
-            if (activeTab === 'm3u') {
-                data.m3u_url = document.getElementById('m3uUrl').value.trim();
-            } else {
-                data.xtream = {
-                    host: document.getElementById('xtreamHost').value.trim(),
-                    user: document.getElementById('xtreamUser').value.trim(),
-                    pass: document.getElementById('xtreamPass').value.trim()
-                };
-            }
+            
             try {
+                if (activeTab === 'm3u') {
+                    const m3uUrl = document.getElementById('m3uUrl').value.trim();
+                    if (!m3uUrl) throw new Error("Enter M3U URL");
+                    // NEW: Parse M3U on the website instead of just saving the URL
+                    const parsedList = await parseM3U(m3uUrl);
+                    data.channels = parsedList;
+                    data.m3u_url = m3uUrl;
+                } else {
+                    data.xtream = {
+                        host: document.getElementById('xtreamHost').value.trim(),
+                        user: document.getElementById('xtreamUser').value.trim(),
+                        pass: document.getElementById('xtreamPass').value.trim()
+                    };
+                }
+
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
                 alert("Success! Restart the TV app.");
-            } catch (e) { alert("Upload failed."); }
+            } catch (e) { 
+                alert("Error: " + e.message); 
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Update TV App";
+            }
         };
 
         window.contactSupport = () => {
