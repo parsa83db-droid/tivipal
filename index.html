@@ -460,11 +460,20 @@
                         alert("Please fill in the M3U URL field.");
                         return;
                     }
+                    
                     btn.disabled = true;
-                    btn.innerText = "Parsing Playlist...";
-                    const parsedList = await parseM3U(m3uUrl);
-                    data.channels = parsedList;
-                    data.m3u_url = m3uUrl;
+                    btn.innerText = "Syncing...";
+
+                    try {
+                        const parsedList = await parseM3U(m3uUrl);
+                        data.channels = parsedList;
+                        data.m3u_url = m3uUrl;
+                    } catch (parseError) {
+                        console.warn("Parsing failed, saving URL as fallback:", parseError);
+                        // Save the URL even if parsing fails so the TV app can try.
+                        data.m3u_url = m3uUrl;
+                        data.channels = null; 
+                    }
                 } else {
                     const host = document.getElementById('xtreamHost').value.trim();
                     const user = document.getElementById('xtreamUser').value.trim();
@@ -481,9 +490,9 @@
                 }
 
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
-                alert("Success! Restart the TV app.");
+                alert("Success! Playlist synced. Please restart your TV app.");
             } catch (e) { 
-                alert("Error: " + e.message); 
+                alert("System Error: " + e.message); 
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Update TV App";
