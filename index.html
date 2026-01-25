@@ -245,8 +245,8 @@
 
     <section class="features">
         <div class="feat-card">
-            <h3>Remote Cloud Sync</h3>
-            <p>Say goodbye to typing long URLs on a remote. Use our secure portal to sync M3U and Xtream links directly to your TV app from any laptop or smartphone.</p>
+            <h3>QR Cloud Sync</h3>
+            <p>Scan the QR code on your TV to instantly load your Device ID on **tivipal.co.uk**. No manual typing required for playlist management.</p>
         </div>
         <div class="feat-card">
             <h3>Layered Navigation</h3>
@@ -346,6 +346,16 @@
         window.addEventListener('load', () => {
             if (!localStorage.getItem('cookiesAccepted')) {
                 document.getElementById('cookie-banner').style.display = 'flex';
+            }
+
+            // QR SYNC LOGIC: Check URL for ?id=XXXXXX
+            const urlParams = new URLSearchParams(window.location.search);
+            const autoId = urlParams.get('id');
+            if (autoId) {
+                const cleanId = autoId.trim().toUpperCase();
+                openPortal();
+                document.getElementById('deviceId').value = cleanId;
+                checkStatus(); // Auto-check if license is active
             }
         });
 
