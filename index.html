@@ -343,11 +343,10 @@
         const db = getFirestore(app);
         let activeTab = 'm3u';
 
-        // --- NEW: M3U Parser Function ---
         async function parseM3U(url) {
             const proxy = "https://corsproxy.io/?";
             const response = await fetch(proxy + encodeURIComponent(url));
-            if (!response.ok) throw new Error("Failed to download M3U");
+            if (!response.ok) throw new Error("Could not reach M3U link.");
             const text = await response.text();
             const channels = [];
             const lines = text.split('\n');
@@ -356,7 +355,7 @@
             for (let line of lines) {
                 line = line.trim();
                 if (line.startsWith("#EXTINF:")) {
-                    const name = line.split(',').pop() || "Unknown";
+                    const name = line.split(',').pop() || "Unknown Channel";
                     const logoMatch = line.match(/tvg-logo="([^"]+)"/);
                     const groupMatch = line.match(/group-title="([^"]+)"/);
                     currentChannel = {
@@ -370,6 +369,7 @@
                     currentChannel = null;
                 }
             }
+            if (channels.length === 0) throw new Error("No channels found in M3U file.");
             return channels;
         }
 
@@ -377,15 +377,13 @@
             if (!localStorage.getItem('cookiesAccepted')) {
                 document.getElementById('cookie-banner').style.display = 'flex';
             }
-
-            // QR SYNC LOGIC: Check URL for ?id=XXXXXX
             const urlParams = new URLSearchParams(window.location.search);
             const autoId = urlParams.get('id');
             if (autoId) {
                 const cleanId = autoId.trim().toUpperCase();
                 openPortal();
                 document.getElementById('deviceId').value = cleanId;
-                checkStatus(); // Auto-check if license is active
+                checkStatus();
             }
         });
 
@@ -440,34 +438,46 @@
                 }
             } catch (e) { 
                 box.style.color = "#ff4d4d";
-                box.innerHTML = "❌ Connection Refused. Please <span class='support-link' onclick='contactSupport()'>contact support</span>.";
+                box.innerHTML = "❌ Connection Refused.";
             }
         };
 
         window.uploadPlaylist = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
             const btn = document.getElementById('updateBtn');
-            if (!id) return alert("Enter Device ID");
             
-            btn.disabled = true;
-            btn.innerText = "Processing M3U...";
-            
+            if (!id) {
+                alert("Please enter a Device ID.");
+                return;
+            }
+
             let data = { updatedAt: Date.now(), mode: activeTab };
             
             try {
                 if (activeTab === 'm3u') {
                     const m3uUrl = document.getElementById('m3uUrl').value.trim();
-                    if (!m3uUrl) throw new Error("Enter M3U URL");
-                    // NEW: Parse M3U on the website instead of just saving the URL
+                    if (!m3uUrl) {
+                        alert("Please fill in the M3U URL field.");
+                        return;
+                    }
+                    btn.disabled = true;
+                    btn.innerText = "Parsing Playlist...";
                     const parsedList = await parseM3U(m3uUrl);
                     data.channels = parsedList;
                     data.m3u_url = m3uUrl;
                 } else {
-                    data.xtream = {
-                        host: document.getElementById('xtreamHost').value.trim(),
-                        user: document.getElementById('xtreamUser').value.trim(),
-                        pass: document.getElementById('xtreamPass').value.trim()
-                    };
+                    const host = document.getElementById('xtreamHost').value.trim();
+                    const user = document.getElementById('xtreamUser').value.trim();
+                    const pass = document.getElementById('xtreamPass').value.trim();
+                    
+                    if (!host || !user || !pass) {
+                        alert("Please fill in all Xtream fields.");
+                        return;
+                    }
+                    
+                    btn.disabled = true;
+                    btn.innerText = "Saving...";
+                    data.xtream = { host, user, pass };
                 }
 
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
