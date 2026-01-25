@@ -158,4 +158,288 @@
         .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 700; border-radius: 12px; font-size: 0.9rem; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        .btn-action { width: 100%; padding: 18px; border: none; color: white; font-weight: 700; border-radius: 16px; cursor: pointer; margin-top: 1
+        .btn-action { width: 100%; padding: 18px; border: none; color: white; font-weight: 700; border-radius: 16px; cursor: pointer; margin-top: 15px; font-size: 1.1rem; }
+        .bg-blue { background: var(--primary); }
+        .bg-grey { background: #333; }
+
+        .support-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: 600; }
+
+        /* --- Cookie Banner --- */
+        .cookie-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; background: #161a21; border: 1px solid #333; padding: 20px 30px; border-radius: 20px; display: none; align-items: center; justify-content: space-between; z-index: 2000; box-shadow: 0 10px 40px rgba(0,0,0,0.8); gap: 20px; }
+        .cookie-text { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; }
+        .btn-cookie { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 0.85rem; }
+
+        footer { padding: 100px 10% 60px; text-align: center; border-top: 1px solid #1a1d23; color: #555; font-size: 0.9rem; background: #0b0d11; }
+        .footer-links a { color: #666; text-decoration: none; margin: 0 18px; font-weight: 600; font-size: 0.85rem; }
+
+        @media (max-width: 768px) { 
+            .hero h1 { font-size: 2.8rem; } 
+            .platform-row { padding: 15px 20px; }
+            .platform-name { font-size: 1rem; }
+            .logo-tile { width: 50px; height: 50px; }
+            .features { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo" onclick="window.location.href='/'"><span class="tivi">tivi</span><span class="pal">pal</span></div>
+        <button class="btn-main" style="padding: 12px 28px; font-size: 0.9rem;" onclick="openPortal()">Portal Access</button>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>The Ultimate IPTV Player for<br><span class="pal">Smart TVs</span></h1>
+            <p>Experience seamless streaming with the most advanced 3-layer player. Manage playlists remotely and activate your device instantly.</p>
+            <button class="btn-main" onclick="openPortal()">Sync & Manage Device</button>
+        </div>
+    </section>
+
+    <section class="platforms">
+        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 10px;">Supported Platforms</h2>
+        <p style="font-size: 1rem; color: var(--text-dim);">Find tivipal in your TV's official app store.</p>
+        
+        <div class="platforms-list">
+            <div class="platform-row">
+                <div class="platform-info">
+                    <div class="logo-tile">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Samsung_Orig_Wordmark_BLACK_RGB.png" class="store-badge" alt="Samsung">
+                    </div>
+                    <span class="platform-name">Smart TV (Tizen)</span>
+                </div>
+                <span class="badge-label">Available Now</span>
+            </div>
+
+            <div class="platform-row coming-soon">
+                <div class="platform-info">
+                    <div class="logo-tile">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/LG_symbol.svg/3840px-LG_symbol.svg.png" class="store-badge" alt="LG">
+                    </div>
+                    <span class="platform-name">LG Smart TV (webOS)</span>
+                </div>
+                <span class="badge-label label-soon">Coming Soon</span>
+            </div>
+
+            <div class="platform-row coming-soon">
+                <div class="platform-info">
+                    <div class="logo-tile">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Android_logo_2019_%28stacked%29.svg" class="store-badge" alt="Android">
+                    </div>
+                    <span class="platform-name">Android TV / Google TV</span>
+                </div>
+                <span class="badge-label label-soon">Coming Soon</span>
+            </div>
+
+            <div class="platform-row coming-soon">
+                <div class="platform-info">
+                    <div class="logo-tile">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1920px-Apple_logo_black.svg.png" class="store-badge" alt="Apple">
+                    </div>
+                    <span class="platform-name">Apple TV (tvOS)</span>
+                </div>
+                <span class="badge-label label-soon">Coming Soon</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feat-card">
+            <h3>Remote Cloud Sync</h3>
+            <p>Say goodbye to typing long URLs on a remote. Use our secure portal to sync M3U and Xtream links directly to your TV app from any laptop or smartphone.</p>
+        </div>
+        <div class="feat-card">
+            <h3>Layered Navigation</h3>
+            <p>Our unique 3-layer collapsible UI offers the fastest browsing experience, optimized specifically for fluid navigation with smart TV remotes.</p>
+        </div>
+        <div class="feat-card">
+            <h3>Modern & Sleek Design</h3>
+            <p>A premium dark-mode interface built for the modern living room. Experience smooth animations, high-fidelity graphics, and an ultra-responsive layout.</p>
+        </div>
+        <div class="feat-card">
+            <h3>Pure Performance</h3>
+            <p>Zero bloatware. We focus entirely on creating the most stable, high-performance player engine to ensure your streams load faster and stay buffer-free.</p>
+        </div>
+    </section>
+
+    <div id="portal-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModals()">✕</button>
+            <div class="logo" style="margin-bottom: 30px; text-align: center;"><span class="tivi" style="color:white">tivi</span><span class="pal">pal</span> Portal</div>
+            
+            <div class="section-title">Device Identification</div>
+            <input type="text" id="deviceId" placeholder="TP-XXXXXX">
+            <button class="btn-action bg-grey" onclick="checkStatus()">🔍 Check Activation</button>
+            <div id="statusBox" style="margin-top:15px; padding:18px; border-radius:14px; display:none; background:#0b0d11; border:1px solid #222; font-size:0.9rem; line-height: 1.5;"></div>
+
+            <div class="section-title">Remote Playlist Sync</div>
+            <div class="tab-container">
+                <button id="tab-m3u" class="tab-btn active" onclick="switchTab('m3u')">M3U URL</button>
+                <button id="tab-xtream" class="tab-btn" onclick="switchTab('xtream')">Xtream Codes</button>
+            </div>
+
+            <div id="form-m3u">
+                <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
+            </div>
+
+            <div id="form-xtream" style="display: none;">
+                <input type="text" id="xtreamHost" placeholder="Server URL (e.g., http://dns.com:80)">
+                <input type="text" id="xtreamUser" placeholder="Username">
+                <input type="password" id="xtreamPass" placeholder="Password">
+            </div>
+
+            <button class="btn-action bg-blue" onclick="uploadPlaylist()">Update TV App</button>
+
+            <div class="section-title">License Activation</div>
+            <div id="pay-zone">
+                <p style="font-size: 0.9rem; color: #94a3b8; text-align: center; margin: 10px 0;">Lifetime Activation: £5.99</p>
+                <button id="show-pay-btn" class="btn-action bg-blue" onclick="showPayment()">Buy Lifetime License</button>
+                <div id="paypal-button-container" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="privacy-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModals()">✕</button>
+            <h2 style="color:var(--primary); margin-bottom: 20px;">Privacy Policy</h2>
+            <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1; max-height: 60vh; overflow-y: auto;">
+                <p><strong>Last Updated: January 25, 2026</strong></p>
+                <p>We collect Device IDs and playlist credentials provided by you solely for the purpose of remote synchronization. We do not host, store, or transmit any media content.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="cookie-banner" class="cookie-banner">
+        <div class="cookie-text">
+            We use essential cookies for portal functionality. By using tivipal, you agree to our <a href="javascript:void(0)" onclick="openPrivacy()" style="color:var(--primary); text-decoration: underline;">Privacy Policy</a>.
+        </div>
+        <button class="btn-cookie" onclick="acceptCookies()">Accept</button>
+    </div>
+
+    <footer>
+        <div class="logo" style="margin-bottom: 15px; font-size: 1.5rem;"><span class="tivi">tivi</span><span class="pal">pal</span></div>
+        <p>&copy; 2026 tivipal | The ultimate IPTV player for Smart TVs.</p>
+        <div class="footer-links">
+            <a href="javascript:void(0)" onclick="openPrivacy()">Privacy Policy</a>
+            <a href="javascript:void(0)" onclick="contactSupport()">Contact Support</a>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAx4WCxuXMgXqUp1CxwjHx9Ydd5s8IQTiQ",
+            authDomain: "tivipal-cee03.firebaseapp.com",
+            projectId: "tivipal-cee03",
+            storageBucket: "tivipal-cee03.firebasestorage.app",
+            messagingSenderId: "991826954037",
+            appId: "1:991826954037:web:8f9a61754dc2c6e4746e7c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let activeTab = 'm3u';
+
+        window.addEventListener('load', () => {
+            if (!localStorage.getItem('cookiesAccepted')) {
+                document.getElementById('cookie-banner').style.display = 'flex';
+            }
+        });
+
+        window.acceptCookies = () => {
+            localStorage.setItem('cookiesAccepted', 'true');
+            document.getElementById('cookie-banner').style.display = 'none';
+        };
+
+        window.openPortal = () => {
+            document.getElementById('portal-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.openPrivacy = () => {
+            document.getElementById('privacy-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeModals = () => {
+            document.getElementById('portal-modal').style.display = 'none';
+            document.getElementById('privacy-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
+
+        window.switchTab = (mode) => {
+            activeTab = mode;
+            document.getElementById('form-m3u').style.display = mode === 'm3u' ? 'block' : 'none';
+            document.getElementById('form-xtream').style.display = mode === 'xtream' ? 'block' : 'none';
+            document.getElementById('tab-m3u').classList.toggle('active', mode === 'm3u');
+            document.getElementById('tab-xtream').classList.toggle('active', mode === 'xtream');
+        };
+
+        window.checkStatus = async () => {
+            const id = document.getElementById('deviceId').value.trim().toUpperCase();
+            const box = document.getElementById('statusBox');
+            if (!id) return;
+            box.style.display = 'block'; box.innerHTML = "Checking database...";
+            try {
+                const docSnap = await getDoc(doc(db, "playlists", id));
+                if (docSnap.exists()) {
+                    if (docSnap.data().isPaid) {
+                        box.style.color = "#00c853"; 
+                        box.innerHTML = "✅ Lifetime License Active";
+                        document.getElementById('pay-zone').style.display = 'none';
+                    } else {
+                        box.style.color = "#ffcc00"; 
+                        box.innerHTML = "⏳ Trial Active / Activation Required";
+                    }
+                } else {
+                    box.style.color = "#ffcc00";
+                    box.innerHTML = "ℹ️ ID not found. Enter your playlist below to register.";
+                }
+            } catch (e) { 
+                box.style.color = "#ff4d4d";
+                box.innerHTML = "❌ Connection Refused. Please <span class='support-link' onclick='contactSupport()'>contact support</span>.";
+            }
+        };
+
+        window.uploadPlaylist = async () => {
+            const id = document.getElementById('deviceId').value.trim().toUpperCase();
+            if (!id) return alert("Enter Device ID");
+            let data = { updatedAt: Date.now(), mode: activeTab };
+            if (activeTab === 'm3u') {
+                data.m3u_url = document.getElementById('m3uUrl').value.trim();
+            } else {
+                data.xtream = {
+                    host: document.getElementById('xtreamHost').value.trim(),
+                    user: document.getElementById('xtreamUser').value.trim(),
+                    pass: document.getElementById('xtreamPass').value.trim()
+                };
+            }
+            try {
+                await setDoc(doc(db, "playlists", id), data, { merge: true });
+                alert("Success! Restart the TV app.");
+            } catch (e) { alert("Upload failed."); }
+        };
+
+        window.contactSupport = () => {
+            const id = document.getElementById('deviceId').value.trim().toUpperCase() || "NEW_ID";
+            window.location.href = `mailto:tivipalpro@gmail.com?subject=Support Request: ${id}&body=Hello, I need assistance with Device ID: ${id}`;
+        };
+
+        window.showPayment = () => {
+            const id = document.getElementById('deviceId').value.trim().toUpperCase();
+            if (!id) return alert("Enter ID first");
+            document.getElementById('show-pay-btn').style.display = 'none';
+            paypal.Buttons({
+                createOrder: (data, actions) => actions.order.create({ purchase_units: [{ amount: { value: '5.99' }, description: `tivipal: ${id}` }] }),
+                onApprove: (data, actions) => actions.order.capture().then(async () => {
+                    await updateDoc(doc(db, "playlists", id), { isPaid: true });
+                    window.location.reload();
+                })
+            }).render('#paypal-button-container');
+        };
+    </script>
+</body>
+</html>
