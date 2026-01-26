@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script src="https://www.paypal.com/sdk/js?AZcDmimBoWyAxx2HZk61mJilTyOvgm4h1EiFCiuZi2DIuHPm3S7h_vdQoWXs73F1mL7X9EJke6Bt2wJ1&currency=GBP"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AZcDmimBoWyAxx2HZk61mJilTyOvgm4h1EiFCiuZi2DIuHPm3S7h_vdQoWXs73F1mL7X9EJke6Bt2wJ1&currency=GBP"></script>
 
     <style>
         :root { 
@@ -349,7 +349,6 @@
             if (!response.ok) throw new Error("Could not reach M3U link.");
             const text = await response.text();
             
-            // FILING CABINET LOGIC: Use an object to store channels by category
             const categories = {};
             const lines = text.split('\n');
             let currentChannel = null;
@@ -361,9 +360,8 @@
                     const logoMatch = line.match(/tvg-logo="([^"]+)"/);
                     const groupMatch = line.match(/group-title="([^"]+)"/);
                     
-                    // Sanitize category name for Firebase keys
                     let groupName = groupMatch ? groupMatch[1].trim() : "General";
-                    groupName = groupName.replace(/[.#$[\]]/g, "_"); // Remove restricted Firebase chars
+                    groupName = groupName.replace(/[.#$[\]]/g, "_");
 
                     currentChannel = {
                         name: name,
@@ -372,8 +370,6 @@
                     };
                 } else if (line.startsWith("http") && currentChannel) {
                     currentChannel.url = line;
-                    
-                    // Add to the specific category "drawer"
                     if (!categories[currentChannel.category]) {
                         categories[currentChannel.category] = [];
                     }
@@ -382,36 +378,13 @@
                 }
             }
 
-            if (Object.keys(categories).length === 0) throw new Error("No channels found in M3U file.");
+            if (Object.keys(categories).length === 0) throw new Error("No channels found.");
             return categories;
         }
 
-        window.addEventListener('load', () => {
-            if (!localStorage.getItem('cookiesAccepted')) {
-                document.getElementById('cookie-banner').style.display = 'flex';
-            }
-            const urlParams = new URLSearchParams(window.location.search);
-            const autoId = urlParams.get('id');
-            if (autoId) {
-                const cleanId = autoId.trim().toUpperCase();
-                openPortal();
-                document.getElementById('deviceId').value = cleanId;
-                checkStatus();
-            }
-        });
-
-        window.acceptCookies = () => {
-            localStorage.setItem('cookiesAccepted', 'true');
-            document.getElementById('cookie-banner').style.display = 'none';
-        };
-
+        // EXPOSE FUNCTIONS TO BUTTONS (Required for type="module")
         window.openPortal = () => {
             document.getElementById('portal-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        };
-
-        window.openPrivacy = () => {
-            document.getElementById('privacy-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         };
 
@@ -458,76 +431,89 @@
         window.uploadPlaylist = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
             const btn = document.getElementById('updateBtn');
-            
-            if (!id) {
-                alert("Please enter a Device ID.");
-                return;
-            }
+            if (!id) return alert("Please enter a Device ID.");
 
             let data = { updatedAt: Date.now(), mode: activeTab };
-            
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
             try {
                 if (activeTab === 'm3u') {
                     const m3uUrl = document.getElementById('m3uUrl').value.trim();
-                    if (!m3uUrl) {
-                        alert("Please fill in the M3U URL field.");
-                        return;
-                    }
-                    
-                    btn.disabled = true;
-                    btn.innerText = "Syncing...";
-
-                    try {
-                        const structuredCategories = await parseM3U(m3uUrl);
-                        data.channels = structuredCategories; // Now a nested object!
-                        data.m3u_url = m3uUrl;
-                    } catch (parseError) {
-                        console.warn("Parsing failed, saving URL as fallback:", parseError);
-                        data.m3u_url = m3uUrl;
-                        data.channels = null; 
-                    }
+                    if (!m3uUrl) throw new Error("M3U URL is required.");
+                    const structured = await parseM3U(m3uUrl);
+                    data.channels = structured;
+                    data.m3u_url = m3uUrl;
                 } else {
                     const host = document.getElementById('xtreamHost').value.trim();
                     const user = document.getElementById('xtreamUser').value.trim();
                     const pass = document.getElementById('xtreamPass').value.trim();
-                    
-                    if (!host || !user || !pass) {
-                        alert("Please fill in all Xtream fields.");
-                        return;
-                    }
-                    
-                    btn.disabled = true;
-                    btn.innerText = "Saving...";
+                    if (!host || !user || !pass) throw new Error("All Xtream fields required.");
                     data.xtream = { host, user, pass };
                 }
 
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
-                alert("Success! Playlist synced. Please restart your TV app.");
+                alert("Success! Playlist synced.");
             } catch (e) { 
-                alert("System Error: " + e.message); 
+                alert("Error: " + e.message); 
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Update TV App";
             }
         };
 
-        window.contactSupport = () => {
-            const id = document.getElementById('deviceId').value.trim().toUpperCase() || "NEW_ID";
-            window.location.href = `mailto:tivipalpro@gmail.com?subject=Support Request: ${id}&body=Hello, I need assistance with Device ID: ${id}`;
-        };
-
         window.showPayment = () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            if (!id) return alert("Enter ID first");
+            if (!id) return alert("Enter Device ID first to link payment.");
+            
             document.getElementById('show-pay-btn').style.display = 'none';
+            
             paypal.Buttons({
-                createOrder: (data, actions) => actions.order.create({ purchase_units: [{ amount: { value: '5.99' }, description: `tivipal: ${id}` }] }),
-                onApprove: (data, actions) => actions.order.capture().then(async () => {
-                    await updateDoc(doc(db, "playlists", id), { isPaid: true });
-                    window.location.reload();
-                })
+                createOrder: (data, actions) => {
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: { value: '5.99' },
+                            description: `tivipal Lifetime: ${id}`
+                        }]
+                    });
+                },
+                onApprove: (data, actions) => {
+                    return actions.order.capture().then(async (details) => {
+                        try {
+                            await setDoc(doc(db, "playlists", id), { isPaid: true }, { merge: true });
+                            alert('Transaction completed by ' + details.payer.name.given_name + '! Your TV app is now activated.');
+                            window.location.reload();
+                        } catch (err) {
+                            alert("Payment recorded but database update failed. Please contact support.");
+                        }
+                    });
+                },
+                onError: (err) => {
+                    alert("PayPal Error: Please ensure you are using a valid card.");
+                    document.getElementById('show-pay-btn').style.display = 'block';
+                }
             }).render('#paypal-button-container');
         };
+
+        window.acceptCookies = () => {
+            localStorage.setItem('cookiesAccepted', 'true');
+            document.getElementById('cookie-banner').style.display = 'none';
+        };
+
+        window.openPrivacy = () => {
+            document.getElementById('privacy-modal').style.display = 'flex';
+        };
+
+        window.contactSupport = () => {
+            const id = document.getElementById('deviceId').value.trim().toUpperCase() || "NEW_ID";
+            window.location.href = `mailto:tivipalpro@gmail.com?subject=Support Request: ${id}`;
+        };
+
+        window.addEventListener('load', () => {
+            if (!localStorage.getItem('cookiesAccepted')) {
+                document.getElementById('cookie-banner').style.display = 'flex';
+            }
+        });
     </script>
 </body>
 </html>
