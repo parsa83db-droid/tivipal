@@ -344,45 +344,54 @@
         let activeTab = 'm3u';
 
         async function parseM3U(url) {
-            const proxy = "https://corsproxy.io/?";
-            const response = await fetch(proxy + encodeURIComponent(url));
-            if (!response.ok) throw new Error("Could not reach M3U link.");
-            const text = await response.text();
-            
-            const categories = {};
-            const lines = text.split('\n');
-            let currentChannel = null;
+            // Try two different proxies to ensure reachability
+            const proxies = ["https://corsproxy.io/?", "https://api.allorigins.win/raw?url="];
+            let lastError = "";
 
-            for (let line of lines) {
-                line = line.trim();
-                if (line.startsWith("#EXTINF:")) {
-                    const name = line.split(',').pop() || "Unknown Channel";
-                    const logoMatch = line.match(/tvg-logo="([^"]+)"/);
-                    const groupMatch = line.match(/group-title="([^"]+)"/);
+            for(let proxy of proxies) {
+                try {
+                    const response = await fetch(proxy + encodeURIComponent(url));
+                    if (!response.ok) continue;
                     
-                    let groupName = groupMatch ? groupMatch[1].trim() : "General";
-                    groupName = groupName.replace(/[.#$[\]]/g, "_");
+                    const text = await response.text();
+                    if (!text.includes("#EXTM3U")) continue;
+                    
+                    const categories = {};
+                    const lines = text.split('\n');
+                    let currentChannel = null;
 
-                    currentChannel = {
-                        name: name,
-                        logo: logoMatch ? logoMatch[1] : "",
-                        category: groupName
-                    };
-                } else if (line.startsWith("http") && currentChannel) {
-                    currentChannel.url = line;
-                    if (!categories[currentChannel.category]) {
-                        categories[currentChannel.category] = [];
+                    for (let line of lines) {
+                        line = line.trim();
+                        if (line.startsWith("#EXTINF:")) {
+                            const name = line.split(',').pop() || "Unknown Channel";
+                            const logoMatch = line.match(/tvg-logo="([^"]+)"/);
+                            const groupMatch = line.match(/group-title="([^"]+)"/);
+                            
+                            let groupName = groupMatch ? groupMatch[1].trim() : "General";
+                            groupName = groupName.replace(/[.#$[\]]/g, "_");
+
+                            currentChannel = {
+                                name: name,
+                                logo: logoMatch ? logoMatch[1] : "",
+                                category: groupName
+                            };
+                        } else if (line.startsWith("http") && currentChannel) {
+                            currentChannel.url = line;
+                            if (!categories[currentChannel.category]) {
+                                categories[currentChannel.category] = [];
+                            }
+                            categories[currentChannel.category].push(currentChannel);
+                            currentChannel = null;
+                        }
                     }
-                    categories[currentChannel.category].push(currentChannel);
-                    currentChannel = null;
+                    return categories;
+                } catch (e) {
+                    lastError = e.message;
                 }
             }
-
-            if (Object.keys(categories).length === 0) throw new Error("No channels found.");
-            return categories;
+            throw new Error(lastError || "Provider blocked access.");
         }
 
-        // EXPOSE FUNCTIONS TO BUTTONS (Required for type="module")
         window.openPortal = () => {
             document.getElementById('portal-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
@@ -441,9 +450,15 @@
                 if (activeTab === 'm3u') {
                     const m3uUrl = document.getElementById('m3uUrl').value.trim();
                     if (!m3uUrl) throw new Error("M3U URL is required.");
-                    const structured = await parseM3U(m3uUrl);
-                    data.channels = structured;
                     data.m3u_url = m3uUrl;
+                    
+                    try {
+                        const structured = await parseM3U(m3uUrl);
+                        data.channels = structured;
+                    } catch (parseErr) {
+                        console.warn("Sorting failed, saving raw URL:", parseErr.message);
+                        data.channels = null; // Mark as raw mode for TV app
+                    }
                 } else {
                     const host = document.getElementById('xtreamHost').value.trim();
                     const user = document.getElementById('xtreamUser').value.trim();
@@ -453,7 +468,7 @@
                 }
 
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
-                alert("Success! Playlist synced.");
+                alert("Success! Playlist linked to your device.");
             } catch (e) { 
                 alert("Error: " + e.message); 
             } finally {
