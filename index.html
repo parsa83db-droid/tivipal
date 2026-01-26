@@ -348,7 +348,9 @@
             const response = await fetch(proxy + encodeURIComponent(url));
             if (!response.ok) throw new Error("Could not reach M3U link.");
             const text = await response.text();
-            const channels = [];
+            
+            // FILING CABINET LOGIC: Use an object to store channels by category
+            const categories = {};
             const lines = text.split('\n');
             let currentChannel = null;
 
@@ -358,19 +360,30 @@
                     const name = line.split(',').pop() || "Unknown Channel";
                     const logoMatch = line.match(/tvg-logo="([^"]+)"/);
                     const groupMatch = line.match(/group-title="([^"]+)"/);
+                    
+                    // Sanitize category name for Firebase keys
+                    let groupName = groupMatch ? groupMatch[1].trim() : "General";
+                    groupName = groupName.replace(/[.#$[\]]/g, "_"); // Remove restricted Firebase chars
+
                     currentChannel = {
                         name: name,
                         logo: logoMatch ? logoMatch[1] : "",
-                        category: groupMatch ? groupMatch[1] : "General"
+                        category: groupName
                     };
                 } else if (line.startsWith("http") && currentChannel) {
                     currentChannel.url = line;
-                    channels.push(currentChannel);
+                    
+                    // Add to the specific category "drawer"
+                    if (!categories[currentChannel.category]) {
+                        categories[currentChannel.category] = [];
+                    }
+                    categories[currentChannel.category].push(currentChannel);
                     currentChannel = null;
                 }
             }
-            if (channels.length === 0) throw new Error("No channels found in M3U file.");
-            return channels;
+
+            if (Object.keys(categories).length === 0) throw new Error("No channels found in M3U file.");
+            return categories;
         }
 
         window.addEventListener('load', () => {
@@ -465,12 +478,11 @@
                     btn.innerText = "Syncing...";
 
                     try {
-                        const parsedList = await parseM3U(m3uUrl);
-                        data.channels = parsedList;
+                        const structuredCategories = await parseM3U(m3uUrl);
+                        data.channels = structuredCategories; // Now a nested object!
                         data.m3u_url = m3uUrl;
                     } catch (parseError) {
                         console.warn("Parsing failed, saving URL as fallback:", parseError);
-                        // Save the URL even if parsing fails so the TV app can try.
                         data.m3u_url = m3uUrl;
                         data.channels = null; 
                     }
