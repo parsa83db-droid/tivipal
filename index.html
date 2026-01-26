@@ -445,7 +445,7 @@
                     const m3uUrl = document.getElementById('m3uUrl').value.trim();
                     if (!m3uUrl) throw new Error("M3U URL is required.");
                     
-                    // Direct Send - No Parsing
+                    // Direct Send - No local parsing
                     data.m3u_url = m3uUrl;
                     barFill.style.width = '60%';
                 } else {
@@ -458,16 +458,13 @@
                     barFill.style.width = '60%';
                 }
 
-                // Send raw data to Firebase for TV app to handle
+                // Send data to Firebase
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
                 
                 barFill.style.width = '100%';
                 setTimeout(() => {
                     bar.style.display = 'none';
                     dash.style.display = 'block';
-                    document.getElementById('count-live').innerText = "Linked";
-                    document.getElementById('count-vod').innerText = "Linked";
-                    document.getElementById('count-series').innerText = "Linked";
                 }, 600);
                 
             } catch (e) { 
