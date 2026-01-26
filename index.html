@@ -609,6 +609,14 @@
             if (!localStorage.getItem('cookiesAccepted')) {
                 document.getElementById('cookie-banner').style.display = 'flex';
             }
+            // QR SYNC LOGIC: Check URL for Device ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const qrId = urlParams.get('id');
+            if (qrId) {
+                document.getElementById('deviceId').value = qrId.toUpperCase();
+                window.openPortal();
+                window.checkStatus();
+            }
         });
     </script>
 </body>
