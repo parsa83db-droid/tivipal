@@ -309,16 +309,12 @@
 
             <div id="syncDashboard" class="sync-card">
                 <div class="sync-row">
-                    <span class="sync-label">📺 Live TV Channels</span>
+                    <span class="sync-label">📺 Connection</span>
                     <span id="count-live" class="sync-value">Cloud Linked</span>
                 </div>
                 <div class="sync-row">
-                    <span class="sync-label">🎬 Movies (VOD)</span>
-                    <span id="count-vod" class="sync-value">Cloud Linked</span>
-                </div>
-                <div class="sync-row">
-                    <span class="sync-label">🍿 Series & Seasons</span>
-                    <span id="count-series" class="sync-value">Cloud Linked</span>
+                    <span class="sync-label">🚀 Sync Status</span>
+                    <span id="count-vod" class="sync-value">Sent to TV</span>
                 </div>
                 <div id="sync-status-msg" style="color: var(--success); font-size: 0.85rem; text-align: center; margin-top: 15px; font-weight: 600;">✅ Sync Complete! Restart your TV App.</div>
             </div>
@@ -435,30 +431,43 @@
             let data = { updatedAt: Date.now(), mode: activeTab };
             
             btn.classList.add('sync-loading');
-            btn.innerText = "Syncing Cloud...";
+            btn.innerText = "Syncing with TV...";
             dash.style.display = 'none';
             bar.style.display = 'block';
-            barFill.style.width = '20%';
+            barFill.style.width = '30%';
 
             try {
                 if (activeTab === 'm3u') {
                     const m3uUrl = document.getElementById('m3uUrl').value.trim();
                     if (!m3uUrl) throw new Error("M3U URL is required.");
                     
-                    // Direct Send - No local parsing
-                    data.m3u_url = m3uUrl;
-                    barFill.style.width = '60%';
+                    // Smart detection: If it's actually an Xtream login inside an M3U link, convert it
+                    if (m3uUrl.includes('get.php') && m3uUrl.includes('username=')) {
+                        try {
+                            const urlObj = new URL(m3uUrl);
+                            const params = new URLSearchParams(urlObj.search);
+                            data.mode = 'xtream';
+                            data.xtream = {
+                                host: `${urlObj.protocol}//${urlObj.host}`,
+                                user: params.get('username'),
+                                pass: params.get('password')
+                            };
+                        } catch (e) { data.m3u_url = m3uUrl; }
+                    } else {
+                        data.m3u_url = m3uUrl;
+                    }
+                    // We remove local channel parsing entirely to keep the URL raw
                 } else {
                     const host = document.getElementById('xtreamHost').value.trim();
                     const user = document.getElementById('xtreamUser').value.trim();
                     const pass = document.getElementById('xtreamPass').value.trim();
-                    
                     if (!host || !user || !pass) throw new Error("All Xtream fields required.");
                     data.xtream = { host, user, pass };
-                    barFill.style.width = '60%';
                 }
 
-                // Send data to Firebase
+                barFill.style.width = '70%';
+                
+                // Set to Firebase
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
                 
                 barFill.style.width = '100%';
