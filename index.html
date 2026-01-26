@@ -164,7 +164,7 @@
 
         .support-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: 600; }
 
-        /* --- Progress Bar (New Update Included) --- */
+        /* --- Progress Bar --- */
         #syncProgress { width: 100%; height: 6px; background: #0b0d11; border-radius: 10px; margin-top: 20px; overflow: hidden; display: none; border: 1px solid rgba(255,255,255,0.05); }
         #syncProgressBar { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--glow); transition: width 0.4s ease; }
 
@@ -310,15 +310,15 @@
             <div id="syncDashboard" class="sync-card">
                 <div class="sync-row">
                     <span class="sync-label">📺 Live TV Channels</span>
-                    <span id="count-live" class="sync-value">0</span>
+                    <span id="count-live" class="sync-value">Cloud Linked</span>
                 </div>
                 <div class="sync-row">
                     <span class="sync-label">🎬 Movies (VOD)</span>
-                    <span id="count-vod" class="sync-value">0</span>
+                    <span id="count-vod" class="sync-value">Cloud Linked</span>
                 </div>
                 <div class="sync-row">
                     <span class="sync-label">🍿 Series & Seasons</span>
-                    <span id="count-series" class="sync-value">0</span>
+                    <span id="count-series" class="sync-value">Cloud Linked</span>
                 </div>
                 <div id="sync-status-msg" style="color: var(--success); font-size: 0.85rem; text-align: center; margin-top: 15px; font-weight: 600;">✅ Sync Complete! Restart your TV App.</div>
             </div>
@@ -375,63 +375,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         let activeTab = 'm3u';
-
-        // UPDATED: High-Performance Multi-Proxy Parser with Progress Callback
-        async function parseM3U(url, onProgress) {
-            const proxies = [
-                "https://corsproxy.io/?", 
-                "https://api.allorigins.win/raw?url=",
-                "https://thingproxy.freeboard.io/fetch/"
-            ];
-            
-            onProgress(20); // Started
-
-            for(let proxy of proxies) {
-                try {
-                    const response = await fetch(proxy + encodeURIComponent(url));
-                    if (!response.ok) continue;
-                    
-                    onProgress(50); // Downloaded
-
-                    const text = await response.text();
-                    if (!text.includes("#EXTM3U")) continue;
-                    
-                    const categories = {};
-                    const lines = text.split('\n');
-                    let currentChannel = null;
-
-                    for (let line of lines) {
-                        line = line.trim();
-                        if (line.startsWith("#EXTINF:")) {
-                            const name = line.split(',').pop().trim() || "Unknown Channel";
-                            const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
-                            const groupMatch = line.match(/group-title="([^"]+)"/i);
-                            
-                            let groupName = groupMatch ? groupMatch[1].trim() : "General";
-                            groupName = groupName.replace(/[.#$[\]]/g, "_");
-
-                            currentChannel = {
-                                name: name,
-                                logo: logoMatch ? logoMatch[1] : "",
-                                category: groupName
-                            };
-                        } else if (line.startsWith("http") && currentChannel) {
-                            currentChannel.url = line;
-                            if (!categories[currentChannel.category]) {
-                                categories[currentChannel.category] = [];
-                            }
-                            categories[currentChannel.category].push(currentChannel);
-                            currentChannel = null;
-                        }
-                    }
-                    onProgress(100); // Processed
-                    return categories;
-                } catch (e) {
-                    console.warn(`Proxy ${proxy} failed, trying next...`);
-                }
-            }
-            throw new Error("Provider blocked access or URL invalid.");
-        }
 
         window.openPortal = () => {
             document.getElementById('portal-modal').style.display = 'flex';
@@ -490,63 +433,41 @@
             if (!id) return alert("Please enter a Device ID.");
 
             let data = { updatedAt: Date.now(), mode: activeTab };
-            const m3uUrl = document.getElementById('m3uUrl').value.trim();
             
             btn.classList.add('sync-loading');
-            btn.innerText = "Analyzing Content...";
+            btn.innerText = "Syncing Cloud...";
             dash.style.display = 'none';
             bar.style.display = 'block';
-            barFill.style.width = '0%';
+            barFill.style.width = '20%';
 
             try {
-                // Smart Detection Logic
-                if (activeTab === 'm3u' && m3uUrl.includes('get.php') && m3uUrl.includes('username=')) {
-                    try {
-                        const urlObj = new URL(m3uUrl);
-                        const params = new URLSearchParams(urlObj.search);
-                        const host = `${urlObj.protocol}//${urlObj.host}`;
-                        const user = params.get('username');
-                        const pass = params.get('password');
-
-                        if (host && user && pass) {
-                            data.mode = 'xtream'; 
-                            data.xtream = { host, user, pass };
-                        }
-                    } catch (err) { console.error("Smart detection failed", err); }
-                } 
-
-                let stats = { live: 0, vod: 0, series: 0 };
-
-                if (data.mode === 'm3u') {
+                if (activeTab === 'm3u') {
+                    const m3uUrl = document.getElementById('m3uUrl').value.trim();
                     if (!m3uUrl) throw new Error("M3U URL is required.");
-                    data.m3u_url = m3uUrl;
-                    const parsed = await parseM3U(m3uUrl, (p) => {
-                        barFill.style.width = p + '%';
-                    });
-                    data.channels = parsed;
                     
-                    Object.values(parsed).forEach(list => {
-                        stats.live += list.length;
-                    });
+                    // Direct Send - No Parsing
+                    data.m3u_url = m3uUrl;
+                    barFill.style.width = '60%';
                 } else {
-                    const host = document.getElementById('xtreamHost').value.trim() || (data.xtream ? data.xtream.host : "");
-                    const user = document.getElementById('xtreamUser').value.trim() || (data.xtream ? data.xtream.user : "");
-                    const pass = document.getElementById('xtreamPass').value.trim() || (data.xtream ? data.xtream.pass : "");
+                    const host = document.getElementById('xtreamHost').value.trim();
+                    const user = document.getElementById('xtreamUser').value.trim();
+                    const pass = document.getElementById('xtreamPass').value.trim();
                     
                     if (!host || !user || !pass) throw new Error("All Xtream fields required.");
                     data.xtream = { host, user, pass };
-                    barFill.style.width = '100%';
-                    stats = { live: "Syncing...", vod: "Syncing...", series: "Syncing..." };
+                    barFill.style.width = '60%';
                 }
 
+                // Send raw data to Firebase for TV app to handle
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
                 
+                barFill.style.width = '100%';
                 setTimeout(() => {
                     bar.style.display = 'none';
                     dash.style.display = 'block';
-                    document.getElementById('count-live').innerText = stats.live;
-                    document.getElementById('count-vod').innerText = stats.vod || "Enabled";
-                    document.getElementById('count-series').innerText = stats.series || "Enabled";
+                    document.getElementById('count-live').innerText = "Linked";
+                    document.getElementById('count-vod').innerText = "Linked";
+                    document.getElementById('count-series').innerText = "Linked";
                 }, 600);
                 
             } catch (e) { 
@@ -609,7 +530,6 @@
             if (!localStorage.getItem('cookiesAccepted')) {
                 document.getElementById('cookie-banner').style.display = 'flex';
             }
-            // QR SYNC LOGIC: Check URL for Device ID
             const urlParams = new URLSearchParams(window.location.search);
             const qrId = urlParams.get('id');
             if (qrId) {
