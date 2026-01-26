@@ -162,8 +162,6 @@
         .bg-blue { background: var(--primary); }
         .bg-grey { background: #333; }
 
-        .support-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: 600; }
-
         /* --- Progress Bar --- */
         #syncProgress { width: 100%; height: 6px; background: #0b0d11; border-radius: 10px; margin-top: 20px; overflow: hidden; display: none; border: 1px solid rgba(255,255,255,0.05); }
         #syncProgressBar { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--glow); transition: width 0.4s ease; }
@@ -309,12 +307,8 @@
 
             <div id="syncDashboard" class="sync-card">
                 <div class="sync-row">
-                    <span class="sync-label">📺 Connection</span>
-                    <span id="count-live" class="sync-value">Cloud Linked</span>
-                </div>
-                <div class="sync-row">
-                    <span class="sync-label">🚀 Sync Status</span>
-                    <span id="count-vod" class="sync-value">Sent to TV</span>
+                    <span class="sync-label">📺 Connection Status</span>
+                    <span class="sync-value">Cloud Linked</span>
                 </div>
                 <div id="sync-status-msg" style="color: var(--success); font-size: 0.85rem; text-align: center; margin-top: 15px; font-weight: 600;">✅ Sync Complete! Restart your TV App.</div>
             </div>
@@ -333,8 +327,8 @@
             <button class="close-modal" onclick="closeModals()">✕</button>
             <h2 style="color:var(--primary); margin-bottom: 20px;">Privacy Policy</h2>
             <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1; max-height: 60vh; overflow-y: auto;">
-                <p><strong>Last Updated: January 25, 2026</strong></p>
-                <p>We collect Device IDs and playlist credentials provided by you solely for the purpose of remote synchronization. We do not host, store, or transmit any media content.</p>
+                <p><strong>Last Updated: January 26, 2026</strong></p>
+                <p>We collect Device IDs and playlist credentials provided by you solely for remote synchronization with your TV. We do not host, store, or transmit any media content.</p>
             </div>
         </div>
     </div>
@@ -357,7 +351,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAx4WCxuXMgXqUp1CxwjHx9Ydd5s8IQTiQ",
@@ -428,46 +422,39 @@
             
             if (!id) return alert("Please enter a Device ID.");
 
-            let data = { updatedAt: Date.now(), mode: activeTab };
+            // Base data object
+            let data = { 
+                updatedAt: Date.now(), 
+                mode: activeTab 
+            };
             
             btn.classList.add('sync-loading');
-            btn.innerText = "Syncing with TV...";
+            btn.innerText = "Syncing Cloud...";
             dash.style.display = 'none';
             bar.style.display = 'block';
-            barFill.style.width = '30%';
+            barFill.style.width = '20%';
 
             try {
                 if (activeTab === 'm3u') {
                     const m3uUrl = document.getElementById('m3uUrl').value.trim();
                     if (!m3uUrl) throw new Error("M3U URL is required.");
                     
-                    // Smart detection: If it's actually an Xtream login inside an M3U link, convert it
-                    if (m3uUrl.includes('get.php') && m3uUrl.includes('username=')) {
-                        try {
-                            const urlObj = new URL(m3uUrl);
-                            const params = new URLSearchParams(urlObj.search);
-                            data.mode = 'xtream';
-                            data.xtream = {
-                                host: `${urlObj.protocol}//${urlObj.host}`,
-                                user: params.get('username'),
-                                pass: params.get('password')
-                            };
-                        } catch (e) { data.m3u_url = m3uUrl; }
-                    } else {
-                        data.m3u_url = m3uUrl;
-                    }
-                    // We remove local channel parsing entirely to keep the URL raw
+                    // Direct send of the raw string URL
+                    data.m3u_url = m3uUrl;
+                    barFill.style.width = '70%';
                 } else {
                     const host = document.getElementById('xtreamHost').value.trim();
                     const user = document.getElementById('xtreamUser').value.trim();
                     const pass = document.getElementById('xtreamPass').value.trim();
+                    
                     if (!host || !user || !pass) throw new Error("All Xtream fields required.");
+                    
+                    // Direct send of raw strings
                     data.xtream = { host, user, pass };
+                    barFill.style.width = '70%';
                 }
 
-                barFill.style.width = '70%';
-                
-                // Set to Firebase
+                // Send to Firebase without any website-side parsing
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
                 
                 barFill.style.width = '100%';
@@ -504,16 +491,12 @@
                     return actions.order.capture().then(async (details) => {
                         try {
                             await setDoc(doc(db, "playlists", id), { isPaid: true }, { merge: true });
-                            alert('Transaction completed by ' + details.payer.name.given_name + '! Your TV app is now activated.');
+                            alert('Transaction completed! Your TV app is now activated.');
                             window.location.reload();
                         } catch (err) {
                             alert("Payment recorded but database update failed. Please contact support.");
                         }
                     });
-                },
-                onError: (err) => {
-                    alert("PayPal Error: Please ensure you are using a valid card.");
-                    document.getElementById('show-pay-btn').style.display = 'block';
                 }
             }).render('#paypal-button-container');
         };
