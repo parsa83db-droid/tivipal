@@ -343,9 +343,13 @@
         const db = getFirestore(app);
         let activeTab = 'm3u';
 
+        // UPDATED: High-Performance Multi-Proxy Parser
         async function parseM3U(url) {
-            // Try two different proxies to ensure reachability
-            const proxies = ["https://corsproxy.io/?", "https://api.allorigins.win/raw?url="];
+            const proxies = [
+                "https://corsproxy.io/?", 
+                "https://api.allorigins.win/raw?url=",
+                "https://thingproxy.freeboard.io/fetch/"
+            ];
             let lastError = "";
 
             for(let proxy of proxies) {
@@ -363,11 +367,13 @@
                     for (let line of lines) {
                         line = line.trim();
                         if (line.startsWith("#EXTINF:")) {
-                            const name = line.split(',').pop() || "Unknown Channel";
-                            const logoMatch = line.match(/tvg-logo="([^"]+)"/);
-                            const groupMatch = line.match(/group-title="([^"]+)"/);
+                            // Professional Regex to extract name, logo, and group-title
+                            const name = line.split(',').pop().trim() || "Unknown Channel";
+                            const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
+                            const groupMatch = line.match(/group-title="([^"]+)"/i);
                             
                             let groupName = groupMatch ? groupMatch[1].trim() : "General";
+                            // Sanitize groupName for Firestore Keys
                             groupName = groupName.replace(/[.#$[\]]/g, "_");
 
                             currentChannel = {
@@ -389,7 +395,7 @@
                     lastError = e.message;
                 }
             }
-            throw new Error(lastError || "Provider blocked access.");
+            throw new Error("Provider blocked access or URL invalid.");
         }
 
         window.openPortal = () => {
@@ -444,7 +450,7 @@
 
             let data = { updatedAt: Date.now(), mode: activeTab };
             btn.disabled = true;
-            btn.innerText = "Processing...";
+            btn.innerText = "Parsing Folders...";
 
             try {
                 if (activeTab === 'm3u') {
@@ -452,13 +458,8 @@
                     if (!m3uUrl) throw new Error("M3U URL is required.");
                     data.m3u_url = m3uUrl;
                     
-                    try {
-                        const structured = await parseM3U(m3uUrl);
-                        data.channels = structured;
-                    } catch (parseErr) {
-                        console.warn("Sorting failed, saving raw URL:", parseErr.message);
-                        data.channels = null; // Mark as raw mode for TV app
-                    }
+                    // The core update: attempt deep parsing
+                    data.channels = await parseM3U(m3uUrl);
                 } else {
                     const host = document.getElementById('xtreamHost').value.trim();
                     const user = document.getElementById('xtreamUser').value.trim();
@@ -468,7 +469,7 @@
                 }
 
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
-                alert("Success! Playlist linked to your device.");
+                alert("Success! Your provider folders have been organized.");
             } catch (e) { 
                 alert("Error: " + e.message); 
             } finally {
