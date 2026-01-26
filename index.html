@@ -164,6 +164,21 @@
 
         .support-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: 600; }
 
+        /* --- Progress Bar (New Update Included) --- */
+        #syncProgress { width: 100%; height: 6px; background: #0b0d11; border-radius: 10px; margin-top: 20px; overflow: hidden; display: none; border: 1px solid rgba(255,255,255,0.05); }
+        #syncProgressBar { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--glow); transition: width 0.4s ease; }
+
+        /* --- Sync Dashboard Styles --- */
+        .sync-card { background: #0b0d11; border-radius: 20px; border: 1px solid #222; padding: 20px; margin-top: 20px; display: none; animation: slideUp 0.4s ease-out; }
+        .sync-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sync-row:last-child { border-bottom: none; }
+        .sync-label { font-size: 0.9rem; color: var(--text-dim); display: flex; align-items: center; gap: 10px; }
+        .sync-value { font-weight: 800; color: var(--success); font-size: 1rem; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-btn { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .sync-loading { animation: pulse-btn 1.5s infinite; pointer-events: none; }
+
         /* --- Cookie Banner --- */
         .cookie-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; background: #161a21; border: 1px solid #333; padding: 20px 30px; border-radius: 20px; display: none; align-items: center; justify-content: space-between; z-index: 2000; box-shadow: 0 10px 40px rgba(0,0,0,0.8); gap: 20px; }
         .cookie-text { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; }
@@ -290,6 +305,24 @@
 
             <button id="updateBtn" class="btn-action bg-blue" onclick="uploadPlaylist()">Update TV App</button>
 
+            <div id="syncProgress"><div id="syncProgressBar"></div></div>
+
+            <div id="syncDashboard" class="sync-card">
+                <div class="sync-row">
+                    <span class="sync-label">📺 Live TV Channels</span>
+                    <span id="count-live" class="sync-value">0</span>
+                </div>
+                <div class="sync-row">
+                    <span class="sync-label">🎬 Movies (VOD)</span>
+                    <span id="count-vod" class="sync-value">0</span>
+                </div>
+                <div class="sync-row">
+                    <span class="sync-label">🍿 Series & Seasons</span>
+                    <span id="count-series" class="sync-value">0</span>
+                </div>
+                <div id="sync-status-msg" style="color: var(--success); font-size: 0.85rem; text-align: center; margin-top: 15px; font-weight: 600;">✅ Sync Complete! Restart your TV App.</div>
+            </div>
+
             <div class="section-title">License Activation</div>
             <div id="pay-zone">
                 <p style="font-size: 0.9rem; color: #94a3b8; text-align: center; margin: 10px 0;">Lifetime Activation: £5.99</p>
@@ -343,20 +376,23 @@
         const db = getFirestore(app);
         let activeTab = 'm3u';
 
-        // UPDATED: High-Performance Multi-Proxy Parser
-        async function parseM3U(url) {
+        // UPDATED: High-Performance Multi-Proxy Parser with Progress Callback
+        async function parseM3U(url, onProgress) {
             const proxies = [
                 "https://corsproxy.io/?", 
                 "https://api.allorigins.win/raw?url=",
                 "https://thingproxy.freeboard.io/fetch/"
             ];
-            let lastError = "";
+            
+            onProgress(20); // Started
 
             for(let proxy of proxies) {
                 try {
                     const response = await fetch(proxy + encodeURIComponent(url));
                     if (!response.ok) continue;
                     
+                    onProgress(50); // Downloaded
+
                     const text = await response.text();
                     if (!text.includes("#EXTM3U")) continue;
                     
@@ -367,13 +403,11 @@
                     for (let line of lines) {
                         line = line.trim();
                         if (line.startsWith("#EXTINF:")) {
-                            // Professional Regex to extract name, logo, and group-title
                             const name = line.split(',').pop().trim() || "Unknown Channel";
                             const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
                             const groupMatch = line.match(/group-title="([^"]+)"/i);
                             
                             let groupName = groupMatch ? groupMatch[1].trim() : "General";
-                            // Sanitize groupName for Firestore Keys
                             groupName = groupName.replace(/[.#$[\]]/g, "_");
 
                             currentChannel = {
@@ -390,9 +424,10 @@
                             currentChannel = null;
                         }
                     }
+                    onProgress(100); // Processed
                     return categories;
                 } catch (e) {
-                    lastError = e.message;
+                    console.warn(`Proxy ${proxy} failed, trying next...`);
                 }
             }
             throw new Error("Provider blocked access or URL invalid.");
@@ -401,6 +436,8 @@
         window.openPortal = () => {
             document.getElementById('portal-modal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
+            document.getElementById('syncDashboard').style.display = 'none';
+            document.getElementById('syncProgress').style.display = 'none';
         };
 
         window.closeModals = () => {
@@ -446,34 +483,77 @@
         window.uploadPlaylist = async () => {
             const id = document.getElementById('deviceId').value.trim().toUpperCase();
             const btn = document.getElementById('updateBtn');
+            const dash = document.getElementById('syncDashboard');
+            const bar = document.getElementById('syncProgress');
+            const barFill = document.getElementById('syncProgressBar');
+            
             if (!id) return alert("Please enter a Device ID.");
 
             let data = { updatedAt: Date.now(), mode: activeTab };
-            btn.disabled = true;
-            btn.innerText = "Parsing Folders...";
+            const m3uUrl = document.getElementById('m3uUrl').value.trim();
+            
+            btn.classList.add('sync-loading');
+            btn.innerText = "Analyzing Content...";
+            dash.style.display = 'none';
+            bar.style.display = 'block';
+            barFill.style.width = '0%';
 
             try {
-                if (activeTab === 'm3u') {
-                    const m3uUrl = document.getElementById('m3uUrl').value.trim();
+                // Smart Detection Logic
+                if (activeTab === 'm3u' && m3uUrl.includes('get.php') && m3uUrl.includes('username=')) {
+                    try {
+                        const urlObj = new URL(m3uUrl);
+                        const params = new URLSearchParams(urlObj.search);
+                        const host = `${urlObj.protocol}//${urlObj.host}`;
+                        const user = params.get('username');
+                        const pass = params.get('password');
+
+                        if (host && user && pass) {
+                            data.mode = 'xtream'; 
+                            data.xtream = { host, user, pass };
+                        }
+                    } catch (err) { console.error("Smart detection failed", err); }
+                } 
+
+                let stats = { live: 0, vod: 0, series: 0 };
+
+                if (data.mode === 'm3u') {
                     if (!m3uUrl) throw new Error("M3U URL is required.");
                     data.m3u_url = m3uUrl;
+                    const parsed = await parseM3U(m3uUrl, (p) => {
+                        barFill.style.width = p + '%';
+                    });
+                    data.channels = parsed;
                     
-                    // The core update: attempt deep parsing
-                    data.channels = await parseM3U(m3uUrl);
+                    Object.values(parsed).forEach(list => {
+                        stats.live += list.length;
+                    });
                 } else {
-                    const host = document.getElementById('xtreamHost').value.trim();
-                    const user = document.getElementById('xtreamUser').value.trim();
-                    const pass = document.getElementById('xtreamPass').value.trim();
+                    const host = document.getElementById('xtreamHost').value.trim() || (data.xtream ? data.xtream.host : "");
+                    const user = document.getElementById('xtreamUser').value.trim() || (data.xtream ? data.xtream.user : "");
+                    const pass = document.getElementById('xtreamPass').value.trim() || (data.xtream ? data.xtream.pass : "");
+                    
                     if (!host || !user || !pass) throw new Error("All Xtream fields required.");
                     data.xtream = { host, user, pass };
+                    barFill.style.width = '100%';
+                    stats = { live: "Syncing...", vod: "Syncing...", series: "Syncing..." };
                 }
 
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
-                alert("Success! Your provider folders have been organized.");
+                
+                setTimeout(() => {
+                    bar.style.display = 'none';
+                    dash.style.display = 'block';
+                    document.getElementById('count-live').innerText = stats.live;
+                    document.getElementById('count-vod').innerText = stats.vod || "Enabled";
+                    document.getElementById('count-series').innerText = stats.series || "Enabled";
+                }, 600);
+                
             } catch (e) { 
                 alert("Error: " + e.message); 
+                bar.style.display = 'none';
             } finally {
-                btn.disabled = false;
+                btn.classList.remove('sync-loading');
                 btn.innerText = "Update TV App";
             }
         };
