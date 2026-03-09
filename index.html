@@ -292,10 +292,12 @@
             </div>
 
             <div id="form-m3u">
+                <input type="text" id="m3uName" placeholder="Playlist Name (e.g., My List)">
                 <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
             </div>
 
             <div id="form-xtream" style="display: none;">
+                <input type="text" id="xtreamName" placeholder="Playlist Name (e.g., IPTV Pro)">
                 <input type="text" id="xtreamHost" placeholder="Server URL (e.g., http://dns.com:80)">
                 <input type="text" id="xtreamUser" placeholder="Username">
                 <input type="password" id="xtreamPass" placeholder="Password">
@@ -422,11 +424,10 @@
             
             if (!id) return alert("Please enter a Device ID.");
 
-            // Create data object with unique sync flag for the TV app
             let data = { 
                 updatedAt: Date.now(), 
                 mode: activeTab,
-                syncRequest: Math.random().toString(36).substring(7) // Generates a random string to trigger TV app listeners
+                syncRequest: Math.random().toString(36).substring(7)
             };
             
             btn.classList.add('sync-loading');
@@ -438,26 +439,27 @@
             try {
                 if (activeTab === 'm3u') {
                     const m3uUrl = document.getElementById('m3uUrl').value.trim();
+                    const m3uName = document.getElementById('m3uName').value.trim();
                     if (!m3uUrl) throw new Error("M3U URL is required.");
                     
                     data.m3u_url = m3uUrl;
-                    // Clear out old xtream data to prevent sync confusion
+                    data.playlistName = m3uName || "M3U Playlist";
                     data.xtream = deleteField(); 
                     barFill.style.width = '70%';
                 } else {
                     const host = document.getElementById('xtreamHost').value.trim();
                     const user = document.getElementById('xtreamUser').value.trim();
                     const pass = document.getElementById('xtreamPass').value.trim();
+                    const xtName = document.getElementById('xtreamName').value.trim();
                     
                     if (!host || !user || !pass) throw new Error("All Xtream fields required.");
                     
                     data.xtream = { host, user, pass };
-                    // Clear out old m3u data to prevent sync confusion
+                    data.playlistName = xtName || "Xtream Playlist";
                     data.m3u_url = deleteField();
                     barFill.style.width = '70%';
                 }
 
-                // Push to Firestore
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
                 
                 barFill.style.width = '100%';
