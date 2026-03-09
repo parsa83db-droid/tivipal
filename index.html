@@ -351,7 +351,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAx4WCxuXMgXqUp1CxwjHx9Ydd5s8IQTiQ",
@@ -422,10 +422,11 @@
             
             if (!id) return alert("Please enter a Device ID.");
 
-            // Base data object
+            // Create data object with unique sync flag for the TV app
             let data = { 
                 updatedAt: Date.now(), 
-                mode: activeTab 
+                mode: activeTab,
+                syncRequest: Math.random().toString(36).substring(7) // Generates a random string to trigger TV app listeners
             };
             
             btn.classList.add('sync-loading');
@@ -439,8 +440,9 @@
                     const m3uUrl = document.getElementById('m3uUrl').value.trim();
                     if (!m3uUrl) throw new Error("M3U URL is required.");
                     
-                    // Direct send of the raw string URL
                     data.m3u_url = m3uUrl;
+                    // Clear out old xtream data to prevent sync confusion
+                    data.xtream = deleteField(); 
                     barFill.style.width = '70%';
                 } else {
                     const host = document.getElementById('xtreamHost').value.trim();
@@ -449,12 +451,13 @@
                     
                     if (!host || !user || !pass) throw new Error("All Xtream fields required.");
                     
-                    // Direct send of raw strings
                     data.xtream = { host, user, pass };
+                    // Clear out old m3u data to prevent sync confusion
+                    data.m3u_url = deleteField();
                     barFill.style.width = '70%';
                 }
 
-                // Send to Firebase without any website-side parsing
+                // Push to Firestore
                 await setDoc(doc(db, "playlists", id), data, { merge: true });
                 
                 barFill.style.width = '100%';
