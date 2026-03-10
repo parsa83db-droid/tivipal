@@ -15,7 +15,6 @@
             background: #000;
         }
 
-        /* Tizen fix: no aspect-ratio shorthand — use padding-top trick instead */
         #player-wrap {
             position: absolute;
             top: 0;
@@ -51,14 +50,8 @@
 
         #error h2 { font-size: 26px; margin-bottom: 14px; }
         #error p  { font-size: 18px; opacity: 0.7; margin-bottom: 20px; }
+        #error-code { font-size: 13px; opacity: 0.4; margin-top: 10px; }
 
-        #error-code {
-            font-size: 13px;
-            opacity: 0.4;
-            margin-top: 10px;
-        }
-
-        /* Spinner shown while player loads */
         #spinner {
             position: absolute;
             top: 50%;
@@ -94,14 +87,15 @@
     </div>
 
     <script>
-        var urlParams  = new URLSearchParams(window.location.search);
-        var videoId    = urlParams.get('v');
-        var spinner    = document.getElementById('spinner');
-        var errorEl    = document.getElementById('error');
-        var errorMsg   = document.getElementById('error-msg');
-        var errorCode  = document.getElementById('error-code');
+        var urlParams   = new URLSearchParams(window.location.search);
+        var videoId     = urlParams.get('v');
+        var spinner     = document.getElementById('spinner');
+        var errorEl     = document.getElementById('error');
+        var errorMsg    = document.getElementById('error-msg');
+        var errorCode   = document.getElementById('error-code');
         var player;
         var playerReady = false;
+        var unmuted     = false;
 
         function showError(msg, code) {
             spinner.style.display = 'none';
@@ -113,17 +107,11 @@
         if (!videoId) {
             showError('No video ID provided');
         } else {
-            // Safety timeout — if player hasn't started in 12s, show error
             var safetyTimer = setTimeout(function() {
                 if (!playerReady) showError('Player took too long to load. Check network.');
             }, 12000);
 
-            // Load YouTube IFrame API
             var tag = document.createElement('script');
-
-            // ── KEY FIX 1: Use youtube-nocookie.com ──────────────────────────
-            // youtube-nocookie.com bypasses some Tizen embedding restrictions
-            // and avoids the privacy-enhanced mode DRM check that causes error 153
             tag.src = 'https://www.youtube.com/iframe_api';
             tag.onerror = function() {
                 clearTimeout(safetyTimer);
@@ -138,25 +126,21 @@
 
                 player = new YT.Player('player', {
                     videoId: videoId,
-                    host: 'https://www.youtube-nocookie.com', // ← KEY FIX 2
+                    host: 'https://www.youtube-nocookie.com',
                     playerVars: {
-                        // ── KEY FIX 3: origin must match the page serving this file ──
-                        // Upload trailer.html to https://tivipal.co.uk/trailer.html
-                        // and set origin to that domain so YouTube trusts the handshake
-                        'origin':           'https://tivipal.co.uk',
-                        'widget_referrer':  'https://tivipal.co.uk',
-                        'enablejsapi':      1,
-                        'autoplay':         1,
-                        'controls':         1,
-                        'modestbranding':   1,
-                        'rel':              0,
-                        'playsinline':      1,
-                        'iv_load_policy':   3,
-                        'fs':               0,  // fullscreen button off (handled by overlay)
-                        // ── KEY FIX 4: cc_load_policy off ───────────────────
-                        // Avoids extra API calls that can trigger DRM checks on Tizen
-                        'cc_load_policy':   0,
-                        'hl':              'en'
+                        'origin':          'https://tivipal.co.uk',
+                        'widget_referrer': 'https://tivipal.co.uk',
+                        'enablejsapi':     1,
+                        'autoplay':        1,
+                        'mute':            1,   // muted autoplay is always allowed
+                        'controls':        1,
+                        'modestbranding':  1,
+                        'rel':             0,
+                        'playsinline':     1,
+                        'iv_load_policy':  3,
+                        'fs':              0,
+                        'cc_load_policy':  0,
+                        'hl':             'en'
                     },
                     events: {
                         onReady:       onPlayerReady,
@@ -169,7 +153,8 @@
             function onPlayerReady(event) {
                 playerReady = true;
                 spinner.style.display = 'none';
-                console.log('✅ YouTube player ready — playing');
+                console.log('✅ YouTube player ready — playing muted');
+                event.target.mute();
                 event.target.playVideo();
             }
 
@@ -178,22 +163,28 @@
                 console.error('❌ YouTube player error:', code);
 
                 var msg;
-                if (code === 2)              msg = 'Invalid video ID';
-                else if (code === 5)         msg = 'HTML5 player error on this device';
-                else if (code === 100)       msg = 'Video not found or private';
+                if (code === 2)                        msg = 'Invalid video ID';
+                else if (code === 5)                   msg = 'HTML5 player error on this device';
+                else if (code === 100)                 msg = 'Video not found or private';
                 else if (code === 101 || code === 150) msg = 'Video owner has disabled embedding';
-                else if (code === 153)       msg = 'DRM error — video restricted on this device';
-                else                         msg = 'Playback error (' + code + ')';
+                else if (code === 153)                 msg = 'DRM error — video restricted on this device';
+                else                                   msg = 'Playback error (' + code + ')';
 
                 showError(msg, code);
             }
 
             function onPlayerStateChange(event) {
+                // Unmute as soon as playback actually starts — user never hears silence
                 if (event.data === YT.PlayerState.PLAYING) {
                     spinner.style.display = 'none';
+                    if (!unmuted && player && player.unMute) {
+                        unmuted = true;
+                        player.unMute();
+                        player.setVolume(100);
+                        console.log('🔊 Unmuted after autoplay started');
+                    }
                 }
                 if (event.data === YT.PlayerState.ENDED) {
-                    // Signal parent to close overlay
                     try { window.parent.postMessage({ type: 'trailer-ended' }, '*'); } catch(e) {}
                     window.close();
                 }
@@ -204,7 +195,6 @@
         document.addEventListener('keydown', function(e) {
             var k = e.keyCode;
 
-            // BACK (10009) or ESC (27) — close
             if (k === 10009 || k === 27) {
                 e.preventDefault();
                 if (player && player.stopVideo) player.stopVideo();
@@ -223,25 +213,25 @@
                 else player.playVideo();
             }
 
-            // Fast forward (FF key 417 or RIGHT 39)
+            // Fast forward
             if (k === 417 || k === 39) {
                 e.preventDefault();
                 player.seekTo(player.getCurrentTime() + 10, true);
             }
 
-            // Rewind (REW key 412 or LEFT 37)
+            // Rewind
             if (k === 412 || k === 37) {
                 e.preventDefault();
                 player.seekTo(Math.max(0, player.getCurrentTime() - 10), true);
             }
 
-            // Volume up (447 or UP 38)
+            // Volume up
             if (k === 447 || k === 38) {
                 e.preventDefault();
                 player.setVolume(Math.min(100, player.getVolume() + 10));
             }
 
-            // Volume down (448 or DOWN 40)
+            // Volume down
             if (k === 448 || k === 40) {
                 e.preventDefault();
                 player.setVolume(Math.max(0, player.getVolume() - 10));
