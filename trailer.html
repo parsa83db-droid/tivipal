@@ -96,6 +96,7 @@
         var player;
         var playerReady = false;
         var unmuted     = false;
+        var playStarted = false; // true once we've seen at least one PLAYING state
 
         function showError(msg, code) {
             spinner.style.display = 'none';
@@ -132,7 +133,7 @@
                         'widget_referrer': 'https://tivipal.co.uk',
                         'enablejsapi':     1,
                         'autoplay':        1,
-                        'mute':            1,   // muted autoplay is always allowed
+                        'mute':            1,   // start muted — browser always allows muted autoplay
                         'controls':        1,
                         'modestbranding':  1,
                         'rel':             0,
@@ -153,9 +154,11 @@
             function onPlayerReady(event) {
                 playerReady = true;
                 spinner.style.display = 'none';
-                console.log('✅ YouTube player ready — playing muted');
-                event.target.mute();
-                event.target.playVideo();
+                console.log('✅ YouTube player ready');
+                // Do NOT call mute() here — playerVars mute:1 already handles it
+                // Do NOT call playVideo() here — autoplay:1 handles it
+                // Calling playVideo() here triggers a state change BEFORE
+                // the video is actually playing, causing the browser to block it
             }
 
             function onPlayerError(event) {
@@ -174,17 +177,28 @@
             }
 
             function onPlayerStateChange(event) {
-                // Unmute as soon as playback actually starts — user never hears silence
-                if (event.data === YT.PlayerState.PLAYING) {
+                var state = event.data;
+
+                if (state === YT.PlayerState.PLAYING) {
                     spinner.style.display = 'none';
-                    if (!unmuted && player && player.unMute) {
+                    playStarted = true;
+
+                    // Only unmute once, only after confirmed PLAYING
+                    // Short delay ensures the browser has committed to playback
+                    // before we unmute — prevents the block-on-unmuted-autoplay race
+                    if (!unmuted) {
                         unmuted = true;
-                        player.unMute();
-                        player.setVolume(100);
-                        console.log('🔊 Unmuted after autoplay started');
+                        setTimeout(function() {
+                            if (player && player.unMute) {
+                                player.unMute();
+                                player.setVolume(100);
+                                console.log('🔊 Unmuted after confirmed PLAYING');
+                            }
+                        }, 250);
                     }
                 }
-                if (event.data === YT.PlayerState.ENDED) {
+
+                if (state === YT.PlayerState.ENDED) {
                     try { window.parent.postMessage({ type: 'trailer-ended' }, '*'); } catch(e) {}
                     window.close();
                 }
