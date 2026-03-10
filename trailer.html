@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <title>Trailer - tivipal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* Tizen fix: no aspect-ratio shorthand — use padding-top trick instead */
+        #player-wrap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #error {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 40px;
+            background: rgba(0,0,0,0.85);
+            border-radius: 12px;
+            z-index: 10;
+        }
+
+        #error h2 { font-size: 26px; margin-bottom: 14px; }
+        #error p  { font-size: 18px; opacity: 0.7; margin-bottom: 20px; }
+
+        #error-code {
+            font-size: 13px;
+            opacity: 0.4;
+            margin-top: 10px;
+        }
+
+        /* Spinner shown while player loads */
+        #spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.15);
+            border-top-color: #fff;
+            border-radius: 50%;
+            -webkit-animation: spin 0.8s linear infinite;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            to { -webkit-transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="spinner"></div>
+    <div id="player-wrap">
+        <div id="player"></div>
+    </div>
+    <div id="error">
+        <h2>⚠️ Trailer Unavailable</h2>
+        <p id="error-msg">This video cannot be played on this device</p>
+        <div id="error-code"></div>
+    </div>
+
+    <script>
+        var urlParams  = new URLSearchParams(window.location.search);
+        var videoId    = urlParams.get('v');
+        var spinner    = document.getElementById('spinner');
+        var errorEl    = document.getElementById('error');
+        var errorMsg   = document.getElementById('error-msg');
+        var errorCode  = document.getElementById('error-code');
+        var player;
+        var playerReady = false;
+
+        function showError(msg, code) {
+            spinner.style.display = 'none';
+            errorMsg.textContent  = msg || 'This video cannot be played';
+            errorCode.textContent = code ? 'Error code: ' + code : '';
+            errorEl.style.display = 'block';
+        }
+
+        if (!videoId) {
+            showError('No video ID provided');
+        } else {
+            // Safety timeout — if player hasn't started in 12s, show error
+            var safetyTimer = setTimeout(function() {
+                if (!playerReady) showError('Player took too long to load. Check network.');
+            }, 12000);
+
+            // Load YouTube IFrame API
+            var tag = document.createElement('script');
+
+            // ── KEY FIX 1: Use youtube-nocookie.com ──────────────────────────
+            // youtube-nocookie.com bypasses some Tizen embedding restrictions
+            // and avoids the privacy-enhanced mode DRM check that causes error 153
+            tag.src = 'https://www.youtube.com/iframe_api';
+            tag.onerror = function() {
+                clearTimeout(safetyTimer);
+                showError('Could not load YouTube player (network error)');
+            };
+
+            var firstScript = document.getElementsByTagName('script')[0];
+            firstScript.parentNode.insertBefore(tag, firstScript);
+
+            window.onYouTubeIframeAPIReady = function() {
+                clearTimeout(safetyTimer);
+
+                player = new YT.Player('player', {
+                    videoId: videoId,
+                    host: 'https://www.youtube-nocookie.com', // ← KEY FIX 2
+                    playerVars: {
+                        // ── KEY FIX 3: origin must match the page serving this file ──
+                        // Upload trailer.html to https://tivipal.co.uk/trailer.html
+                        // and set origin to that domain so YouTube trusts the handshake
+                        'origin':           'https://tivipal.co.uk',
+                        'widget_referrer':  'https://tivipal.co.uk',
+                        'enablejsapi':      1,
+                        'autoplay':         1,
+                        'controls':         1,
+                        'modestbranding':   1,
+                        'rel':              0,
+                        'playsinline':      1,
+                        'iv_load_policy':   3,
+                        'fs':               0,  // fullscreen button off (handled by overlay)
+                        // ── KEY FIX 4: cc_load_policy off ───────────────────
+                        // Avoids extra API calls that can trigger DRM checks on Tizen
+                        'cc_load_policy':   0,
+                        'hl':              'en'
+                    },
+                    events: {
+                        onReady:       onPlayerReady,
+                        onError:       onPlayerError,
+                        onStateChange: onPlayerStateChange
+                    }
+                });
+            };
+
+            function onPlayerReady(event) {
+                playerReady = true;
+                spinner.style.display = 'none';
+                console.log('✅ YouTube player ready — playing');
+                event.target.playVideo();
+            }
+
+            function onPlayerError(event) {
+                var code = event.data;
+                console.error('❌ YouTube player error:', code);
+
+                var msg;
+                if (code === 2)              msg = 'Invalid video ID';
+                else if (code === 5)         msg = 'HTML5 player error on this device';
+                else if (code === 100)       msg = 'Video not found or private';
+                else if (code === 101 || code === 150) msg = 'Video owner has disabled embedding';
+                else if (code === 153)       msg = 'DRM error — video restricted on this device';
+                else                         msg = 'Playback error (' + code + ')';
+
+                showError(msg, code);
+            }
+
+            function onPlayerStateChange(event) {
+                if (event.data === YT.PlayerState.PLAYING) {
+                    spinner.style.display = 'none';
+                }
+                if (event.data === YT.PlayerState.ENDED) {
+                    // Signal parent to close overlay
+                    try { window.parent.postMessage({ type: 'trailer-ended' }, '*'); } catch(e) {}
+                    window.close();
+                }
+            }
+        }
+
+        // ── Remote control key handler ────────────────────────────────────────
+        document.addEventListener('keydown', function(e) {
+            var k = e.keyCode;
+
+            // BACK (10009) or ESC (27) — close
+            if (k === 10009 || k === 27) {
+                e.preventDefault();
+                if (player && player.stopVideo) player.stopVideo();
+                try { window.parent.postMessage({ type: 'trailer-close' }, '*'); } catch(ex) {}
+                window.close();
+                return;
+            }
+
+            if (!player || !playerReady) return;
+
+            // Play/Pause
+            if (k === 415 || k === 32 || k === 13) {
+                e.preventDefault();
+                var s = player.getPlayerState();
+                if (s === YT.PlayerState.PLAYING) player.pauseVideo();
+                else player.playVideo();
+            }
+
+            // Fast forward (FF key 417 or RIGHT 39)
+            if (k === 417 || k === 39) {
+                e.preventDefault();
+                player.seekTo(player.getCurrentTime() + 10, true);
+            }
+
+            // Rewind (REW key 412 or LEFT 37)
+            if (k === 412 || k === 37) {
+                e.preventDefault();
+                player.seekTo(Math.max(0, player.getCurrentTime() - 10), true);
+            }
+
+            // Volume up (447 or UP 38)
+            if (k === 447 || k === 38) {
+                e.preventDefault();
+                player.setVolume(Math.min(100, player.getVolume() + 10));
+            }
+
+            // Volume down (448 or DOWN 40)
+            if (k === 448 || k === 40) {
+                e.preventDefault();
+                player.setVolume(Math.max(0, player.getVolume() - 10));
+            }
+        });
+    </script>
+</body>
+</html>
