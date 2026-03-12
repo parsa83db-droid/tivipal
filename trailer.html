@@ -125,13 +125,6 @@
             function onPlayerReady(event) {
                 playerReady = true;
                 spinner.style.display = 'none';
-                // Unmute BEFORE playback begins — avoids mid-stream audio pipeline
-                // restart on Tizen WebKit which causes the brief play→stop glitch.
-                try {
-                    event.target.unMute();
-                    event.target.setVolume(100);
-                    unmuted = true;
-                } catch(e) {}
                 // Notify parent that player is ready with duration
                 try {
                     window.parent.postMessage({
@@ -155,6 +148,17 @@
 
             function onPlayerStateChange(event) {
                 var state = event.data;
+
+                // Unmute once playback actually starts
+                if (state === YT.PlayerState.PLAYING && !unmuted) {
+                    unmuted = true;
+                    setTimeout(function() {
+                        if (player && player.unMute) {
+                            player.unMute();
+                            player.setVolume(100);
+                        }
+                    }, 250);
+                }
 
                 // Notify parent of state change so controls UI can update
                 var stateMap = {
