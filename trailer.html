@@ -75,7 +75,6 @@
             errorMsg.textContent  = msg || 'This video cannot be played';
             errorCode.textContent = code ? 'Error code: ' + code : '';
             errorEl.style.display = 'block';
-            // Notify parent of error
             try { window.parent.postMessage({ type: 'trailer-error', msg: msg }, '*'); } catch(e) {}
         }
 
@@ -98,21 +97,25 @@
                 clearTimeout(safetyTimer);
                 player = new YT.Player('player', {
                     videoId: videoId,
-                    host: 'https://www.youtube-nocookie.com',
+                    // NOTE: no 'host' override — youtube-nocookie.com causes
+                    // silent immediate-stop on several Tizen firmware versions.
                     playerVars: {
                         'origin':          'https://tivipal.co.uk',
                         'widget_referrer': 'https://tivipal.co.uk',
                         'enablejsapi':     1,
                         'autoplay':        1,
-                        'mute':            1,
-                        'controls':        0,   // hide YouTube controls — we use our own
+                        'mute':            1,   // stays muted until PLAYING fires
+                        'controls':        0,
                         'modestbranding':  1,
                         'rel':             0,
                         'playsinline':     1,
                         'iv_load_policy':  3,
                         'fs':              0,
                         'cc_load_policy':  0,
-                        'hl':             'en'
+                        'hl':             'en',
+                        // Required on some Tizen builds to prevent autoplay
+                        // self-cancelling when no playlist is defined:
+                        'playlist':        videoId
                     },
                     events: {
                         onReady:       onPlayerReady,
@@ -125,7 +128,8 @@
             function onPlayerReady(event) {
                 playerReady = true;
                 spinner.style.display = 'none';
-                // Notify parent that player is ready with duration
+                // Do NOT unmute here — touching the audio pipeline before
+                // playback is confirmed playing causes Tizen WebKit to abort.
                 try {
                     window.parent.postMessage({
                         type:     'trailer-ready',
@@ -149,18 +153,21 @@
             function onPlayerStateChange(event) {
                 var state = event.data;
 
-                // Unmute once playback actually starts
+                // Unmute only once, only after playback is confirmed running,
+                // and only after a safe delay — this is the only place we
+                // touch the audio pipeline, keeping Tizen happy.
                 if (state === YT.PlayerState.PLAYING && !unmuted) {
                     unmuted = true;
                     setTimeout(function() {
-                        if (player && player.unMute) {
-                            player.unMute();
-                            player.setVolume(100);
-                        }
-                    }, 250);
+                        try {
+                            if (player && player.unMute) {
+                                player.unMute();
+                                player.setVolume(100);
+                            }
+                        } catch(e) {}
+                    }, 800);
                 }
 
-                // Notify parent of state change so controls UI can update
                 var stateMap = {
                     '-1': 'unstarted',
                     '0':  'ended',
@@ -183,7 +190,7 @@
                 }
             }
 
-            // ── Time ticker — sends current time to parent every 500ms for progress bar ──
+            // ── Time ticker ──────────────────────────────────────────────────
             setInterval(function() {
                 if (!player || !playerReady) return;
                 var state = player.getPlayerState();
@@ -198,7 +205,7 @@
             }, 500);
         }
 
-        // ── Listen for commands from parent overlay ────────────────────────────
+        // ── Commands from parent overlay ─────────────────────────────────────
         window.addEventListener('message', function(ev) {
             if (!player || !playerReady) return;
             var msg = ev.data;
