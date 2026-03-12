@@ -7,36 +7,15 @@
     <title>Trailer - tivipal</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-        }
-
-        #player-wrap {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        #player {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        #player-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        #player      { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
         #error {
             display: none;
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             -webkit-transform: translate(-50%, -50%);
             transform: translate(-50%, -50%);
             color: #fff;
@@ -47,26 +26,22 @@
             border-radius: 12px;
             z-index: 10;
         }
-
-        #error h2 { font-size: 26px; margin-bottom: 14px; }
-        #error p  { font-size: 18px; opacity: 0.7; margin-bottom: 20px; }
-        #error-code { font-size: 13px; opacity: 0.4; margin-top: 10px; }
+        #error h2    { font-size: 26px; margin-bottom: 14px; }
+        #error p     { font-size: 18px; opacity: 0.7; }
+        #error-code  { font-size: 13px; opacity: 0.4; margin-top: 10px; }
 
         #spinner {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             -webkit-transform: translate(-50%, -50%);
             transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
+            width: 60px; height: 60px;
             border: 5px solid rgba(255,255,255,0.15);
             border-top-color: #fff;
             border-radius: 50%;
             -webkit-animation: spin 0.8s linear infinite;
             animation: spin 0.8s linear infinite;
         }
-
         @-webkit-keyframes spin {
             to { -webkit-transform: translate(-50%, -50%) rotate(360deg); }
         }
@@ -77,9 +52,7 @@
 </head>
 <body>
     <div id="spinner"></div>
-    <div id="player-wrap">
-        <div id="player"></div>
-    </div>
+    <div id="player-wrap"><div id="player"></div></div>
     <div id="error">
         <h2>⚠️ Trailer Unavailable</h2>
         <p id="error-msg">This video cannot be played on this device</p>
@@ -96,13 +69,14 @@
         var player;
         var playerReady = false;
         var unmuted     = false;
-        var playStarted = false; // true once we've seen at least one PLAYING state
 
         function showError(msg, code) {
             spinner.style.display = 'none';
             errorMsg.textContent  = msg || 'This video cannot be played';
             errorCode.textContent = code ? 'Error code: ' + code : '';
             errorEl.style.display = 'block';
+            // Notify parent of error
+            try { window.parent.postMessage({ type: 'trailer-error', msg: msg }, '*'); } catch(e) {}
         }
 
         if (!videoId) {
@@ -118,13 +92,10 @@
                 clearTimeout(safetyTimer);
                 showError('Could not load YouTube player (network error)');
             };
-
-            var firstScript = document.getElementsByTagName('script')[0];
-            firstScript.parentNode.insertBefore(tag, firstScript);
+            document.getElementsByTagName('script')[0].parentNode.insertBefore(tag, document.getElementsByTagName('script')[0]);
 
             window.onYouTubeIframeAPIReady = function() {
                 clearTimeout(safetyTimer);
-
                 player = new YT.Player('player', {
                     videoId: videoId,
                     host: 'https://www.youtube-nocookie.com',
@@ -133,8 +104,8 @@
                         'widget_referrer': 'https://tivipal.co.uk',
                         'enablejsapi':     1,
                         'autoplay':        1,
-                        'mute':            1,   // start muted — browser always allows muted autoplay
-                        'controls':        1,
+                        'mute':            1,
+                        'controls':        0,   // hide YouTube controls — we use our own
                         'modestbranding':  1,
                         'rel':             0,
                         'playsinline':     1,
@@ -154,101 +125,110 @@
             function onPlayerReady(event) {
                 playerReady = true;
                 spinner.style.display = 'none';
-                console.log('✅ YouTube player ready');
-                // Do NOT call mute() here — playerVars mute:1 already handles it
-                // Do NOT call playVideo() here — autoplay:1 handles it
-                // Calling playVideo() here triggers a state change BEFORE
-                // the video is actually playing, causing the browser to block it
+                // Notify parent that player is ready with duration
+                try {
+                    window.parent.postMessage({
+                        type:     'trailer-ready',
+                        duration: player.getDuration() || 0
+                    }, '*');
+                } catch(e) {}
             }
 
             function onPlayerError(event) {
                 var code = event.data;
-                console.error('❌ YouTube player error:', code);
-
-                var msg;
-                if (code === 2)                        msg = 'Invalid video ID';
-                else if (code === 5)                   msg = 'HTML5 player error on this device';
-                else if (code === 100)                 msg = 'Video not found or private';
-                else if (code === 101 || code === 150) msg = 'Video owner has disabled embedding';
-                else if (code === 153)                 msg = 'DRM error — video restricted on this device';
-                else                                   msg = 'Playback error (' + code + ')';
-
+                var msg =
+                    code === 2   ? 'Invalid video ID' :
+                    code === 5   ? 'HTML5 player error on this device' :
+                    code === 100 ? 'Video not found or private' :
+                    (code === 101 || code === 150) ? 'Video owner has disabled embedding' :
+                    code === 153 ? 'DRM error — video restricted on this device' :
+                    'Playback error (' + code + ')';
                 showError(msg, code);
             }
 
             function onPlayerStateChange(event) {
                 var state = event.data;
 
-                if (state === YT.PlayerState.PLAYING) {
-                    spinner.style.display = 'none';
-                    playStarted = true;
-
-                    // Only unmute once, only after confirmed PLAYING
-                    // Short delay ensures the browser has committed to playback
-                    // before we unmute — prevents the block-on-unmuted-autoplay race
-                    if (!unmuted) {
-                        unmuted = true;
-                        setTimeout(function() {
-                            if (player && player.unMute) {
-                                player.unMute();
-                                player.setVolume(100);
-                                console.log('🔊 Unmuted after confirmed PLAYING');
-                            }
-                        }, 250);
-                    }
+                // Unmute once playback actually starts
+                if (state === YT.PlayerState.PLAYING && !unmuted) {
+                    unmuted = true;
+                    setTimeout(function() {
+                        if (player && player.unMute) {
+                            player.unMute();
+                            player.setVolume(100);
+                        }
+                    }, 250);
                 }
+
+                // Notify parent of state change so controls UI can update
+                var stateMap = {
+                    '-1': 'unstarted',
+                    '0':  'ended',
+                    '1':  'playing',
+                    '2':  'paused',
+                    '3':  'buffering',
+                    '5':  'cued'
+                };
+                try {
+                    window.parent.postMessage({
+                        type:     'trailer-state',
+                        state:    stateMap[String(state)] || state,
+                        time:     player ? player.getCurrentTime() : 0,
+                        duration: player ? player.getDuration()    : 0
+                    }, '*');
+                } catch(e) {}
 
                 if (state === YT.PlayerState.ENDED) {
                     try { window.parent.postMessage({ type: 'trailer-ended' }, '*'); } catch(e) {}
-                    window.close();
                 }
             }
+
+            // ── Time ticker — sends current time to parent every 500ms for progress bar ──
+            setInterval(function() {
+                if (!player || !playerReady) return;
+                var state = player.getPlayerState();
+                if (state !== YT.PlayerState.PLAYING) return;
+                try {
+                    window.parent.postMessage({
+                        type:     'trailer-tick',
+                        time:     player.getCurrentTime(),
+                        duration: player.getDuration()
+                    }, '*');
+                } catch(e) {}
+            }, 500);
         }
 
-        // ── Remote control key handler ────────────────────────────────────────
-        document.addEventListener('keydown', function(e) {
-            var k = e.keyCode;
-
-            if (k === 10009 || k === 27) {
-                e.preventDefault();
-                if (player && player.stopVideo) player.stopVideo();
-                try { window.parent.postMessage({ type: 'trailer-close' }, '*'); } catch(ex) {}
-                window.close();
-                return;
-            }
-
+        // ── Listen for commands from parent overlay ────────────────────────────
+        window.addEventListener('message', function(ev) {
             if (!player || !playerReady) return;
+            var msg = ev.data;
+            if (!msg || typeof msg !== 'object') return;
 
-            // Play/Pause
-            if (k === 415 || k === 32 || k === 13) {
-                e.preventDefault();
-                var s = player.getPlayerState();
-                if (s === YT.PlayerState.PLAYING) player.pauseVideo();
-                else player.playVideo();
-            }
-
-            // Fast forward
-            if (k === 417 || k === 39) {
-                e.preventDefault();
-                player.seekTo(player.getCurrentTime() + 10, true);
-            }
-
-            // Rewind
-            if (k === 412 || k === 37) {
-                e.preventDefault();
-                player.seekTo(Math.max(0, player.getCurrentTime() - 10), true);
-            }
-
-            // Volume up
-            if (k === 447 || k === 38) {
-                e.preventDefault();
-                player.setVolume(Math.min(100, player.getVolume() + 10));
-            }
-
-            // Volume down
-            if (k === 448 || k === 40) {
-                e.preventDefault();
-                player.setVolume(Math.max(0, player.getVolume() - 10));
+            switch (msg.cmd) {
+                case 'play':
+                    player.unMute(); player.setVolume(100);
+                    player.playVideo();
+                    break;
+                case 'pause':
+                    player.pauseVideo();
+                    break;
+                case 'seek':
+                    player.seekTo(msg.time, true);
+                    break;
+                case 'volume':
+                    player.setVolume(msg.value);
+                    if (msg.value === 0) player.mute(); else player.unMute();
+                    break;
+                case 'getState':
+                    try {
+                        window.parent.postMessage({
+                            type:     'trailer-state',
+                            state:    player.getPlayerState(),
+                            time:     player.getCurrentTime(),
+                            duration: player.getDuration()
+                        }, '*');
+                    } catch(e) {}
+                    break;
             }
         });
     </script>
