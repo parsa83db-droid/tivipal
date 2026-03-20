@@ -1118,7 +1118,11 @@
     <button class="btn-primary" onclick="checkDeviceAndProceed()" id="step1-continue-btn">Continue →</button>
     <div class="status-box" id="device-status" role="status"></div>
     <div class="divider"></div>
-    <p style="font-size:0.78rem;color:var(--text-dim);text-align:center;line-height:1.6;">Find your Device ID in the tivipal app settings,<br>or scan the QR code shown on your TV.</p>
+    <p style="font-size:0.78rem;color:var(--text-dim);text-align:center;line-height:1.7;">
+      The easiest way: <strong style="color:var(--text-mid);">scan the QR code</strong> shown on your TV —<br>
+      it opens this page with your Device ID already filled in.<br>
+      Or find it manually in the tivipal app Settings screen.
+    </p>
   </div>
 
   <!-- STEP 2 -->
@@ -1621,7 +1625,7 @@
 
     if (!id) { showStatus(box,'error','Please enter your Device ID.'); input.focus(); return; }
     if (!DEVICE_ID_RE.test(id)) {
-      showStatus(box,'error','Invalid Device ID format. Expected: TP-XXXXXX');
+      showStatus(box,'error','Invalid Device ID format. Expected: TP- followed by 8 characters (e.g. TP-1A2B3C4D)');
       input.classList.add('invalid'); input.focus(); return;
     }
 
