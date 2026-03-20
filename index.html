@@ -215,7 +215,7 @@
     .tv-frame {
       position: relative;
       background: linear-gradient(160deg, #1c1c20 0%, #111113 60%, #0a0a0c 100%);
-      border-radius: 20px 20px 8px 8px;
+      border-radius: 20px 20px 20px 20px;
       padding: 14px 14px 0 14px;
       box-shadow:
         0 0 0 2px #2a2a30,
@@ -224,7 +224,7 @@
         0 0 120px rgba(229,9,20,0.06);
     }
     .tv-screen {
-      border-radius: 10px 10px 0 0;
+      border-radius: 5px 5px 5px 5px;
       overflow: hidden;
       aspect-ratio: 16/9;
       background: linear-gradient(135deg, #0a0a0e 0%, #0f0f14 40%, #0d0d12 100%);
@@ -455,7 +455,7 @@
     .field-label { font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); margin-bottom:7px; display:block; }
     .field-input {
       width:100%; padding:13px 15px; background:var(--bg3);
-      border:1px solid var(--border); border-radius:var(--radius-sm);
+      border:1px solid var(--border); border-radius:25px;
       color:#fff; font-family:'DM Sans',sans-serif; font-size:0.93rem;
       outline:none; transition:border-color 0.2s, box-shadow 0.2s; margin-bottom:13px;
     }
@@ -472,14 +472,14 @@
 
     .btn-primary {
       width:100%; padding:14px; background:var(--red); color:#fff; border:none;
-      border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.97rem;
+      border-radius:25px; font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.97rem;
       cursor:pointer; transition:all 0.2s; margin-top:6px;
     }
     .btn-primary:hover { background:#f40612; transform:translateY(-1px); box-shadow:0 6px 20px var(--red-glow); }
     .btn-primary:disabled { opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none; }
     .btn-secondary {
       width:100%; padding:13px; background:var(--bg3); color:var(--text-mid);
-      border:1px solid var(--border); border-radius:var(--radius-sm);
+      border:1px solid var(--border); border-radius:25px;
       font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.93rem;
       cursor:pointer; transition:all 0.2s; margin-top:8px;
     }
