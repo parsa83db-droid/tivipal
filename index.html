@@ -1,537 +1,1628 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tivipal | Premium IPTV Player for Smart TVs</title>
-    
     <link rel="icon" type="image/png" href="favicon.png">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.paypal.com/sdk/js?client-id=AZcDmimBoWyAxx2HZk61mJilTyOvgm4h1EiFCiuZi2DIuHPm3S7h_vdQoWXs73F1mL7X9EJke6Bt2wJ1&currency=GBP"></script>
 
-    <style>
-        :root { 
-            --primary: #1A73E8; 
-            --glow: rgba(26, 115, 232, 0.6);
-            --bg: #0b0d11; 
-            --card: rgba(22, 26, 33, 0.88); 
-            --input: #1e2229; 
-            --success: #00c853; 
-            --text-main: #ffffff;
-            --text-dim: #9ca3af;
-        }
+```
+<style>
+    :root {
+        --red:        #e50914;
+        --red-dim:    #b20710;
+        --red-glow:   rgba(229, 9, 20, 0.35);
+        --bg:         #070709;
+        --bg2:        #0e0e10;
+        --bg3:        #161618;
+        --border:     rgba(255,255,255,0.07);
+        --border-red: rgba(229,9,20,0.3);
+        --text:       #ffffff;
+        --text-dim:   #8a8a9a;
+        --text-mid:   #c4c4d0;
+        --success:    #22c55e;
+        --warning:    #f59e0b;
+        --card-bg:    rgba(22,22,24,0.95);
+        --radius-lg:  20px;
+        --radius-md:  14px;
+        --radius-sm:  8px;
+    }
 
-        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* --- Navbar --- */
-        .navbar { 
-            padding: 25px 10%; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: absolute; 
-            width: 100%; 
-            z-index: 10; 
-            background: linear-gradient(to bottom, rgba(11,13,17,0.8) 0%, transparent 100%); 
-        }
-        .logo { font-size: 2.5rem; font-weight: 800; letter-spacing: -1.5px; cursor: pointer; }
-        .logo .tivi { color: #FFFFFF; }
-        .logo .pal { color: var(--primary); }
+    html { scroll-behavior: smooth; }
 
-        /* --- Hero Section --- */
-        .hero { 
-            position: relative; 
-            padding: 220px 10% 120px; 
-            text-align: center; 
-            background: url('https://i.ibb.co/14cTHPq/background.jpg') no-repeat center center; 
-            background-size: cover; 
-            min-height: 85vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
-        
-        .hero::before { 
-            content: ""; 
-            position: absolute; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: radial-gradient(circle at center, rgba(11,13,17,0.2) 0%, rgba(11,13,17,0.95) 100%); 
-            z-index: 1; 
-        }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
 
-        .hero-content { position: relative; z-index: 2; max-width: 950px; }
-        .hero h1 { font-size: 3.0rem; font-weight: 800; margin-bottom: 25px; line-height: 1.05; letter-spacing: -2px; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .hero p { font-size: 1.3rem; color: #cbd5e1; margin-bottom: 45px; max-width: 750px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 9998;
+        opacity: 0.4;
+    }
 
-        .btn-main { 
-            background: var(--primary); 
-            color: white; 
-            padding: 20px 50px; 
-            border-radius: 50px; 
-            font-weight: 700; 
-            border: none; 
-            cursor: pointer; 
-            font-size: 1.15rem; 
-            box-shadow: 0 10px 30px rgba(26, 115, 232, 0.4); 
-        }
-        .btn-main:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(26, 115, 232, 0.6); }
+    /* ══════════════════════════════
+       NAVBAR
+    ══════════════════════════════ */
+    .navbar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 100;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 22px 6%;
+        background: linear-gradient(to bottom, rgba(7,7,9,0.98) 0%, transparent 100%);
+        transition: background 0.3s ease;
+    }
+    .navbar.scrolled {
+        background: rgba(7,7,9,0.98);
+        border-bottom: 1px solid var(--border);
+    }
 
-        /* --- Platforms Section --- */
-        .platforms { padding: 80px 10%; text-align: center; position: relative; z-index: 5; background: #0b0d11; }
-        .platforms-list { 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            max-width: 650px;
-            margin: 40px auto 0;
-        }
-        .platform-row { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
-            width: 100%;
-            padding: 15px 30px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
+    .logo {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 2.2rem;
+        letter-spacing: 2px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .logo .tivi { color: #fff; }
+    .logo .pal  { color: var(--red); }
 
-        .logo-tile {
-            background: white;
-            width: 65px;
-            height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 16px;
-            padding: 10px;
-            flex-shrink: 0;
-            box-shadow: 0 0 15px var(--glow);
-            animation: pulse-glow 3s infinite ease-in-out;
-        }
-        
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 10px var(--glow); }
-            50% { box-shadow: 0 0 25px var(--glow); transform: scale(1.02); }
-            100% { box-shadow: 0 0 10px var(--glow); }
-        }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
 
-        .store-badge { width: 100%; height: 100%; object-fit: contain; }
+    .btn-portal {
+        background: var(--red);
+        color: #fff;
+        border: none;
+        padding: 11px 28px;
+        border-radius: 6px;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        letter-spacing: 0.3px;
+        transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-portal:hover {
+        background: #f40612;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px var(--red-glow);
+    }
 
-        .platform-info { display: flex; align-items: center; gap: 25px; }
-        .platform-name { font-weight: 600; font-size: 1.2rem; color: #fff; }
-        .badge-label { font-size: 0.8rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .label-soon { color: #555 !important; }
-        .platform-row.coming-soon { opacity: 0.5; background: rgba(255,255,255,0.01); }
-        .platform-row.coming-soon .logo-tile { box-shadow: none; animation: none; background: #e0e0e0; }
+    /* ══════════════════════════════
+       HERO
+    ══════════════════════════════ */
+    .hero {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        overflow: hidden;
+        background: var(--bg);
+    }
 
-        /* --- Features Section --- */
-        .features { padding: 80px 10%; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 35px; position: relative; z-index: 3; background: #0b0d11; }
-        .feat-card { 
-            background: var(--card); 
-            padding: 50px 40px; 
-            border-radius: 32px; 
-            border: 1px solid rgba(255,255,255,0.07); 
-            backdrop-filter: blur(14px); 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.4); 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .feat-card h3 { color: var(--primary); margin-top: 0; font-size: 1.5rem; margin-bottom: 15px; font-weight: 800; }
-        .feat-card p { font-size: 1rem; color: var(--text-dim); line-height: 1.7; margin: 0; }
+    /* Cinematic vignette */
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 80% 60% at 50% 40%, rgba(229,9,20,0.08) 0%, transparent 70%),
+            radial-gradient(ellipse 60% 40% at 20% 80%, rgba(229,9,20,0.04) 0%, transparent 60%);
+    }
 
-        /* --- Modals --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.94); backdrop-filter: blur(20px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: #161a21; width: 100%; max-width: 550px; padding: 45px; border-radius: 36px; position: relative; border: 1px solid #333; max-height: 92vh; overflow-y: auto; }
-        .close-modal { position: absolute; top: 25px; right: 30px; font-size: 2rem; color: #555; cursor: pointer; border: none; background: none; }
+    /* Animated scanlines */
+    .hero-bg::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(255,255,255,0.008) 2px,
+            rgba(255,255,255,0.008) 4px
+        );
+        pointer-events: none;
+    }
 
-        .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin: 30px 0 12px; border-bottom: 1px solid #333; padding-bottom: 6px; letter-spacing: 1px; }
-        input { width: 100%; padding: 18px; margin: 10px 0; border-radius: 16px; border: 1px solid #333; background: #1e2229; color: white; font-size: 1rem; outline: none; }
-        
-        .tab-container { display: flex; gap: 10px; margin-bottom: 15px; background: #0b0d11; padding: 6px; border-radius: 16px; border: 1px solid #222; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 700; border-radius: 12px; font-size: 0.9rem; }
-        .tab-btn.active { background: var(--primary); color: white; }
+    /* Floating grid */
+    .hero-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(229,9,20,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(229,9,20,0.04) 1px, transparent 1px);
+        background-size: 60px 60px;
+        mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 100%);
+        -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 100%);
+    }
 
-        .btn-action { width: 100%; padding: 18px; border: none; color: white; font-weight: 700; border-radius: 16px; cursor: pointer; margin-top: 15px; font-size: 1.1rem; }
-        .bg-blue { background: var(--primary); }
-        .bg-grey { background: #333; }
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 900px;
+        padding: 0 24px;
+        animation: heroFadeIn 1s ease both;
+    }
 
-        /* --- Progress Bar --- */
-        #syncProgress { width: 100%; height: 6px; background: #0b0d11; border-radius: 10px; margin-top: 20px; overflow: hidden; display: none; border: 1px solid rgba(255,255,255,0.05); }
-        #syncProgressBar { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--glow); transition: width 0.4s ease; }
+    @keyframes heroFadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
 
-        /* --- Sync Dashboard Styles --- */
-        .sync-card { background: #0b0d11; border-radius: 20px; border: 1px solid #222; padding: 20px; margin-top: 20px; display: none; animation: slideUp 0.4s ease-out; }
-        .sync-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .sync-row:last-child { border-bottom: none; }
-        .sync-label { font-size: 0.9rem; color: var(--text-dim); display: flex; align-items: center; gap: 10px; }
-        .sync-value { font-weight: 800; color: var(--success); font-size: 1rem; }
-        
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse-btn { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-        .sync-loading { animation: pulse-btn 1.5s infinite; pointer-events: none; }
+    .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(229,9,20,0.1);
+        border: 1px solid var(--border-red);
+        color: var(--red);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 7px 16px;
+        border-radius: 50px;
+        margin-bottom: 32px;
+    }
+    .hero-eyebrow::before {
+        content: '';
+        width: 6px; height: 6px;
+        background: var(--red);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.4; transform: scale(1.4); }
+    }
 
-        /* --- Cookie Banner --- */
-        .cookie-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; background: #161a21; border: 1px solid #333; padding: 20px 30px; border-radius: 20px; display: none; align-items: center; justify-content: space-between; z-index: 2000; box-shadow: 0 10px 40px rgba(0,0,0,0.8); gap: 20px; }
-        .cookie-text { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; }
-        .btn-cookie { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 0.85rem; }
+    .hero h1 {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(3.5rem, 9vw, 7.5rem);
+        line-height: 0.95;
+        letter-spacing: 3px;
+        margin-bottom: 28px;
+        color: #fff;
+    }
+    .hero h1 .accent { color: var(--red); }
 
-        footer { padding: 100px 10% 60px; text-align: center; border-top: 1px solid #1a1d23; color: #555; font-size: 0.9rem; background: #0b0d11; }
-        .footer-links a { color: #666; text-decoration: none; margin: 0 18px; font-weight: 600; font-size: 0.85rem; }
+    .hero-sub {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        color: var(--text-mid);
+        line-height: 1.7;
+        max-width: 600px;
+        margin: 0 auto 48px;
+        font-weight: 400;
+    }
 
-        @media (max-width: 768px) { 
-            .hero h1 { font-size: 2.8rem; } 
-            .platform-row { padding: 15px 20px; }
-            .platform-name { font-size: 1rem; }
-            .logo-tile { width: 50px; height: 50px; }
-            .features { grid-template-columns: 1fr; }
-        }
-    </style>
+    .hero-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-hero-primary {
+        background: var(--red);
+        color: #fff;
+        border: none;
+        padding: 17px 42px;
+        border-radius: 6px;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 8px 30px var(--red-glow);
+    }
+    .btn-hero-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 40px rgba(229,9,20,0.5);
+    }
+
+    .btn-hero-secondary {
+        background: rgba(255,255,255,0.06);
+        color: #fff;
+        border: 1px solid var(--border);
+        padding: 17px 42px;
+        border-radius: 6px;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        backdrop-filter: blur(10px);
+    }
+    .btn-hero-secondary:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.2);
+        transform: translateY(-3px);
+    }
+
+    /* Stats row */
+    .hero-stats {
+        position: absolute;
+        bottom: 60px;
+        left: 0; right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 60px;
+        z-index: 2;
+        animation: heroFadeIn 1s ease 0.4s both;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 2.2rem;
+        letter-spacing: 1px;
+        color: #fff;
+        line-height: 1;
+    }
+    .stat-num span { color: var(--red); }
+    .stat-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+
+    /* ══════════════════════════════
+       SECTION SHARED
+    ══════════════════════════════ */
+    section { padding: 100px 6%; }
+
+    .section-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        color: var(--red);
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+    .section-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        letter-spacing: 2px;
+        line-height: 1;
+        margin-bottom: 20px;
+    }
+    .section-sub {
+        font-size: 1.05rem;
+        color: var(--text-dim);
+        line-height: 1.7;
+        max-width: 520px;
+    }
+
+    /* ══════════════════════════════
+       PLATFORMS
+    ══════════════════════════════ */
+    .platforms-section {
+        background: var(--bg2);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .platforms-inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: center;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .platform-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .platform-item {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 18px 24px;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .platform-item.active {
+        border-color: var(--border-red);
+        background: rgba(229,9,20,0.04);
+    }
+    .platform-item.active:hover { border-color: rgba(229,9,20,0.5); }
+
+    .platform-logo {
+        width: 44px; height: 44px;
+        background: #fff;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        padding: 8px;
+        flex-shrink: 0;
+    }
+    .platform-logo img { width: 100%; height: 100%; object-fit: contain; }
+    .platform-logo.dim { background: #2a2a2a; }
+
+    .platform-name { font-weight: 600; font-size: 0.95rem; color: #fff; }
+    .platform-sub  { font-size: 0.8rem; color: var(--text-dim); margin-top: 2px; }
+
+    .platform-badge {
+        margin-left: auto;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 50px;
+    }
+    .badge-live { background: rgba(229,9,20,0.15); color: var(--red); border: 1px solid var(--border-red); }
+    .badge-soon { background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border); }
+
+    /* ══════════════════════════════
+       FEATURES
+    ══════════════════════════════ */
+    .features-section { background: var(--bg); }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2px;
+        margin-top: 60px;
+        border: 2px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+
+    .feat-card {
+        padding: 50px 44px;
+        background: var(--bg2);
+        position: relative;
+        overflow: hidden;
+        transition: background 0.3s;
+    }
+    .feat-card:hover { background: var(--bg3); }
+
+    .feat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 3px;
+        background: linear-gradient(90deg, var(--red), transparent);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+    .feat-card:hover::before { transform: scaleX(1); }
+
+    .feat-icon {
+        font-size: 2rem;
+        margin-bottom: 24px;
+        display: block;
+        filter: grayscale(0.2);
+    }
+    .feat-card h3 {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.6rem;
+        letter-spacing: 1.5px;
+        color: #fff;
+        margin-bottom: 14px;
+    }
+    .feat-card p {
+        font-size: 0.95rem;
+        color: var(--text-dim);
+        line-height: 1.75;
+    }
+
+    /* ══════════════════════════════
+       PORTAL MODAL
+    ══════════════════════════════ */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.92);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+        background: var(--bg2);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 24px;
+        width: 100%;
+        max-width: 580px;
+        max-height: 92vh;
+        overflow-y: auto;
+        position: relative;
+        scrollbar-width: thin;
+        scrollbar-color: #333 transparent;
+        animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes modalIn {
+        from { opacity: 0; transform: scale(0.92) translateY(20px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+        padding: 32px 36px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        background: var(--bg2);
+        z-index: 10;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+    }
+    .modal-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.8rem;
+        letter-spacing: 2px;
+    }
+    .modal-close {
+        width: 36px; height: 36px;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        color: var(--text-dim);
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+    }
+    .modal-close:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+    .modal-body { padding: 28px 36px 36px; }
+
+    /* Steps */
+    .step-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 32px;
+    }
+    .step-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 14px 8px;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.2s;
+        color: var(--text-dim);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    .step-btn .step-num {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        transition: all 0.2s;
+    }
+    .step-btn.active {
+        background: rgba(229,9,20,0.08);
+        border-color: var(--border-red);
+        color: #fff;
+    }
+    .step-btn.active .step-num {
+        background: var(--red);
+        border-color: var(--red);
+        color: #fff;
+    }
+    .step-btn.done {
+        background: rgba(34,197,94,0.05);
+        border-color: rgba(34,197,94,0.2);
+        color: var(--success);
+    }
+    .step-btn.done .step-num {
+        background: rgba(34,197,94,0.15);
+        border-color: rgba(34,197,94,0.3);
+        color: var(--success);
+    }
+
+    /* Form fields */
+    .field-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 8px;
+        display: block;
+    }
+    .field-input {
+        width: 100%;
+        padding: 14px 16px;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: #fff;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s;
+        margin-bottom: 14px;
+    }
+    .field-input:focus { border-color: rgba(229,9,20,0.5); }
+    .field-input::placeholder { color: #444; }
+
+    .tab-row {
+        display: flex;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 4px;
+        gap: 4px;
+        margin-bottom: 20px;
+    }
+    .tab-pill {
+        flex: 1;
+        padding: 10px;
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .tab-pill.active { background: var(--red); color: #fff; }
+
+    .btn-primary {
+        width: 100%;
+        padding: 15px;
+        background: var(--red);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 6px;
+    }
+    .btn-primary:hover { background: #f40612; transform: translateY(-1px); box-shadow: 0 6px 20px var(--red-glow); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+        width: 100%;
+        padding: 14px;
+        background: var(--bg3);
+        color: var(--text-mid);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 8px;
+    }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+
+    /* Status box */
+    .status-box {
+        padding: 14px 16px;
+        border-radius: var(--radius-sm);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        display: none;
+        margin-top: 12px;
+        font-weight: 500;
+    }
+    .status-box.success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); color: var(--success); }
+    .status-box.error   { background: rgba(229,9,20,0.1);  border: 1px solid var(--border-red); color: #ff6b6b; }
+    .status-box.info    { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-mid); }
+    .status-box.warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: var(--warning); }
+
+    /* Progress bar */
+    .progress-wrap {
+        height: 4px;
+        background: var(--bg);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 16px;
+        display: none;
+    }
+    .progress-fill {
+        height: 100%;
+        background: var(--red);
+        box-shadow: 0 0 8px var(--red-glow);
+        width: 0%;
+        transition: width 0.4s ease;
+        border-radius: 4px;
+    }
+
+    /* ── Playlist Manager ── */
+    .playlist-section-title {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-dim);
+        font-weight: 700;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .playlist-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+
+    .playlist-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .playlist-item:hover { border-color: rgba(255,255,255,0.15); }
+    .playlist-item.active-playlist {
+        border-color: var(--border-red);
+        background: rgba(229,9,20,0.05);
+    }
+
+    .playlist-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--border);
+        flex-shrink: 0;
+        transition: background 0.2s;
+    }
+    .playlist-item.active-playlist .playlist-dot { background: var(--red); box-shadow: 0 0 6px var(--red-glow); }
+
+    .playlist-info { flex: 1; min-width: 0; }
+    .playlist-name-text { font-weight: 600; font-size: 0.9rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .playlist-meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+
+    .playlist-item.active-playlist .playlist-name-text { color: #fff; }
+    .active-badge {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--red);
+        background: rgba(229,9,20,0.12);
+        padding: 3px 8px;
+        border-radius: 50px;
+        border: 1px solid var(--border-red);
+        flex-shrink: 0;
+    }
+
+    .playlist-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .pl-action-btn {
+        width: 30px; height: 30px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text-dim);
+        font-size: 0.75rem;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+    }
+    .pl-action-btn:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+    .pl-action-btn.del:hover { color: #ff6b6b; border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.05); }
+    .pl-action-btn.edit:hover { color: var(--warning); border-color: rgba(245,158,11,0.3); }
+    .pl-action-btn.set-active:hover { color: var(--success); border-color: rgba(34,197,94,0.3); }
+
+    .btn-add-playlist {
+        width: 100%;
+        padding: 12px;
+        background: none;
+        border: 1px dashed rgba(255,255,255,0.12);
+        border-radius: var(--radius-sm);
+        color: var(--text-dim);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-add-playlist:hover {
+        border-color: var(--border-red);
+        color: var(--red);
+        background: rgba(229,9,20,0.03);
+    }
+
+    /* Edit form inline */
+    .playlist-edit-form {
+        display: none;
+        padding: 14px;
+        background: var(--bg);
+        border: 1px solid var(--border-red);
+        border-radius: var(--radius-sm);
+        margin-top: 8px;
+        animation: slideDown 0.2s ease;
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .edit-form-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--red); margin-bottom: 12px; }
+
+    /* Sync success dashboard */
+    .sync-success {
+        display: none;
+        padding: 20px;
+        background: rgba(34,197,94,0.05);
+        border: 1px solid rgba(34,197,94,0.2);
+        border-radius: var(--radius-md);
+        text-align: center;
+        margin-top: 16px;
+    }
+    .sync-success-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .sync-success h4 { color: var(--success); font-size: 1rem; margin-bottom: 6px; }
+    .sync-success p { font-size: 0.85rem; color: var(--text-dim); }
+
+    /* Payment section */
+    .price-card {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 24px;
+        text-align: center;
+        margin-bottom: 16px;
+    }
+    .price-amount {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 3rem;
+        letter-spacing: 2px;
+        color: #fff;
+        line-height: 1;
+    }
+    .price-currency { font-size: 1.5rem; vertical-align: super; margin-right: 4px; }
+    .price-period { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; }
+    .price-features { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .price-feat { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-mid); }
+    .price-feat::before { content: '✓'; color: var(--success); font-weight: 700; flex-shrink: 0; }
+
+    /* ══════════════════════════════
+       PRIVACY MODAL
+    ══════════════════════════════ */
+    .privacy-body {
+        font-size: 0.9rem;
+        line-height: 1.75;
+        color: var(--text-mid);
+    }
+    .privacy-body h3 { color: #fff; margin-top: 20px; margin-bottom: 8px; font-size: 1rem; }
+    .privacy-body p { margin-bottom: 12px; }
+
+    /* ══════════════════════════════
+       COOKIE BANNER
+    ══════════════════════════════ */
+    .cookie-banner {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 48px);
+        max-width: 640px;
+        background: var(--bg2);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: var(--radius-md);
+        padding: 18px 24px;
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        z-index: 2000;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.8);
+        backdrop-filter: blur(20px);
+    }
+    .cookie-text { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; flex: 1; }
+    .cookie-text a { color: var(--red); text-decoration: none; }
+    .btn-cookie {
+        background: var(--red);
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 6px;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════
+       FOOTER
+    ══════════════════════════════ */
+    footer {
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        padding: 60px 6% 40px;
+    }
+    .footer-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 40px;
+        flex-wrap: wrap;
+        margin-bottom: 48px;
+    }
+    .footer-brand .footer-logo {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.8rem;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+    .footer-brand p { font-size: 0.85rem; color: var(--text-dim); max-width: 260px; line-height: 1.6; }
+
+    .footer-links-col h4 {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-dim);
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+    .footer-links-col a {
+        display: block;
+        color: var(--text-mid);
+        text-decoration: none;
+        font-size: 0.88rem;
+        margin-bottom: 10px;
+        transition: color 0.2s;
+    }
+    .footer-links-col a:hover { color: #fff; }
+
+    .footer-bottom {
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .footer-copy { font-size: 0.8rem; color: var(--text-dim); }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 768px) {
+        .platforms-inner { grid-template-columns: 1fr; gap: 40px; }
+        .features-grid   { grid-template-columns: 1fr; }
+        .hero-stats       { gap: 30px; bottom: 40px; }
+        .modal-box        { border-radius: 16px; }
+        .modal-header, .modal-body { padding-left: 24px; padding-right: 24px; }
+        .feat-card        { padding: 36px 28px; }
+        footer .footer-inner { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+        .hero-stats { display: none; }
+        .step-row   { gap: 4px; }
+        .step-btn   { font-size: 0.65rem; padding: 10px 4px; }
+    }
+
+    /* Loading spinner */
+    .spinner {
+        display: inline-block;
+        width: 16px; height: 16px;
+        border: 2px solid rgba(255,255,255,0.2);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Divider */
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+</style>
+```
+
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo" onclick="window.location.href='/'"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-        <button class="btn-main" style="padding: 12px 28px; font-size: 0.9rem;" onclick="openPortal()">Portal Access</button>
-    </nav>
+```
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+    <a class="logo" onclick="scrollToTop()"><span class="tivi">tivi</span><span class="pal">pal</span></a>
+    <div class="nav-right">
+        <button class="btn-portal" onclick="openPortal()">Manage Device</button>
+    </div>
+</nav>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>The Ultimate IPTV Player for<br><span class="pal">Smart TVs</span></h1>
-            <p>Experience seamless streaming with the most advanced 3-layer player. Manage playlists remotely and activate your device instantly.</p>
-            <button class="btn-main" onclick="openPortal()">Sync & Manage Device</button>
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+        <div class="hero-eyebrow">Now Available on Samsung Smart TV</div>
+        <h1>STREAM WITHOUT<br><span class="accent">LIMITS</span></h1>
+        <p class="hero-sub">The most advanced IPTV player for Smart TVs. QR cloud sync, multi-playlist management, and a cinema-grade interface built for your remote.</p>
+        <div class="hero-actions">
+            <button class="btn-hero-primary" onclick="openPortal()">Manage My Device</button>
+            <button class="btn-hero-secondary" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">See Features</button>
         </div>
-    </section>
+    </div>
+    <div class="hero-stats">
+        <div class="stat">
+            <div class="stat-num">4<span>K</span></div>
+            <div class="stat-label">Ready</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">3<span>-</span>Layer</div>
+            <div class="stat-label">Navigation</div>
+        </div>
+        <div class="stat">
+            <div class="stat-num">£<span>5</span>.99</div>
+            <div class="stat-label">Lifetime</div>
+        </div>
+    </div>
+</section>
 
-    <section class="platforms">
-        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 10px;">Supported Platforms</h2>
-        <p style="font-size: 1rem; color: var(--text-dim);">Find tivipal in your TV's official app store.</p>
-        
-        <div class="platforms-list">
-            <div class="platform-row">
-                <div class="platform-info">
-                    <div class="logo-tile">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Samsung_Orig_Wordmark_BLACK_RGB.png" class="store-badge" alt="Samsung">
-                    </div>
-                    <span class="platform-name">Smart TV (Tizen)</span>
+<!-- PLATFORMS -->
+<section class="platforms-section">
+    <div class="platforms-inner">
+        <div>
+            <div class="section-label">Availability</div>
+            <h2 class="section-title">YOUR TV.<br>YOUR PLAYER.</h2>
+            <p class="section-sub">tivipal is built from the ground up for TV remotes. No mouse. No keyboard. Just seamless navigation.</p>
+        </div>
+        <div class="platform-list">
+            <div class="platform-item active">
+                <div class="platform-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Samsung_Orig_Wordmark_BLACK_RGB.png" alt="Samsung">
                 </div>
-                <span class="badge-label">Available Now</span>
+                <div>
+                    <div class="platform-name">Samsung Smart TV</div>
+                    <div class="platform-sub">Tizen OS — All models</div>
+                </div>
+                <span class="platform-badge badge-live">Live</span>
             </div>
-
-            <div class="platform-row coming-soon">
-                <div class="platform-info">
-                    <div class="logo-tile">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/LG_symbol.svg/3840px-LG_symbol.svg.png" class="store-badge" alt="LG">
-                    </div>
-                    <span class="platform-name">LG Smart TV (webOS)</span>
+            <div class="platform-item">
+                <div class="platform-logo dim">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/LG_symbol.svg/3840px-LG_symbol.svg.png" alt="LG">
                 </div>
-                <span class="badge-label label-soon">Coming Soon</span>
+                <div>
+                    <div class="platform-name">LG Smart TV</div>
+                    <div class="platform-sub">webOS</div>
+                </div>
+                <span class="platform-badge badge-soon">Soon</span>
             </div>
-
-            <div class="platform-row coming-soon">
-                <div class="platform-info">
-                    <div class="logo-tile">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Android_logo_2019_%28stacked%29.svg" class="store-badge" alt="Android">
-                    </div>
-                    <span class="platform-name">Android TV / Google TV</span>
+            <div class="platform-item">
+                <div class="platform-logo dim">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Android_logo_2019_%28stacked%29.svg" alt="Android">
                 </div>
-                <span class="badge-label label-soon">Coming Soon</span>
+                <div>
+                    <div class="platform-name">Android TV / Google TV</div>
+                    <div class="platform-sub">Android 9+</div>
+                </div>
+                <span class="platform-badge badge-soon">Soon</span>
             </div>
-
-            <div class="platform-row coming-soon">
-                <div class="platform-info">
-                    <div class="logo-tile">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1920px-Apple_logo_black.svg.png" class="store-badge" alt="Apple">
-                    </div>
-                    <span class="platform-name">Apple TV (tvOS)</span>
+            <div class="platform-item">
+                <div class="platform-logo dim">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1920px-Apple_logo_black.svg.png" alt="Apple">
                 </div>
-                <span class="badge-label label-soon">Coming Soon</span>
+                <div>
+                    <div class="platform-name">Apple TV</div>
+                    <div class="platform-sub">tvOS</div>
+                </div>
+                <span class="platform-badge badge-soon">Soon</span>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="features">
+<!-- FEATURES -->
+<section class="features-section" id="features">
+    <div style="text-align:center; margin-bottom: 0;">
+        <div class="section-label" style="justify-content:center;display:flex;">Why tivipal</div>
+        <h2 class="section-title" style="font-size:clamp(2.5rem,5vw,4rem);">BUILT DIFFERENT</h2>
+    </div>
+    <div class="features-grid">
         <div class="feat-card">
+            <span class="feat-icon">📲</span>
             <h3>QR Cloud Sync</h3>
-            <p>Scan the QR code on your TV to instantly load your Device ID on **tivipal.co.uk**. No manual typing required for playlist management.</p>
+            <p>Scan the QR code on your TV with your phone. Your Device ID loads instantly on tivipal.co.uk — push playlist changes directly to your TV without touching the remote.</p>
         </div>
         <div class="feat-card">
-            <h3>Layered Navigation</h3>
-            <p>Our unique 3-layer collapsible UI offers the fastest browsing experience, optimized specifically for fluid navigation with smart TV remotes.</p>
+            <span class="feat-icon">🎬</span>
+            <h3>Multi-Playlist Manager</h3>
+            <p>Add and switch between multiple playlists — M3U or Xtream Codes. Set an active playlist, rename them, delete old ones. Full control from your phone or browser.</p>
         </div>
         <div class="feat-card">
-            <h3>Modern & Sleek Design</h3>
-            <p>A premium dark-mode interface built for the modern living room. Experience smooth animations, high-fidelity graphics, and an ultra-responsive layout.</p>
+            <span class="feat-icon">⚡</span>
+            <h3>3-Layer Navigation</h3>
+            <p>Our unique collapsible 3-layer UI is engineered for TV remote navigation. Browse thousands of channels, movies, and series at full speed — no lag, no compromise.</p>
         </div>
         <div class="feat-card">
+            <span class="feat-icon">🛡️</span>
             <h3>Pure Performance</h3>
-            <p>Zero bloatware. We focus entirely on creating the most stable, high-performance player engine to ensure your streams load faster and stay buffer-free.</p>
+            <p>Zero bloatware. Every line of code is optimised for Samsung Tizen. Streams load faster, stay buffer-free, and the UI never stutters — even on older TV hardware.</p>
         </div>
-    </section>
+    </div>
+</section>
 
-    <div id="portal-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModals()">✕</button>
-            <div class="logo" style="margin-bottom: 30px; text-align: center;"><span class="tivi" style="color:white">tivi</span><span class="pal">pal</span> Portal</div>
-            
-            <div class="section-title">Device Identification</div>
-            <input type="text" id="deviceId" placeholder="TP-XXXXXX">
-            <button class="btn-action bg-grey" onclick="checkStatus()">🔍 Check Activation</button>
-            <div id="statusBox" style="margin-top:15px; padding:18px; border-radius:14px; display:none; background:#0b0d11; border:1px solid #222; font-size:0.9rem; line-height: 1.5;"></div>
+<!-- PORTAL MODAL -->
+<div class="modal-overlay" id="portal-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title"><span style="color:#fff">tivi</span><span style="color:var(--red)">pal</span> PORTAL</div>
+            <button class="modal-close" onclick="closeModals()">✕</button>
+        </div>
+        <div class="modal-body">
 
-            <div class="section-title">Remote Playlist Sync</div>
-            <div class="tab-container">
-                <button id="tab-m3u" class="tab-btn active" onclick="switchTab('m3u')">M3U URL</button>
-                <button id="tab-xtream" class="tab-btn" onclick="switchTab('xtream')">Xtream Codes</button>
+            <!-- Step nav -->
+            <div class="step-row">
+                <button class="step-btn active" id="step-btn-1" onclick="goToStep(1)">
+                    <span class="step-num">1</span>Device
+                </button>
+                <button class="step-btn" id="step-btn-2" onclick="goToStep(2)">
+                    <span class="step-num">2</span>Playlists
+                </button>
+                <button class="step-btn" id="step-btn-3" onclick="goToStep(3)">
+                    <span class="step-num">3</span>Activate
+                </button>
             </div>
 
-            <div id="form-m3u">
-                <input type="text" id="m3uName" placeholder="Playlist Name (e.g., My List)">
-                <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
+            <!-- ── STEP 1: Device ID ── -->
+            <div id="step-1">
+                <label class="field-label">Device ID</label>
+                <input class="field-input" id="deviceId" placeholder="TP-XXXXXX" oninput="this.value=this.value.toUpperCase()">
+                <button class="btn-primary" onclick="checkDeviceAndProceed()">
+                    Continue →
+                </button>
+                <div class="status-box" id="device-status"></div>
+                <div class="divider"></div>
+                <p style="font-size:0.8rem;color:var(--text-dim);text-align:center;">Find your Device ID in the tivipal app settings or scan the QR code on your TV.</p>
             </div>
 
-            <div id="form-xtream" style="display: none;">
-                <input type="text" id="xtreamName" placeholder="Playlist Name (e.g., IPTV Pro)">
-                <input type="text" id="xtreamHost" placeholder="Server URL (e.g., http://dns.com:80)">
-                <input type="text" id="xtreamUser" placeholder="Username">
-                <input type="password" id="xtreamPass" placeholder="Password">
-            </div>
-
-            <button id="updateBtn" class="btn-action bg-blue" onclick="uploadPlaylist()">Update TV App</button>
-
-            <div id="syncProgress"><div id="syncProgressBar"></div></div>
-
-            <div id="syncDashboard" class="sync-card">
-                <div class="sync-row">
-                    <span class="sync-label">📺 Connection Status</span>
-                    <span class="sync-value">Cloud Linked</span>
+            <!-- ── STEP 2: Playlist Manager ── -->
+            <div id="step-2" style="display:none;">
+                <div class="playlist-section-title">Your Playlists</div>
+                <div class="playlist-list" id="playlist-list">
+                    <!-- Populated by JS -->
                 </div>
-                <div id="sync-status-msg" style="color: var(--success); font-size: 0.85rem; text-align: center; margin-top: 15px; font-weight: 600;">✅ Sync Complete! Continue on your TV App.</div>
+                <button class="btn-add-playlist" onclick="showAddForm()">
+                    <span>＋</span> Add New Playlist
+                </button>
+
+                <!-- Add / Edit form -->
+                <div class="playlist-edit-form" id="add-edit-form">
+                    <div class="edit-form-title" id="form-mode-label">Add New Playlist</div>
+                    <input type="hidden" id="edit-playlist-id">
+                    <label class="field-label">Playlist Name</label>
+                    <input class="field-input" id="pl-name" placeholder="e.g. My IPTV">
+                    <div class="tab-row">
+                        <button class="tab-pill active" id="tab-m3u" onclick="switchTab('m3u')">M3U URL</button>
+                        <button class="tab-pill" id="tab-xtream" onclick="switchTab('xtream')">Xtream Codes</button>
+                    </div>
+                    <div id="form-m3u">
+                        <input class="field-input" id="pl-m3u-url" placeholder="https://example.com/playlist.m3u">
+                    </div>
+                    <div id="form-xtream" style="display:none;">
+                        <input class="field-input" id="pl-xt-host" placeholder="Server URL (e.g. http://dns.com:80)">
+                        <input class="field-input" id="pl-xt-user" placeholder="Username">
+                        <input class="field-input" type="password" id="pl-xt-pass" placeholder="Password">
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:4px;">
+                        <button class="btn-primary" style="margin-top:0;" onclick="savePlaylist()">Save Playlist</button>
+                        <button class="btn-secondary" style="margin-top:0;width:auto;padding:14px 20px;" onclick="cancelForm()">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="progress-wrap" id="sync-progress"><div class="progress-fill" id="sync-fill"></div></div>
+                <div class="sync-success" id="sync-success">
+                    <div class="sync-success-icon">✅</div>
+                    <h4>Synced to TV</h4>
+                    <p>Your playlists have been pushed to your device. Open tivipal on your TV to apply changes.</p>
+                </div>
+
+                <div class="divider"></div>
+                <button class="btn-primary" onclick="syncToTV()">Push to TV</button>
+                <button class="btn-secondary" onclick="goToStep(3)">Next: Activate License →</button>
             </div>
 
-            <div class="section-title">License Activation</div>
-            <div id="pay-zone">
-                <p style="font-size: 0.9rem; color: #94a3b8; text-align: center; margin: 10px 0;">Lifetime Activation: £5.99</p>
-                <button id="show-pay-btn" class="btn-action bg-blue" onclick="showPayment()">Buy Lifetime License</button>
-                <div id="paypal-button-container" style="margin-top: 15px;"></div>
+            <!-- ── STEP 3: License ── -->
+            <div id="step-3" style="display:none;">
+                <div id="license-paid" style="display:none;">
+                    <div class="sync-success" style="display:block;">
+                        <div class="sync-success-icon">🏆</div>
+                        <h4>Lifetime License Active</h4>
+                        <p>Your device is fully activated. Enjoy tivipal with no limitations.</p>
+                    </div>
+                </div>
+                <div id="license-unpaid">
+                    <div class="price-card">
+                        <div class="price-amount"><span class="price-currency">£</span>5.99</div>
+                        <div class="price-period">One-time payment · Lifetime access</div>
+                        <div class="price-features">
+                            <div class="price-feat">Unlimited playlists</div>
+                            <div class="price-feat">All future updates included</div>
+                            <div class="price-feat">Priority support</div>
+                            <div class="price-feat">All platforms when released</div>
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="show-pay-btn" onclick="showPayment()">Buy Lifetime License — £5.99</button>
+                    <div id="paypal-button-container" style="margin-top:16px;"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- PRIVACY MODAL -->
+<div class="modal-overlay" id="privacy-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title">PRIVACY POLICY</div>
+            <button class="modal-close" onclick="closeModals()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="privacy-body">
+                <p><strong style="color:#fff;">Last Updated: January 26, 2026</strong></p>
+                <h3>What We Collect</h3>
+                <p>We collect Device IDs and playlist credentials (M3U URLs or Xtream Codes login details) provided by you solely for the purpose of remote synchronisation with your TV device via our cloud service (Firebase Firestore).</p>
+                <h3>How We Use It</h3>
+                <p>Your data is stored securely in Google Firebase and is used exclusively to deliver playlist updates to your registered TV device. We do not sell, share, or use your data for any advertising or analytics purposes.</p>
+                <h3>Media Content</h3>
+                <p>tivipal does not host, store, stream, or transmit any media content. All streaming is performed directly between your TV and your IPTV provider's servers.</p>
+                <h3>Payments</h3>
+                <p>Payment processing is handled entirely by PayPal. tivipal does not store any payment card information. We only record whether a device has an active license.</p>
+                <h3>Cookies</h3>
+                <p>We use a single essential cookie to remember your cookie consent preference. No tracking or advertising cookies are used.</p>
+                <h3>Your Rights (UK GDPR)</h3>
+                <p>You have the right to request deletion of your data at any time. Contact us at tivipalpro@gmail.com with your Device ID and we will remove all associated data within 30 days.</p>
+                <h3>Contact</h3>
+                <p>For all privacy enquiries: <a href="mailto:tivipalpro@gmail.com" style="color:var(--red);">tivipalpro@gmail.com</a></p>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="privacy-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModals()">✕</button>
-            <h2 style="color:var(--primary); margin-bottom: 20px;">Privacy Policy</h2>
-            <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1; max-height: 60vh; overflow-y: auto;">
-                <p><strong>Last Updated: January 26, 2026</strong></p>
-                <p>We collect Device IDs and playlist credentials provided by you solely for remote synchronization with your TV. We do not host, store, or transmit any media content.</p>
-            </div>
-        </div>
+<!-- COOKIE BANNER -->
+<div class="cookie-banner" id="cookie-banner">
+    <div class="cookie-text">
+        We use essential cookies for portal functionality. By using tivipal you agree to our
+        <a href="javascript:void(0)" onclick="openPrivacy()">Privacy Policy</a>.
     </div>
+    <button class="btn-cookie" onclick="acceptCookies()">Accept</button>
+</div>
 
-    <div id="cookie-banner" class="cookie-banner">
-        <div class="cookie-text">
-            We use essential cookies for portal functionality. By using tivipal, you agree to our <a href="javascript:void(0)" onclick="openPrivacy()" style="color:var(--primary); text-decoration: underline;">Privacy Policy</a>.
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="footer-logo"><span class="tivi" style="color:#fff">tivi</span><span class="pal" style="color:var(--red)">pal</span></div>
+            <p>The ultimate IPTV player for Smart TVs. Engineered for performance, designed for the living room.</p>
         </div>
-        <button class="btn-cookie" onclick="acceptCookies()">Accept</button>
-    </div>
-
-    <footer>
-        <div class="logo" style="margin-bottom: 15px; font-size: 1.5rem;"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-        <p>&copy; 2026 tivipal | The ultimate IPTV player for Smart TVs.</p>
-        <div class="footer-links">
+        <div class="footer-links-col">
+            <h4>Product</h4>
+            <a href="javascript:void(0)" onclick="openPortal()">Portal Access</a>
+            <a href="javascript:void(0)" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+        </div>
+        <div class="footer-links-col">
+            <h4>Legal</h4>
             <a href="javascript:void(0)" onclick="openPrivacy()">Privacy Policy</a>
             <a href="javascript:void(0)" onclick="contactSupport()">Contact Support</a>
         </div>
-    </footer>
+    </div>
+    <div class="footer-bottom">
+        <div class="footer-copy">© 2026 tivipal. All rights reserved.</div>
+        <div class="footer-copy">Made for Smart TV lovers.</div>
+    </div>
+</footer>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script type="module">
+    import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteField }
+                                from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAx4WCxuXMgXqUp1CxwjHx9Ydd5s8IQTiQ",
-            authDomain: "tivipal-cee03.firebaseapp.com",
-            projectId: "tivipal-cee03",
-            storageBucket: "tivipal-cee03.firebasestorage.app",
-            messagingSenderId: "991826954037",
-            appId: "1:991826954037:web:8f9a61754dc2c6e4746e7c"
-        };
+    const firebaseConfig = {
+        apiKey:            "AIzaSyAx4WCxuXMgXqUp1CxwjHx9Ydd5s8IQTiQ",
+        authDomain:        "tivipal-cee03.firebaseapp.com",
+        projectId:         "tivipal-cee03",
+        storageBucket:     "tivipal-cee03.firebasestorage.app",
+        messagingSenderId: "991826954037",
+        appId:             "1:991826954037:web:8f9a61754dc2c6e4746e7c"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        let activeTab = 'm3u';
+    const firebaseApp = initializeApp(firebaseConfig);
+    const db          = getFirestore(firebaseApp);
 
-        window.openPortal = () => {
-            document.getElementById('portal-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            document.getElementById('syncDashboard').style.display = 'none';
-            document.getElementById('syncProgress').style.display = 'none';
-        };
+    // ── State ──────────────────────────────────────────────────────────────
+    let currentDeviceId  = '';
+    let deviceData       = null;
+    let playlists        = {};   // { id: { name, type, url|xtream, active } }
+    let activeTab        = 'm3u';
+    let editingId        = null; // playlist being edited
+    let currentStep      = 1;
 
-        window.closeModals = () => {
-            document.getElementById('portal-modal').style.display = 'none';
-            document.getElementById('privacy-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        };
+    // ── Navbar scroll effect ───────────────────────────────────────────────
+    window.addEventListener('scroll', () => {
+        document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+    });
 
-        window.switchTab = (mode) => {
-            activeTab = mode;
-            document.getElementById('form-m3u').style.display = mode === 'm3u' ? 'block' : 'none';
-            document.getElementById('form-xtream').style.display = mode === 'xtream' ? 'block' : 'none';
-            document.getElementById('tab-m3u').classList.toggle('active', mode === 'm3u');
-            document.getElementById('tab-xtream').classList.toggle('active', mode === 'xtream');
-        };
+    window.scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        window.checkStatus = async () => {
-            const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            const box = document.getElementById('statusBox');
-            if (!id) return;
-            box.style.display = 'block'; box.innerHTML = "Checking database...";
-            try {
-                const docSnap = await getDoc(doc(db, "playlists", id));
-                if (docSnap.exists()) {
-                    if (docSnap.data().isPaid) {
-                        box.style.color = "#00c853"; 
-                        box.innerHTML = "✅ Lifetime License Active";
-                        document.getElementById('pay-zone').style.display = 'none';
-                    } else {
-                        box.style.color = "#ffcc00"; 
-                        box.innerHTML = "⏳ Trial Active / Activation Required";
+    // ── Modal ──────────────────────────────────────────────────────────────
+    window.openPortal = () => {
+        document.getElementById('portal-modal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+        goToStep(1);
+    };
+
+    window.closeModals = () => {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+        document.body.style.overflow = '';
+    };
+
+    window.openPrivacy = () => {
+        document.getElementById('privacy-modal').classList.add('open');
+    };
+
+    // Close on backdrop click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) window.closeModals();
+        });
+    });
+
+    // ── Steps ──────────────────────────────────────────────────────────────
+    window.goToStep = (n) => {
+        currentStep = n;
+        [1,2,3].forEach(i => {
+            document.getElementById('step-' + i).style.display = i === n ? 'block' : 'none';
+            const btn = document.getElementById('step-btn-' + i);
+            btn.classList.remove('active', 'done');
+            if (i === n)  btn.classList.add('active');
+            if (i < n)    btn.classList.add('done');
+        });
+        if (n === 2) renderPlaylists();
+    };
+
+    // ── Step 1: Device check ───────────────────────────────────────────────
+    window.checkDeviceAndProceed = async () => {
+        const id  = document.getElementById('deviceId').value.trim().toUpperCase();
+        const box = document.getElementById('device-status');
+        if (!id) { showStatus(box, 'error', 'Please enter your Device ID.'); return; }
+
+        currentDeviceId = id;
+        showStatus(box, 'info', '<span class="spinner"></span>Checking device…');
+
+        try {
+            const snap = await getDoc(doc(db, 'playlists', id));
+            if (snap.exists()) {
+                deviceData = snap.data();
+                playlists  = deviceData.playlists || {};
+
+                // Migrate legacy single-playlist format
+                if (Object.keys(playlists).length === 0) {
+                    if (deviceData.m3u_url) {
+                        playlists['pl_legacy'] = {
+                            name:   deviceData.playlistName || 'My Playlist',
+                            type:   'm3u',
+                            url:    deviceData.m3u_url,
+                            active: true
+                        };
+                    } else if (deviceData.xtream) {
+                        playlists['pl_legacy'] = {
+                            name:   deviceData.playlistName || 'My Playlist',
+                            type:   'xtream',
+                            xtream: deviceData.xtream,
+                            active: true
+                        };
                     }
-                } else {
-                    box.style.color = "#ffcc00";
-                    box.innerHTML = "ℹ️ ID not found. Enter your playlist below to register.";
                 }
-            } catch (e) { 
-                box.style.color = "#ff4d4d";
-                box.innerHTML = "❌ Connection Refused.";
+
+                if (deviceData.isPaid) {
+                    showStatus(box, 'success', '✅ Device found — Lifetime License Active');
+                } else {
+                    showStatus(box, 'warning', '⏳ Device found — Trial / Activation required');
+                }
+            } else {
+                deviceData = {};
+                playlists  = {};
+                showStatus(box, 'info', 'ℹ️ New device — add your playlist below to register it.');
             }
-        };
+            setTimeout(() => goToStep(2), 800);
+        } catch (e) {
+            showStatus(box, 'error', '❌ Connection error. Please try again.');
+        }
+    };
 
-        window.uploadPlaylist = async () => {
-            const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            const btn = document.getElementById('updateBtn');
-            const dash = document.getElementById('syncDashboard');
-            const bar = document.getElementById('syncProgress');
-            const barFill = document.getElementById('syncProgressBar');
-            
-            if (!id) return alert("Please enter a Device ID.");
+    // ── Step 2: Playlist management ────────────────────────────────────────
 
-            let data = { 
-                updatedAt: Date.now(), 
-                mode: activeTab,
+    function genId() { return 'pl_' + Date.now().toString(36); }
+
+    function renderPlaylists() {
+        const list = document.getElementById('playlist-list');
+        const ids  = Object.keys(playlists);
+
+        if (ids.length === 0) {
+            list.innerHTML = '<p style="font-size:0.85rem;color:var(--text-dim);text-align:center;padding:16px 0;">No playlists yet — add one below.</p>';
+            return;
+        }
+
+        list.innerHTML = ids.map(id => {
+            const pl     = playlists[id];
+            const isAct  = pl.active;
+            const meta   = pl.type === 'm3u'
+                ? 'M3U · ' + (pl.url ? pl.url.substring(0, 35) + '…' : '')
+                : 'Xtream · ' + (pl.xtream ? pl.xtream.host.substring(0, 30) + '…' : '');
+            return `
+            <div class="playlist-item ${isAct ? 'active-playlist' : ''}" data-id="${id}">
+                <div class="playlist-dot"></div>
+                <div class="playlist-info">
+                    <div class="playlist-name-text">${escHtml(pl.name || 'Untitled')}</div>
+                    <div class="playlist-meta">${escHtml(meta)}</div>
+                </div>
+                ${isAct ? '<span class="active-badge">Active</span>' : ''}
+                <div class="playlist-actions">
+                    ${!isAct ? `<button class="pl-action-btn set-active" title="Set as active" onclick="setActive('${id}')">▶</button>` : ''}
+                    <button class="pl-action-btn edit" title="Edit" onclick="editPlaylist('${id}')">✎</button>
+                    <button class="pl-action-btn del"  title="Delete" onclick="deletePlaylist('${id}')">✕</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    window.showAddForm = () => {
+        editingId = null;
+        document.getElementById('form-mode-label').textContent = 'Add New Playlist';
+        document.getElementById('pl-name').value    = '';
+        document.getElementById('pl-m3u-url').value = '';
+        document.getElementById('pl-xt-host').value = '';
+        document.getElementById('pl-xt-user').value = '';
+        document.getElementById('pl-xt-pass').value = '';
+        document.getElementById('edit-playlist-id').value = '';
+        switchTab('m3u');
+        document.getElementById('add-edit-form').style.display = 'block';
+        document.getElementById('pl-name').focus();
+    };
+
+    window.editPlaylist = (id) => {
+        editingId = id;
+        const pl  = playlists[id];
+        document.getElementById('form-mode-label').textContent = 'Edit Playlist';
+        document.getElementById('edit-playlist-id').value = id;
+        document.getElementById('pl-name').value = pl.name || '';
+        if (pl.type === 'm3u') {
+            switchTab('m3u');
+            document.getElementById('pl-m3u-url').value = pl.url || '';
+        } else {
+            switchTab('xtream');
+            document.getElementById('pl-xt-host').value = (pl.xtream && pl.xtream.host) || '';
+            document.getElementById('pl-xt-user').value = (pl.xtream && pl.xtream.user) || '';
+            document.getElementById('pl-xt-pass').value = (pl.xtream && pl.xtream.pass) || '';
+        }
+        document.getElementById('add-edit-form').style.display = 'block';
+        document.getElementById('pl-name').focus();
+    };
+
+    window.cancelForm = () => {
+        document.getElementById('add-edit-form').style.display = 'none';
+        editingId = null;
+    };
+
+    window.savePlaylist = () => {
+        const name = document.getElementById('pl-name').value.trim();
+        if (!name) { alert('Please enter a playlist name.'); return; }
+
+        const id = editingId || genId();
+        const wasActive = editingId && playlists[editingId] && playlists[editingId].active;
+
+        if (activeTab === 'm3u') {
+            const url = document.getElementById('pl-m3u-url').value.trim();
+            if (!url) { alert('Please enter an M3U URL.'); return; }
+            playlists[id] = { name, type: 'm3u', url, active: wasActive || false };
+        } else {
+            const host = document.getElementById('pl-xt-host').value.trim();
+            const user = document.getElementById('pl-xt-user').value.trim();
+            const pass = document.getElementById('pl-xt-pass').value.trim();
+            if (!host || !user || !pass) { alert('Please fill all Xtream fields.'); return; }
+            playlists[id] = { name, type: 'xtream', xtream: { host, user, pass }, active: wasActive || false };
+        }
+
+        // If it's the first playlist, make it active automatically
+        if (Object.keys(playlists).length === 1) playlists[id].active = true;
+
+        document.getElementById('add-edit-form').style.display = 'none';
+        editingId = null;
+        renderPlaylists();
+    };
+
+    window.deletePlaylist = (id) => {
+        if (!confirm('Delete this playlist?')) return;
+        const wasActive = playlists[id] && playlists[id].active;
+        delete playlists[id];
+        // If deleted playlist was active, make first remaining one active
+        if (wasActive) {
+            const remaining = Object.keys(playlists);
+            if (remaining.length > 0) playlists[remaining[0]].active = true;
+        }
+        renderPlaylists();
+    };
+
+    window.setActive = (id) => {
+        Object.keys(playlists).forEach(k => { playlists[k].active = false; });
+        playlists[id].active = true;
+        renderPlaylists();
+    };
+
+    window.switchTab = (mode) => {
+        activeTab = mode;
+        document.getElementById('form-m3u').style.display    = mode === 'm3u'    ? 'block' : 'none';
+        document.getElementById('form-xtream').style.display  = mode === 'xtream' ? 'block' : 'none';
+        document.getElementById('tab-m3u').classList.toggle('active',    mode === 'm3u');
+        document.getElementById('tab-xtream').classList.toggle('active', mode === 'xtream');
+    };
+
+    window.syncToTV = async () => {
+        if (!currentDeviceId) { alert('No device ID.'); return; }
+        if (Object.keys(playlists).length === 0) { alert('Add at least one playlist first.'); return; }
+
+        const progress  = document.getElementById('sync-progress');
+        const fill      = document.getElementById('sync-fill');
+        const successEl = document.getElementById('sync-success');
+        const btn       = document.querySelector('#step-2 .btn-primary');
+
+        successEl.style.display = 'none';
+        progress.style.display  = 'block';
+        fill.style.width        = '30%';
+        btn.disabled            = true;
+        btn.innerHTML           = '<span class="spinner"></span>Syncing…';
+
+        try {
+            // Build active playlist data for backward compatibility with TV app
+            const activePl   = Object.values(playlists).find(p => p.active) || Object.values(playlists)[0];
+            const saveData   = {
+                playlists:   playlists,
+                updatedAt:   Date.now(),
                 syncRequest: Math.random().toString(36).substring(7)
             };
-            
-            btn.classList.add('sync-loading');
-            btn.innerText = "Syncing Cloud...";
-            dash.style.display = 'none';
-            bar.style.display = 'block';
-            barFill.style.width = '20%';
 
-            try {
-                if (activeTab === 'm3u') {
-                    const m3uUrl = document.getElementById('m3uUrl').value.trim();
-                    const m3uName = document.getElementById('m3uName').value.trim();
-                    if (!m3uUrl) throw new Error("M3U URL is required.");
-                    
-                    data.m3u_url = m3uUrl;
-                    data.playlistName = m3uName || "M3U Playlist";
-                    data.xtream = deleteField(); 
-                    barFill.style.width = '70%';
+            // Also write active playlist in legacy format so TV app picks it up
+            if (activePl) {
+                saveData.playlistName = activePl.name;
+                if (activePl.type === 'm3u') {
+                    saveData.mode    = 'm3u';
+                    saveData.m3u_url = activePl.url;
+                    saveData.xtream  = deleteField();
                 } else {
-                    const host = document.getElementById('xtreamHost').value.trim();
-                    const user = document.getElementById('xtreamUser').value.trim();
-                    const pass = document.getElementById('xtreamPass').value.trim();
-                    const xtName = document.getElementById('xtreamName').value.trim();
-                    
-                    if (!host || !user || !pass) throw new Error("All Xtream fields required.");
-                    
-                    data.xtream = { host, user, pass };
-                    data.playlistName = xtName || "Xtream Playlist";
-                    data.m3u_url = deleteField();
-                    barFill.style.width = '70%';
+                    saveData.mode   = 'xtream';
+                    saveData.xtream = activePl.xtream;
+                    saveData.m3u_url = deleteField();
                 }
-
-                await setDoc(doc(db, "playlists", id), data, { merge: true });
-                
-                barFill.style.width = '100%';
-                setTimeout(() => {
-                    bar.style.display = 'none';
-                    dash.style.display = 'block';
-                }, 600);
-                
-            } catch (e) { 
-                alert("Error: " + e.message); 
-                bar.style.display = 'none';
-            } finally {
-                btn.classList.remove('sync-loading');
-                btn.innerText = "Update TV App";
             }
-        };
 
-        window.showPayment = () => {
-            const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            if (!id) return alert("Enter Device ID first to link payment.");
-            
-            document.getElementById('show-pay-btn').style.display = 'none';
-            
-            paypal.Buttons({
-                createOrder: (data, actions) => {
-                    return actions.order.create({
-                        purchase_units: [{
-                            amount: { value: '5.99' },
-                            description: `tivipal Lifetime: ${id}`
-                        }]
-                    });
-                },
-                onApprove: (data, actions) => {
-                    return actions.order.capture().then(async (details) => {
-                        try {
-                            await setDoc(doc(db, "playlists", id), { isPaid: true }, { merge: true });
-                            alert('Transaction completed! Your TV app is now activated.');
-                            window.location.reload();
-                        } catch (err) {
-                            alert("Payment recorded but database update failed. Please contact support.");
-                        }
-                    });
+            fill.style.width = '70%';
+            await setDoc(doc(db, 'playlists', currentDeviceId), saveData, { merge: true });
+            fill.style.width = '100%';
+
+            setTimeout(() => {
+                progress.style.display  = 'none';
+                successEl.style.display = 'block';
+                fill.style.width        = '0%';
+            }, 500);
+
+        } catch (e) {
+            alert('Sync failed: ' + e.message);
+            progress.style.display = 'none';
+        } finally {
+            btn.disabled  = false;
+            btn.innerHTML = 'Push to TV';
+        }
+    };
+
+    // ── Step 3: Payment ────────────────────────────────────────────────────
+    // Show paid/unpaid state when navigating to step 3
+    const origGoToStep = window.goToStep;
+    window.goToStep = (n) => {
+        origGoToStep(n);
+        if (n === 3) {
+            const isPaid = deviceData && deviceData.isPaid;
+            document.getElementById('license-paid').style.display   = isPaid ? 'block' : 'none';
+            document.getElementById('license-unpaid').style.display = isPaid ? 'none'  : 'block';
+        }
+    };
+
+    window.showPayment = () => {
+        if (!currentDeviceId) { alert('Please complete Step 1 first.'); return; }
+        document.getElementById('show-pay-btn').style.display = 'none';
+
+        paypal.Buttons({
+            createOrder: (data, actions) => actions.order.create({
+                purchase_units: [{
+                    amount: { value: '5.99' },
+                    description: `tivipal Lifetime: ${currentDeviceId}`
+                }]
+            }),
+            onApprove: (data, actions) => actions.order.capture().then(async () => {
+                try {
+                    await setDoc(doc(db, 'playlists', currentDeviceId), { isPaid: true }, { merge: true });
+                    if (deviceData) deviceData.isPaid = true;
+                    document.getElementById('license-paid').style.display   = 'block';
+                    document.getElementById('license-unpaid').style.display = 'none';
+                    document.getElementById('step-btn-3').classList.add('done');
+                } catch (err) {
+                    alert('Payment recorded but database update failed. Contact support with your Device ID: ' + currentDeviceId);
                 }
-            }).render('#paypal-button-container');
-        };
+            })
+        }).render('#paypal-button-container');
+    };
 
-        window.acceptCookies = () => {
-            localStorage.setItem('cookiesAccepted', 'true');
-            document.getElementById('cookie-banner').style.display = 'none';
-        };
+    // ── Cookies ────────────────────────────────────────────────────────────
+    window.acceptCookies = () => {
+        localStorage.setItem('cookiesAccepted', '1');
+        document.getElementById('cookie-banner').style.display = 'none';
+    };
 
-        window.openPrivacy = () => {
-            document.getElementById('privacy-modal').style.display = 'flex';
-        };
+    window.contactSupport = () => {
+        const id = currentDeviceId || 'NEW_DEVICE';
+        window.location.href = `mailto:tivipalpro@gmail.com?subject=Support: ${id}`;
+    };
 
-        window.contactSupport = () => {
-            const id = document.getElementById('deviceId').value.trim().toUpperCase() || "NEW_ID";
-            window.location.href = `mailto:tivipalpro@gmail.com?subject=Support Request: ${id}`;
-        };
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function showStatus(el, type, html) {
+        el.className = 'status-box ' + type;
+        el.innerHTML = html;
+        el.style.display = 'block';
+    }
 
-        window.addEventListener('load', () => {
-            if (!localStorage.getItem('cookiesAccepted')) {
-                document.getElementById('cookie-banner').style.display = 'flex';
-            }
-            const urlParams = new URLSearchParams(window.location.search);
-            const qrId = urlParams.get('id');
-            if (qrId) {
-                document.getElementById('deviceId').value = qrId.toUpperCase();
-                window.openPortal();
-                window.checkStatus();
-            }
-        });
-    </script>
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Init ───────────────────────────────────────────────────────────────
+    window.addEventListener('load', () => {
+        if (!localStorage.getItem('cookiesAccepted')) {
+            document.getElementById('cookie-banner').style.display = 'flex';
+        }
+        const params = new URLSearchParams(window.location.search);
+        const qrId   = params.get('id');
+        if (qrId) {
+            document.getElementById('deviceId').value = qrId.toUpperCase();
+            currentDeviceId = qrId.toUpperCase();
+            window.openPortal();
+            window.checkDeviceAndProceed();
+        }
+    });
+</script>
+```
+
 </body>
 </html>
