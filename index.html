@@ -215,8 +215,8 @@
     .tv-frame {
       position: relative;
       background: linear-gradient(160deg, #1c1c20 0%, #111113 60%, #0a0a0c 100%);
-      border-radius: 20px 20px 20px 20px;
-      padding: 14px 14px  14px;
+      border-radius: 20px 20px 8px 8px;
+      padding: 14px 14px 0 14px;
       box-shadow:
         0 0 0 2px #2a2a30,
         0 0 0 3px #111,
@@ -224,7 +224,7 @@
         0 0 120px rgba(229,9,20,0.06);
     }
     .tv-screen {
-      border-radius: 5px 5px 5px 5px;
+      border-radius: 10px 10px 0 0;
       overflow: hidden;
       aspect-ratio: 16/9;
       background: linear-gradient(135deg, #0a0a0e 0%, #0f0f14 40%, #0d0d12 100%);
@@ -233,14 +233,14 @@
     .tv-screen-inner {
       width:100%; height:100%;
       display: flex; flex-direction: column;
-      padding: 14px 14px 14px;
+      padding: 16px 20px 12px;
       gap: 10px;
     }
     /* Simulated UI rows inside the TV */
     .sim-topbar {
       display: flex; align-items:center; justify-content:space-between;
     }
-    .sim-logo { font-family:'DM Sans; font-size:1.1rem; letter-spacing:2px; }
+    .sim-logo { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:2px; }
     .sim-logo .tivi { color:#fff; }
     .sim-logo .pal  { color:var(--red); }
     .sim-clock { font-size:0.65rem; color:rgba(255,255,255,0.4); font-weight:500; }
