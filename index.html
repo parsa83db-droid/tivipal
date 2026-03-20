@@ -1,5 +1,3 @@
-Website Cluade
-
 <!DOCTYPE html>
 
 <html lang="en">
@@ -8,6 +6,9 @@ Website Cluade
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tivipal | Premium IPTV Player for Smart TVs</title>
     <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Preconnect for faster font load -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.paypal.com/sdk/js?client-id=AZcDmimBoWyAxx2HZk61mJilTyOvgm4h1EiFCiuZi2DIuHPm3S7h_vdQoWXs73F1mL7X9EJke6Bt2wJ1&currency=GBP"></script>
 
@@ -55,6 +56,57 @@ Website Cluade
         z-index: 9998;
         opacity: 0.4;
     }
+
+    /* ══════════════════════════════
+       TOAST NOTIFICATION
+    ══════════════════════════════ */
+    .toast-container {
+        position: fixed;
+        bottom: 32px;
+        right: 32px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+    .toast {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        font-weight: 600;
+        max-width: 340px;
+        pointer-events: all;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+        backdrop-filter: blur(16px);
+    }
+    .toast.removing {
+        animation: toastOut 0.25s ease forwards;
+    }
+    @keyframes toastIn {
+        from { opacity: 0; transform: translateX(20px) scale(0.95); }
+        to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes toastOut {
+        from { opacity: 1; transform: translateX(0) scale(1); }
+        to   { opacity: 0; transform: translateX(20px) scale(0.95); }
+    }
+    .toast.success { background: rgba(22,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #4ade80; }
+    .toast.error   { background: rgba(229,9,20,0.12);  border: 1px solid var(--border-red); color: #ff6b6b; }
+    .toast.info    { background: rgba(255,255,255,0.07); border: 1px solid var(--border); color: var(--text-mid); }
+    .toast.warning { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; }
+    .toast-icon    { font-size: 1rem; flex-shrink: 0; }
+    .toast-msg     { flex: 1; line-height: 1.4; }
+    .toast-close   {
+        background: none; border: none; color: inherit; opacity: 0.5;
+        cursor: pointer; font-size: 1rem; padding: 0 0 0 4px; flex-shrink: 0;
+        transition: opacity 0.15s;
+    }
+    .toast-close:hover { opacity: 1; }
 
     /* ══════════════════════════════
        NAVBAR
@@ -120,7 +172,6 @@ Website Cluade
         background: var(--bg);
     }
 
-    /* Cinematic vignette */
     .hero-bg {
         position: absolute;
         inset: 0;
@@ -129,7 +180,6 @@ Website Cluade
             radial-gradient(ellipse 60% 40% at 20% 80%, rgba(229,9,20,0.04) 0%, transparent 60%);
     }
 
-    /* Animated scanlines */
     .hero-bg::after {
         content: '';
         position: absolute;
@@ -144,7 +194,6 @@ Website Cluade
         pointer-events: none;
     }
 
-    /* Floating grid */
     .hero-grid {
         position: absolute;
         inset: 0;
@@ -259,7 +308,6 @@ Website Cluade
         transform: translateY(-3px);
     }
 
-    /* Stats row */
     .hero-stats {
         position: absolute;
         bottom: 60px;
@@ -515,6 +563,7 @@ Website Cluade
         font-weight: 600;
         letter-spacing: 0.5px;
         text-transform: uppercase;
+        font-family: 'DM Sans', sans-serif;
     }
     .step-btn .step-num {
         width: 28px; height: 28px;
@@ -567,11 +616,22 @@ Website Cluade
         font-family: 'DM Sans', sans-serif;
         font-size: 0.95rem;
         outline: none;
-        transition: border-color 0.2s;
+        transition: border-color 0.2s, box-shadow 0.2s;
         margin-bottom: 14px;
     }
-    .field-input:focus { border-color: rgba(229,9,20,0.5); }
+    .field-input:focus { border-color: rgba(229,9,20,0.5); box-shadow: 0 0 0 3px rgba(229,9,20,0.08); }
     .field-input::placeholder { color: #444; }
+    .field-input.invalid { border-color: rgba(255,107,107,0.6); }
+    .field-input.valid   { border-color: rgba(34,197,94,0.4); }
+
+    .field-hint {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        margin-top: -10px;
+        margin-bottom: 14px;
+        line-height: 1.4;
+    }
+    .field-hint.error { color: #ff6b6b; }
 
     .tab-row {
         display: flex;
@@ -612,7 +672,7 @@ Website Cluade
         margin-top: 6px;
     }
     .btn-primary:hover { background: #f40612; transform: translateY(-1px); box-shadow: 0 6px 20px var(--red-glow); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
     .btn-secondary {
         width: 100%;
@@ -734,7 +794,7 @@ Website Cluade
         transition: all 0.2s;
     }
     .pl-action-btn:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
-    .pl-action-btn.del:hover { color: #ff6b6b; border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.05); }
+    .pl-action-btn.del:hover  { color: #ff6b6b; border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.05); }
     .pl-action-btn.edit:hover { color: var(--warning); border-color: rgba(245,158,11,0.3); }
     .pl-action-btn.set-active:hover { color: var(--success); border-color: rgba(34,197,94,0.3); }
 
@@ -813,6 +873,52 @@ Website Cluade
     .price-feat { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-mid); }
     .price-feat::before { content: '✓'; color: var(--success); font-weight: 700; flex-shrink: 0; }
 
+    /* ── Security notice ── */
+    .security-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 14px;
+        background: rgba(245,158,11,0.06);
+        border: 1px solid rgba(245,158,11,0.18);
+        border-radius: var(--radius-sm);
+        margin-bottom: 14px;
+        font-size: 0.8rem;
+        color: var(--text-dim);
+        line-height: 1.5;
+    }
+    .security-note-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ══════════════════════════════
+       CONFIRM DIALOG
+    ══════════════════════════════ */
+    .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+    }
+    .confirm-overlay.open { display: flex; }
+    .confirm-box {
+        background: var(--bg2);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: var(--radius-md);
+        padding: 28px;
+        max-width: 360px;
+        width: 100%;
+        animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .confirm-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1.5px; margin-bottom: 10px; }
+    .confirm-msg   { font-size: 0.9rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px; }
+    .confirm-btns  { display: flex; gap: 10px; }
+    .confirm-btns .btn-primary   { margin-top: 0; background: #dc2626; }
+    .confirm-btns .btn-secondary { margin-top: 0; }
+
     /* ══════════════════════════════
        PRIVACY MODAL
     ══════════════════════════════ */
@@ -822,7 +928,7 @@ Website Cluade
         color: var(--text-mid);
     }
     .privacy-body h3 { color: #fff; margin-top: 20px; margin-bottom: 8px; font-size: 1rem; }
-    .privacy-body p { margin-bottom: 12px; }
+    .privacy-body p  { margin-bottom: 12px; }
 
     /* ══════════════════════════════
        COOKIE BANNER
@@ -926,6 +1032,8 @@ Website Cluade
         .modal-header, .modal-body { padding-left: 24px; padding-right: 24px; }
         .feat-card        { padding: 36px 28px; }
         footer .footer-inner { flex-direction: column; }
+        .toast-container  { bottom: 16px; right: 16px; left: 16px; }
+        .toast            { max-width: 100%; }
     }
     @media (max-width: 480px) {
         .hero-stats { display: none; }
@@ -954,16 +1062,34 @@ Website Cluade
 </head>
 <body>
 
-```
+<!-- TOAST CONTAINER -->
+
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<!-- CONFIRM DIALOG -->
+
+<div class="confirm-overlay" id="confirm-overlay" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="confirm-box">
+        <div class="confirm-title" id="confirm-title">Are you sure?</div>
+        <div class="confirm-msg"  id="confirm-msg">This action cannot be undone.</div>
+        <div class="confirm-btns">
+            <button class="btn-primary"   id="confirm-ok"     style="margin-top:0;">Delete</button>
+            <button class="btn-secondary" id="confirm-cancel" style="margin-top:0;">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- NAVBAR -->
+
 <nav class="navbar" id="navbar">
-    <a class="logo" onclick="scrollToTop()"><span class="tivi">tivi</span><span class="pal">pal</span></a>
+    <a class="logo" onclick="scrollToTop()" role="link" tabindex="0"><span class="tivi">tivi</span><span class="pal">pal</span></a>
     <div class="nav-right">
         <button class="btn-portal" onclick="openPortal()">Manage Device</button>
     </div>
 </nav>
 
 <!-- HERO -->
+
 <section class="hero">
     <div class="hero-bg"></div>
     <div class="hero-grid"></div>
@@ -982,8 +1108,8 @@ Website Cluade
             <div class="stat-label">Ready</div>
         </div>
         <div class="stat">
-            <div class="stat-num">3<span>-</span>Layer</div>
-            <div class="stat-label">Navigation</div>
+            <div class="stat-num">10<span>K+</span></div>
+            <div class="stat-label">Channels Supported</div>
         </div>
         <div class="stat">
             <div class="stat-num">£<span>5</span>.99</div>
@@ -993,6 +1119,7 @@ Website Cluade
 </section>
 
 <!-- PLATFORMS -->
+
 <section class="platforms-section">
     <div class="platforms-inner">
         <div>
@@ -1023,7 +1150,7 @@ Website Cluade
             </div>
             <div class="platform-item">
                 <div class="platform-logo dim">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Android_logo_2019_%28stacked%29.svg" alt="Android">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Android_logo_2019_%28stacked%29.svg" alt="Android TV">
                 </div>
                 <div>
                     <div class="platform-name">Android TV / Google TV</div>
@@ -1033,7 +1160,7 @@ Website Cluade
             </div>
             <div class="platform-item">
                 <div class="platform-logo dim">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1920px-Apple_logo_black.svg.png" alt="Apple">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1920px-Apple_logo_black.svg.png" alt="Apple TV">
                 </div>
                 <div>
                     <div class="platform-name">Apple TV</div>
@@ -1046,6 +1173,7 @@ Website Cluade
 </section>
 
 <!-- FEATURES -->
+
 <section class="features-section" id="features">
     <div style="text-align:center; margin-bottom: 0;">
         <div class="section-label" style="justify-content:center;display:flex;">Why tivipal</div>
@@ -1076,120 +1204,141 @@ Website Cluade
 </section>
 
 <!-- PORTAL MODAL -->
-<div class="modal-overlay" id="portal-modal">
+
+<div class="modal-overlay" id="portal-modal" role="dialog" aria-modal="true" aria-labelledby="portal-modal-title">
     <div class="modal-box">
         <div class="modal-header">
-            <div class="modal-title"><span style="color:#fff">tivi</span><span style="color:var(--red)">pal</span> PORTAL</div>
-            <button class="modal-close" onclick="closeModals()">✕</button>
+            <div class="modal-title" id="portal-modal-title"><span style="color:#fff">tivi</span><span style="color:var(--red)">pal</span> PORTAL</div>
+            <button class="modal-close" onclick="closeModals()" aria-label="Close portal">✕</button>
         </div>
         <div class="modal-body">
 
-            <!-- Step nav -->
-            <div class="step-row">
-                <button class="step-btn active" id="step-btn-1" onclick="goToStep(1)">
-                    <span class="step-num">1</span>Device
-                </button>
-                <button class="step-btn" id="step-btn-2" onclick="goToStep(2)">
-                    <span class="step-num">2</span>Playlists
-                </button>
-                <button class="step-btn" id="step-btn-3" onclick="goToStep(3)">
-                    <span class="step-num">3</span>Activate
-                </button>
-            </div>
-
-            <!-- ── STEP 1: Device ID ── -->
-            <div id="step-1">
-                <label class="field-label">Device ID</label>
-                <input class="field-input" id="deviceId" placeholder="TP-XXXXXX" oninput="this.value=this.value.toUpperCase()">
-                <button class="btn-primary" onclick="checkDeviceAndProceed()">
-                    Continue →
-                </button>
-                <div class="status-box" id="device-status"></div>
-                <div class="divider"></div>
-                <p style="font-size:0.8rem;color:var(--text-dim);text-align:center;">Find your Device ID in the tivipal app settings or scan the QR code on your TV.</p>
-            </div>
-
-            <!-- ── STEP 2: Playlist Manager ── -->
-            <div id="step-2" style="display:none;">
-                <div class="playlist-section-title">Your Playlists</div>
-                <div class="playlist-list" id="playlist-list">
-                    <!-- Populated by JS -->
-                </div>
-                <button class="btn-add-playlist" onclick="showAddForm()">
-                    <span>＋</span> Add New Playlist
-                </button>
-
-                <!-- Add / Edit form -->
-                <div class="playlist-edit-form" id="add-edit-form">
-                    <div class="edit-form-title" id="form-mode-label">Add New Playlist</div>
-                    <input type="hidden" id="edit-playlist-id">
-                    <label class="field-label">Playlist Name</label>
-                    <input class="field-input" id="pl-name" placeholder="e.g. My IPTV">
-                    <div class="tab-row">
-                        <button class="tab-pill active" id="tab-m3u" onclick="switchTab('m3u')">M3U URL</button>
-                        <button class="tab-pill" id="tab-xtream" onclick="switchTab('xtream')">Xtream Codes</button>
-                    </div>
-                    <div id="form-m3u">
-                        <input class="field-input" id="pl-m3u-url" placeholder="https://example.com/playlist.m3u">
-                    </div>
-                    <div id="form-xtream" style="display:none;">
-                        <input class="field-input" id="pl-xt-host" placeholder="Server URL (e.g. http://dns.com:80)">
-                        <input class="field-input" id="pl-xt-user" placeholder="Username">
-                        <input class="field-input" type="password" id="pl-xt-pass" placeholder="Password">
-                    </div>
-                    <div style="display:flex;gap:8px;margin-top:4px;">
-                        <button class="btn-primary" style="margin-top:0;" onclick="savePlaylist()">Save Playlist</button>
-                        <button class="btn-secondary" style="margin-top:0;width:auto;padding:14px 20px;" onclick="cancelForm()">Cancel</button>
-                    </div>
-                </div>
-
-                <div class="progress-wrap" id="sync-progress"><div class="progress-fill" id="sync-fill"></div></div>
-                <div class="sync-success" id="sync-success">
-                    <div class="sync-success-icon">✅</div>
-                    <h4>Synced to TV</h4>
-                    <p>Your playlists have been pushed to your device. Open tivipal on your TV to apply changes.</p>
-                </div>
-
-                <div class="divider"></div>
-                <button class="btn-primary" onclick="syncToTV()">Push to TV</button>
-                <button class="btn-secondary" onclick="goToStep(3)">Next: Activate License →</button>
-            </div>
-
-            <!-- ── STEP 3: License ── -->
-            <div id="step-3" style="display:none;">
-                <div id="license-paid" style="display:none;">
-                    <div class="sync-success" style="display:block;">
-                        <div class="sync-success-icon">🏆</div>
-                        <h4>Lifetime License Active</h4>
-                        <p>Your device is fully activated. Enjoy tivipal with no limitations.</p>
-                    </div>
-                </div>
-                <div id="license-unpaid">
-                    <div class="price-card">
-                        <div class="price-amount"><span class="price-currency">£</span>5.99</div>
-                        <div class="price-period">One-time payment · Lifetime access</div>
-                        <div class="price-features">
-                            <div class="price-feat">Unlimited playlists</div>
-                            <div class="price-feat">All future updates included</div>
-                            <div class="price-feat">Priority support</div>
-                            <div class="price-feat">All platforms when released</div>
-                        </div>
-                    </div>
-                    <button class="btn-primary" id="show-pay-btn" onclick="showPayment()">Buy Lifetime License — £5.99</button>
-                    <div id="paypal-button-container" style="margin-top:16px;"></div>
-                </div>
-            </div>
-
+```
+        <!-- Step nav -->
+        <div class="step-row" role="tablist">
+            <button class="step-btn active" id="step-btn-1" onclick="goToStep(1)" role="tab" aria-selected="true"  aria-controls="step-1">
+                <span class="step-num" aria-hidden="true">1</span>Device
+            </button>
+            <button class="step-btn" id="step-btn-2" onclick="goToStep(2)" role="tab" aria-selected="false" aria-controls="step-2">
+                <span class="step-num" aria-hidden="true">2</span>Playlists
+            </button>
+            <button class="step-btn" id="step-btn-3" onclick="goToStep(3)" role="tab" aria-selected="false" aria-controls="step-3">
+                <span class="step-num" aria-hidden="true">3</span>Activate
+            </button>
         </div>
+
+        <!-- ── STEP 1: Device ID ── -->
+        <div id="step-1" role="tabpanel">
+            <label class="field-label" for="deviceId">Device ID</label>
+            <input class="field-input" id="deviceId"
+                placeholder="TP-XXXXXX"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+                maxlength="9"
+                oninput="onDeviceIdInput(this)">
+            <div class="field-hint" id="deviceId-hint">Format: TP- followed by 6 characters (e.g. TP-A1B2C3)</div>
+            <button class="btn-primary" onclick="checkDeviceAndProceed()" id="step1-continue-btn">
+                Continue →
+            </button>
+            <div class="status-box" id="device-status" role="status"></div>
+            <div class="divider"></div>
+            <p style="font-size:0.8rem;color:var(--text-dim);text-align:center;">Find your Device ID in the tivipal app settings or scan the QR code on your TV.</p>
+        </div>
+
+        <!-- ── STEP 2: Playlist Manager ── -->
+        <div id="step-2" style="display:none;" role="tabpanel">
+            <div class="playlist-section-title">Your Playlists</div>
+            <div class="playlist-list" id="playlist-list" role="list"></div>
+            <button class="btn-add-playlist" onclick="showAddForm()">
+                <span aria-hidden="true">＋</span> Add New Playlist
+            </button>
+
+            <!-- Add / Edit form -->
+            <div class="playlist-edit-form" id="add-edit-form" aria-live="polite">
+                <div class="edit-form-title" id="form-mode-label">Add New Playlist</div>
+                <input type="hidden" id="edit-playlist-id">
+                <label class="field-label" for="pl-name">Playlist Name</label>
+                <input class="field-input" id="pl-name" placeholder="e.g. My IPTV" maxlength="60">
+                <div class="tab-row" role="tablist" aria-label="Playlist type">
+                    <button class="tab-pill active" id="tab-m3u"    onclick="switchTab('m3u')"    role="tab" aria-selected="true">M3U URL</button>
+                    <button class="tab-pill"        id="tab-xtream" onclick="switchTab('xtream')" role="tab" aria-selected="false">Xtream Codes</button>
+                </div>
+                <div id="form-m3u">
+                    <label class="field-label" for="pl-m3u-url">M3U URL</label>
+                    <input class="field-input" id="pl-m3u-url" placeholder="https://example.com/playlist.m3u" type="url" autocomplete="off" spellcheck="false">
+                    <div class="field-hint" id="m3u-url-hint"></div>
+                </div>
+                <div id="form-xtream" style="display:none;">
+                    <label class="field-label" for="pl-xt-host">Server URL</label>
+                    <input class="field-input" id="pl-xt-host" placeholder="http://dns.com:80" type="url" autocomplete="off" spellcheck="false">
+                    <label class="field-label" for="pl-xt-user">Username</label>
+                    <input class="field-input" id="pl-xt-user" placeholder="Username" autocomplete="off" spellcheck="false">
+                    <label class="field-label" for="pl-xt-pass">Password</label>
+                    <input class="field-input" id="pl-xt-pass" placeholder="Password" type="password" autocomplete="new-password">
+                </div>
+                <div style="display:flex;gap:8px;margin-top:4px;">
+                    <button class="btn-primary"   style="margin-top:0;" onclick="savePlaylist()">Save Playlist</button>
+                    <button class="btn-secondary" style="margin-top:0;width:auto;padding:14px 20px;" onclick="cancelForm()">Cancel</button>
+                </div>
+            </div>
+
+            <div class="progress-wrap" id="sync-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress-fill" id="sync-fill"></div>
+            </div>
+            <div class="sync-success" id="sync-success" role="status">
+                <div class="sync-success-icon" aria-hidden="true">✅</div>
+                <h4>Synced to TV</h4>
+                <p>Your playlists have been pushed to your device. Open tivipal on your TV to apply changes.</p>
+            </div>
+
+            <div class="divider"></div>
+            <button class="btn-primary" onclick="syncToTV()" id="sync-btn">Push to TV</button>
+            <button class="btn-secondary" onclick="goToStep(3)">Next: Activate License →</button>
+        </div>
+
+        <!-- ── STEP 3: License ── -->
+        <div id="step-3" style="display:none;" role="tabpanel">
+            <div id="license-paid" style="display:none;">
+                <div class="sync-success" style="display:block;">
+                    <div class="sync-success-icon" aria-hidden="true">🏆</div>
+                    <h4>Lifetime License Active</h4>
+                    <p>Your device is fully activated. Enjoy tivipal with no limitations.</p>
+                </div>
+            </div>
+            <div id="license-unpaid">
+                <div class="price-card">
+                    <div class="price-amount"><span class="price-currency">£</span>5.99</div>
+                    <div class="price-period">One-time payment · Lifetime access</div>
+                    <div class="price-features">
+                        <div class="price-feat">Unlimited playlists</div>
+                        <div class="price-feat">All future updates included</div>
+                        <div class="price-feat">Priority support</div>
+                        <div class="price-feat">All platforms when released</div>
+                    </div>
+                </div>
+                <div class="security-note">
+                    <span class="security-note-icon">🔒</span>
+                    <span>Payment is processed securely by PayPal. tivipal never sees your card details. License activation is verified server-side.</span>
+                </div>
+                <button class="btn-primary" id="show-pay-btn" onclick="showPayment()">Buy Lifetime License — £5.99</button>
+                <div id="paypal-button-container" style="margin-top:16px;"></div>
+            </div>
+        </div>
+
     </div>
+</div>
+```
+
 </div>
 
 <!-- PRIVACY MODAL -->
-<div class="modal-overlay" id="privacy-modal">
+
+<div class="modal-overlay" id="privacy-modal" role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title">
     <div class="modal-box">
         <div class="modal-header">
-            <div class="modal-title">PRIVACY POLICY</div>
-            <button class="modal-close" onclick="closeModals()">✕</button>
+            <div class="modal-title" id="privacy-modal-title">PRIVACY POLICY</div>
+            <button class="modal-close" onclick="closeModals()" aria-label="Close privacy policy">✕</button>
         </div>
         <div class="modal-body">
             <div class="privacy-body">
@@ -1214,7 +1363,8 @@ Website Cluade
 </div>
 
 <!-- COOKIE BANNER -->
-<div class="cookie-banner" id="cookie-banner">
+
+<div class="cookie-banner" id="cookie-banner" role="region" aria-label="Cookie consent">
     <div class="cookie-text">
         We use essential cookies for portal functionality. By using tivipal you agree to our
         <a href="javascript:void(0)" onclick="openPrivacy()">Privacy Policy</a>.
@@ -1223,6 +1373,7 @@ Website Cluade
 </div>
 
 <!-- FOOTER -->
+
 <footer>
     <div class="footer-inner">
         <div class="footer-brand">
@@ -1248,7 +1399,7 @@ Website Cluade
 
 <script type="module">
     import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteField }
+    import { getFirestore, doc, setDoc, getDoc, deleteField }
                                 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -1263,68 +1414,267 @@ Website Cluade
     const firebaseApp = initializeApp(firebaseConfig);
     const db          = getFirestore(firebaseApp);
 
-    // ── State ──────────────────────────────────────────────────────────────
-    let currentDeviceId  = '';
-    let deviceData       = null;
-    let playlists        = {};   // { id: { name, type, url|xtream, active } }
-    let activeTab        = 'm3u';
-    let editingId        = null; // playlist being edited
-    let currentStep      = 1;
+    /* ═══════════════════════════════════════════════════════════════
+       CONSTANTS & VALIDATION
+    ═══════════════════════════════════════════════════════════════ */
+    const DEVICE_ID_RE   = /^TP-[A-Z0-9]{6}$/;
+    const FIRESTORE_TIMEOUT_MS = 9000;
 
-    // ── Navbar scroll effect ───────────────────────────────────────────────
+    /** Allowed top-level Firestore fields — guards against client abuse */
+    const ALLOWED_FIELDS = new Set([
+        'playlists','updatedAt','syncRequest',
+        'playlistName','mode','m3u_url','xtream','deviceId'
+        // Note: 'isPaid' is intentionally excluded — must be set server-side only
+    ]);
+
+    function isValidUrl(str) {
+        try {
+            const u = new URL(str);
+            return ['http:','https:'].includes(u.protocol);
+        } catch { return false; }
+    }
+
+    function normaliseHost(host) {
+        // Strip trailing slash so Xtream URLs are consistent
+        return host.replace(/\/+$/, '');
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PROMISE TIMEOUT WRAPPER
+    ═══════════════════════════════════════════════════════════════ */
+    function withTimeout(promise, ms = FIRESTORE_TIMEOUT_MS, label = 'Request') {
+        let timer;
+        const timeout = new Promise((_, rej) => {
+            timer = setTimeout(() => rej(new Error(`${label} timed out after ${ms / 1000}s`)), ms);
+        });
+        return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TOAST NOTIFICATION SYSTEM  (replaces all alert() calls)
+    ═══════════════════════════════════════════════════════════════ */
+    const TOAST_ICONS = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+
+    window.showToast = function(type, message, duration = 4500) {
+        const container = document.getElementById('toast-container');
+        const toast     = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <span class="toast-icon" aria-hidden="true">${TOAST_ICONS[type] || 'ℹ️'}</span>
+            <span class="toast-msg">${escHtml(message)}</span>
+            <button class="toast-close" aria-label="Dismiss">✕</button>`;
+
+        toast.querySelector('.toast-close').addEventListener('click', () => removeToast(toast));
+        container.appendChild(toast);
+
+        const tid = setTimeout(() => removeToast(toast), duration);
+        toast._tid = tid;
+    };
+
+    function removeToast(toast) {
+        clearTimeout(toast._tid);
+        toast.classList.add('removing');
+        toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       CONFIRM DIALOG  (replaces confirm())
+    ═══════════════════════════════════════════════════════════════ */
+    function showConfirm(title, message, okLabel = 'Delete') {
+        return new Promise(resolve => {
+            const overlay  = document.getElementById('confirm-overlay');
+            const titleEl  = document.getElementById('confirm-title');
+            const msgEl    = document.getElementById('confirm-msg');
+            const okBtn    = document.getElementById('confirm-ok');
+            const cancelBtn= document.getElementById('confirm-cancel');
+
+            titleEl.textContent  = title;
+            msgEl.textContent    = message;
+            okBtn.textContent    = okLabel;
+            overlay.classList.add('open');
+
+            function cleanup(result) {
+                overlay.classList.remove('open');
+                okBtn.removeEventListener('click', onOk);
+                cancelBtn.removeEventListener('click', onCancel);
+                resolve(result);
+            }
+            const onOk     = () => cleanup(true);
+            const onCancel = () => cleanup(false);
+            okBtn.addEventListener('click',     onOk,     { once: true });
+            cancelBtn.addEventListener('click', onCancel, { once: true });
+
+            // Escape closes as cancel
+            const onKey = e => { if (e.key === 'Escape') { document.removeEventListener('keydown', onKey); cleanup(false); } };
+            document.addEventListener('keydown', onKey);
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       STATE
+    ═══════════════════════════════════════════════════════════════ */
+    let currentDeviceId = '';
+    let deviceData      = null;
+    let playlists       = {};
+    let activeTab       = 'm3u';
+    let editingId       = null;
+    let currentStep     = 1;
+    let paypalRendered  = false;
+
+    /* ═══════════════════════════════════════════════════════════════
+       NAVBAR
+    ═══════════════════════════════════════════════════════════════ */
     window.addEventListener('scroll', () => {
         document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
     });
 
     window.scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // ── Modal ──────────────────────────────────────────────────────────────
+    /* ═══════════════════════════════════════════════════════════════
+       FOCUS TRAP HELPER
+    ═══════════════════════════════════════════════════════════════ */
+    function trapFocus(containerSelector) {
+        const container  = document.querySelector(containerSelector);
+        if (!container) return;
+        const focusable  = container.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last  = focusable[focusable.length - 1];
+        container._trapHandler = e => {
+            if (e.key !== 'Tab') return;
+            if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
+            else            { if (document.activeElement === last)  { e.preventDefault(); first.focus(); } }
+        };
+        container.addEventListener('keydown', container._trapHandler);
+    }
+
+    function releaseFocus(containerSelector) {
+        const container = document.querySelector(containerSelector);
+        if (container && container._trapHandler) {
+            container.removeEventListener('keydown', container._trapHandler);
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       MODAL
+    ═══════════════════════════════════════════════════════════════ */
     window.openPortal = () => {
         document.getElementById('portal-modal').classList.add('open');
         document.body.style.overflow = 'hidden';
         goToStep(1);
+        // Delay focus until animation completes
+        setTimeout(() => {
+            document.getElementById('deviceId').focus();
+            trapFocus('#portal-modal .modal-box');
+        }, 60);
     };
 
     window.closeModals = () => {
         document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
         document.body.style.overflow = '';
+        releaseFocus('#portal-modal .modal-box');
+        releaseFocus('#privacy-modal .modal-box');
     };
 
     window.openPrivacy = () => {
         document.getElementById('privacy-modal').classList.add('open');
+        setTimeout(() => trapFocus('#privacy-modal .modal-box'), 60);
     };
 
-    // Close on backdrop click
+    // Escape key closes modals globally
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            const open = document.querySelector('.modal-overlay.open');
+            if (open) window.closeModals();
+        }
+    });
+
+    // Backdrop click closes modal
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', e => {
             if (e.target === overlay) window.closeModals();
         });
     });
 
-    // ── Steps ──────────────────────────────────────────────────────────────
+    /* ═══════════════════════════════════════════════════════════════
+       STEPS
+    ═══════════════════════════════════════════════════════════════ */
     window.goToStep = (n) => {
         currentStep = n;
         [1,2,3].forEach(i => {
             document.getElementById('step-' + i).style.display = i === n ? 'block' : 'none';
             const btn = document.getElementById('step-btn-' + i);
             btn.classList.remove('active', 'done');
-            if (i === n)  btn.classList.add('active');
-            if (i < n)    btn.classList.add('done');
+            btn.setAttribute('aria-selected', i === n ? 'true' : 'false');
+            if (i === n) btn.classList.add('active');
+            if (i < n)  btn.classList.add('done');
         });
         if (n === 2) renderPlaylists();
+        if (n === 3) {
+            const isPaid = deviceData && deviceData.isPaid;
+            document.getElementById('license-paid').style.display   = isPaid ? 'block' : 'none';
+            document.getElementById('license-unpaid').style.display = isPaid ? 'none'  : 'block';
+        }
     };
 
-    // ── Step 1: Device check ───────────────────────────────────────────────
+    /* ═══════════════════════════════════════════════════════════════
+       STEP 1 — DEVICE ID
+    ═══════════════════════════════════════════════════════════════ */
+    window.onDeviceIdInput = (input) => {
+        // Force uppercase, allow only valid chars, auto-insert hyphen
+        let v = input.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+        // Auto-prefix TP- if the user starts typing without it
+        if (v.length >= 2 && !v.startsWith('TP')) {
+            v = 'TP-' + v.replace(/^TP-?/, '');
+        }
+        if (v.startsWith('TP') && v.length === 2) v = 'TP-';
+        input.value = v;
+
+        const hint = document.getElementById('deviceId-hint');
+        const valid = DEVICE_ID_RE.test(v);
+        if (v.length === 0) {
+            input.classList.remove('invalid','valid');
+            hint.textContent = 'Format: TP- followed by 6 characters (e.g. TP-A1B2C3)';
+            hint.classList.remove('error');
+        } else if (valid) {
+            input.classList.remove('invalid'); input.classList.add('valid');
+            hint.textContent = ''; hint.classList.remove('error');
+        } else {
+            input.classList.remove('valid'); input.classList.add('invalid');
+            hint.textContent = v.length < 9 ? `${9 - v.length} character(s) remaining` : 'Invalid format';
+            hint.classList.add('error');
+        }
+    };
+
     window.checkDeviceAndProceed = async () => {
-        const id  = document.getElementById('deviceId').value.trim().toUpperCase();
-        const box = document.getElementById('device-status');
-        if (!id) { showStatus(box, 'error', 'Please enter your Device ID.'); return; }
+        const input = document.getElementById('deviceId');
+        const id    = input.value.trim().toUpperCase();
+        const box   = document.getElementById('device-status');
+
+        if (!id) { showStatus(box, 'error', 'Please enter your Device ID.'); input.focus(); return; }
+        if (!DEVICE_ID_RE.test(id)) {
+            showStatus(box, 'error', 'Invalid Device ID format. Expected: TP-XXXXXX');
+            input.classList.add('invalid');
+            input.focus();
+            return;
+        }
 
         currentDeviceId = id;
+        const btn = document.getElementById('step1-continue-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Checking…';
         showStatus(box, 'info', '<span class="spinner"></span>Checking device…');
 
         try {
-            const snap = await getDoc(doc(db, 'playlists', id));
+            const snap = await withTimeout(
+                getDoc(doc(db, 'playlists', id)),
+                FIRESTORE_TIMEOUT_MS,
+                'Device lookup'
+            );
+
             if (snap.exists()) {
                 deviceData = snap.data();
                 playlists  = deviceData.playlists || {};
@@ -1333,68 +1683,80 @@ Website Cluade
                 if (Object.keys(playlists).length === 0) {
                     if (deviceData.m3u_url) {
                         playlists['pl_legacy'] = {
-                            name:   deviceData.playlistName || 'My Playlist',
-                            type:   'm3u',
-                            url:    deviceData.m3u_url,
-                            active: true
+                            name: deviceData.playlistName || 'My Playlist',
+                            type: 'm3u', url: deviceData.m3u_url, active: true
                         };
                     } else if (deviceData.xtream) {
                         playlists['pl_legacy'] = {
-                            name:   deviceData.playlistName || 'My Playlist',
-                            type:   'xtream',
-                            xtream: deviceData.xtream,
-                            active: true
+                            name: deviceData.playlistName || 'My Playlist',
+                            type: 'xtream', xtream: deviceData.xtream, active: true
                         };
                     }
                 }
 
-                if (deviceData.isPaid) {
-                    showStatus(box, 'success', '✅ Device found — Lifetime License Active');
-                } else {
-                    showStatus(box, 'warning', '⏳ Device found — Trial / Activation required');
-                }
+                showStatus(box, deviceData.isPaid ? 'success' : 'warning',
+                    deviceData.isPaid
+                        ? '✅ Device found — Lifetime License Active'
+                        : '⏳ Device found — Trial / Activation required');
             } else {
                 deviceData = {};
                 playlists  = {};
                 showStatus(box, 'info', 'ℹ️ New device — add your playlist below to register it.');
             }
+
             setTimeout(() => goToStep(2), 800);
+
         } catch (e) {
-            showStatus(box, 'error', '❌ Connection error. Please try again.');
+            const msg = e.message.includes('timed out')
+                ? '⏱ Connection timed out. Check your internet and try again.'
+                : '❌ Connection error. Please try again.';
+            showStatus(box, 'error', msg);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Continue →';
         }
     };
 
-    // ── Step 2: Playlist management ────────────────────────────────────────
+    // Allow Enter key on device ID field
+    document.getElementById('deviceId').addEventListener('keydown', e => {
+        if (e.key === 'Enter') window.checkDeviceAndProceed();
+    });
 
-    function genId() { return 'pl_' + Date.now().toString(36); }
+    /* ═══════════════════════════════════════════════════════════════
+       STEP 2 — PLAYLIST MANAGEMENT
+    ═══════════════════════════════════════════════════════════════ */
+    function genId() { return 'pl_' + (typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID().replace(/-/g,'').substring(0,12)
+        : Date.now().toString(36) + Math.random().toString(36).substring(2,7)); }
 
     function renderPlaylists() {
         const list = document.getElementById('playlist-list');
         const ids  = Object.keys(playlists);
 
         if (ids.length === 0) {
-            list.innerHTML = '<p style="font-size:0.85rem;color:var(--text-dim);text-align:center;padding:16px 0;">No playlists yet — add one below.</p>';
+            list.innerHTML = '<p style="font-size:0.85rem;color:var(--text-dim);text-align:center;padding:16px 0;" role="listitem">No playlists yet — add one below.</p>';
             return;
         }
 
         list.innerHTML = ids.map(id => {
-            const pl     = playlists[id];
-            const isAct  = pl.active;
-            const meta   = pl.type === 'm3u'
-                ? 'M3U · ' + (pl.url ? pl.url.substring(0, 35) + '…' : '')
-                : 'Xtream · ' + (pl.xtream ? pl.xtream.host.substring(0, 30) + '…' : '');
+            const pl    = playlists[id];
+            const isAct = pl.active;
+            const rawMeta = pl.type === 'm3u'
+                ? 'M3U · ' + (pl.url   ? pl.url.substring(0, 35)             + '…' : '—')
+                : 'Xtream · ' + (pl.xtream ? pl.xtream.host.substring(0, 30) + '…' : '—');
+
             return `
-            <div class="playlist-item ${isAct ? 'active-playlist' : ''}" data-id="${id}">
-                <div class="playlist-dot"></div>
+            <div class="playlist-item ${isAct ? 'active-playlist' : ''}" data-id="${escAttr(id)}" role="listitem">
+                <div class="playlist-dot" aria-hidden="true"></div>
                 <div class="playlist-info">
                     <div class="playlist-name-text">${escHtml(pl.name || 'Untitled')}</div>
-                    <div class="playlist-meta">${escHtml(meta)}</div>
+                    <div class="playlist-meta">${escHtml(rawMeta)}</div>
                 </div>
-                ${isAct ? '<span class="active-badge">Active</span>' : ''}
+                ${isAct ? '<span class="active-badge" aria-label="Active playlist">Active</span>' : ''}
                 <div class="playlist-actions">
-                    ${!isAct ? `<button class="pl-action-btn set-active" title="Set as active" onclick="setActive('${id}')">▶</button>` : ''}
-                    <button class="pl-action-btn edit" title="Edit" onclick="editPlaylist('${id}')">✎</button>
-                    <button class="pl-action-btn del"  title="Delete" onclick="deletePlaylist('${id}')">✕</button>
+                    ${!isAct ? `<button class="pl-action-btn set-active" title="Set as active" aria-label="Set ${escAttr(pl.name || 'Untitled')} as active" onclick="setActive('${escAttr(id)}')">▶</button>` : ''}
+                    <button class="pl-action-btn edit" title="Edit" aria-label="Edit ${escAttr(pl.name || 'Untitled')}" onclick="editPlaylist('${escAttr(id)}')">✎</button>
+                    <button class="pl-action-btn del"  title="Delete" aria-label="Delete ${escAttr(pl.name || 'Untitled')}" onclick="deletePlaylist('${escAttr(id)}')">✕</button>
                 </div>
             </div>`;
         }).join('');
@@ -1409,6 +1771,11 @@ Website Cluade
         document.getElementById('pl-xt-user').value = '';
         document.getElementById('pl-xt-pass').value = '';
         document.getElementById('edit-playlist-id').value = '';
+        document.getElementById('m3u-url-hint').textContent = '';
+        ['pl-name','pl-m3u-url','pl-xt-host','pl-xt-user','pl-xt-pass'].forEach(id => {
+            const el = document.getElementById(id);
+            el.classList.remove('invalid','valid');
+        });
         switchTab('m3u');
         document.getElementById('add-edit-form').style.display = 'block';
         document.getElementById('pl-name').focus();
@@ -1417,6 +1784,7 @@ Website Cluade
     window.editPlaylist = (id) => {
         editingId = id;
         const pl  = playlists[id];
+        if (!pl) return;
         document.getElementById('form-mode-label').textContent = 'Edit Playlist';
         document.getElementById('edit-playlist-id').value = id;
         document.getElementById('pl-name').value = pl.name || '';
@@ -1439,48 +1807,90 @@ Website Cluade
     };
 
     window.savePlaylist = () => {
-        const name = document.getElementById('pl-name').value.trim();
-        if (!name) { alert('Please enter a playlist name.'); return; }
+        const nameEl = document.getElementById('pl-name');
+        const name   = nameEl.value.trim();
 
-        const id = editingId || genId();
+        if (!name) {
+            nameEl.classList.add('invalid');
+            showToast('error', 'Please enter a playlist name.');
+            nameEl.focus();
+            return;
+        }
+        nameEl.classList.remove('invalid'); nameEl.classList.add('valid');
+
+        const id        = editingId || genId();
         const wasActive = editingId && playlists[editingId] && playlists[editingId].active;
 
         if (activeTab === 'm3u') {
-            const url = document.getElementById('pl-m3u-url').value.trim();
-            if (!url) { alert('Please enter an M3U URL.'); return; }
+            const urlEl = document.getElementById('pl-m3u-url');
+            const url   = urlEl.value.trim();
+            if (!url || !isValidUrl(url)) {
+                urlEl.classList.add('invalid');
+                document.getElementById('m3u-url-hint').textContent = 'Please enter a valid http:// or https:// URL.';
+                document.getElementById('m3u-url-hint').classList.add('error');
+                showToast('error', 'Please enter a valid M3U URL (http or https).');
+                urlEl.focus();
+                return;
+            }
+            urlEl.classList.remove('invalid'); urlEl.classList.add('valid');
+            document.getElementById('m3u-url-hint').textContent = '';
             playlists[id] = { name, type: 'm3u', url, active: wasActive || false };
+
         } else {
-            const host = document.getElementById('pl-xt-host').value.trim();
-            const user = document.getElementById('pl-xt-user').value.trim();
-            const pass = document.getElementById('pl-xt-pass').value.trim();
-            if (!host || !user || !pass) { alert('Please fill all Xtream fields.'); return; }
+            const hostEl = document.getElementById('pl-xt-host');
+            const userEl = document.getElementById('pl-xt-user');
+            const passEl = document.getElementById('pl-xt-pass');
+            const host   = normaliseHost(hostEl.value.trim());
+            const user   = userEl.value.trim();
+            const pass   = passEl.value.trim();
+
+            if (!host || !isValidUrl(host)) {
+                hostEl.classList.add('invalid');
+                showToast('error', 'Please enter a valid server URL (http or https).');
+                hostEl.focus(); return;
+            }
+            if (!user) { userEl.classList.add('invalid'); showToast('error', 'Username is required.'); userEl.focus(); return; }
+            if (!pass) { passEl.classList.add('invalid'); showToast('error', 'Password is required.'); passEl.focus(); return; }
+
+            [hostEl,userEl,passEl].forEach(el => { el.classList.remove('invalid'); el.classList.add('valid'); });
             playlists[id] = { name, type: 'xtream', xtream: { host, user, pass }, active: wasActive || false };
         }
 
-        // If it's the first playlist, make it active automatically
+        // First playlist is always active
         if (Object.keys(playlists).length === 1) playlists[id].active = true;
 
         document.getElementById('add-edit-form').style.display = 'none';
         editingId = null;
         renderPlaylists();
+        showToast('success', `Playlist "${name}" saved. Don't forget to Push to TV.`);
     };
 
-    window.deletePlaylist = (id) => {
-        if (!confirm('Delete this playlist?')) return;
+    window.deletePlaylist = async (id) => {
+        const pl   = playlists[id];
+        const name = pl ? (pl.name || 'Untitled') : 'this playlist';
+
+        const confirmed = await showConfirm(
+            'Delete Playlist',
+            `Are you sure you want to delete "${name}"? This can't be undone.`,
+            'Delete'
+        );
+        if (!confirmed) return;
+
         const wasActive = playlists[id] && playlists[id].active;
         delete playlists[id];
-        // If deleted playlist was active, make first remaining one active
         if (wasActive) {
             const remaining = Object.keys(playlists);
             if (remaining.length > 0) playlists[remaining[0]].active = true;
         }
         renderPlaylists();
+        showToast('info', `Playlist "${name}" removed.`);
     };
 
     window.setActive = (id) => {
         Object.keys(playlists).forEach(k => { playlists[k].active = false; });
         playlists[id].active = true;
         renderPlaylists();
+        showToast('success', `"${playlists[id].name || 'Playlist'}" set as active.`);
     };
 
     window.switchTab = (mode) => {
@@ -1489,33 +1899,39 @@ Website Cluade
         document.getElementById('form-xtream').style.display  = mode === 'xtream' ? 'block' : 'none';
         document.getElementById('tab-m3u').classList.toggle('active',    mode === 'm3u');
         document.getElementById('tab-xtream').classList.toggle('active', mode === 'xtream');
+        document.getElementById('tab-m3u').setAttribute('aria-selected',    String(mode === 'm3u'));
+        document.getElementById('tab-xtream').setAttribute('aria-selected', String(mode === 'xtream'));
     };
 
+    /* ═══════════════════════════════════════════════════════════════
+       SYNC TO TV
+    ═══════════════════════════════════════════════════════════════ */
     window.syncToTV = async () => {
-        if (!currentDeviceId) { alert('No device ID.'); return; }
-        if (Object.keys(playlists).length === 0) { alert('Add at least one playlist first.'); return; }
+        if (!currentDeviceId) { showToast('error', 'No Device ID set. Please go back to Step 1.'); return; }
+        if (Object.keys(playlists).length === 0) { showToast('warning', 'Add at least one playlist before syncing.'); return; }
 
         const progress  = document.getElementById('sync-progress');
         const fill      = document.getElementById('sync-fill');
         const successEl = document.getElementById('sync-success');
-        const btn       = document.querySelector('#step-2 .btn-primary');
+        const btn       = document.getElementById('sync-btn');
 
         successEl.style.display = 'none';
         progress.style.display  = 'block';
+        progress.setAttribute('aria-valuenow', '30');
         fill.style.width        = '30%';
         btn.disabled            = true;
         btn.innerHTML           = '<span class="spinner"></span>Syncing…';
 
         try {
-            // Build active playlist data for backward compatibility with TV app
-            const activePl   = Object.values(playlists).find(p => p.active) || Object.values(playlists)[0];
-            const saveData   = {
+            const activePl = Object.values(playlists).find(p => p.active) || Object.values(playlists)[0];
+
+            // Build payload — only allowed fields
+            const saveData = {
                 playlists:   playlists,
                 updatedAt:   Date.now(),
-                syncRequest: Math.random().toString(36).substring(7)
+                syncRequest: crypto.randomUUID()
             };
 
-            // Also write active playlist in legacy format so TV app picks it up
             if (activePl) {
                 saveData.playlistName = activePl.name;
                 if (activePl.type === 'm3u') {
@@ -1523,69 +1939,112 @@ Website Cluade
                     saveData.m3u_url = activePl.url;
                     saveData.xtream  = deleteField();
                 } else {
-                    saveData.mode   = 'xtream';
-                    saveData.xtream = activePl.xtream;
+                    saveData.mode    = 'xtream';
+                    saveData.xtream  = activePl.xtream;
                     saveData.m3u_url = deleteField();
                 }
             }
 
+            // Verify only allowed fields are being written
+            Object.keys(saveData).forEach(k => {
+                if (!ALLOWED_FIELDS.has(k) && saveData[k] !== undefined) {
+                    console.warn(`tivipal: field "${k}" not in allowlist — skipping`);
+                    delete saveData[k];
+                }
+            });
+
             fill.style.width = '70%';
-            await setDoc(doc(db, 'playlists', currentDeviceId), saveData, { merge: true });
+            progress.setAttribute('aria-valuenow', '70');
+
+            await withTimeout(
+                setDoc(doc(db, 'playlists', currentDeviceId), saveData, { merge: true }),
+                FIRESTORE_TIMEOUT_MS,
+                'Sync'
+            );
+
             fill.style.width = '100%';
+            progress.setAttribute('aria-valuenow', '100');
 
             setTimeout(() => {
                 progress.style.display  = 'none';
-                successEl.style.display = 'block';
                 fill.style.width        = '0%';
+                progress.setAttribute('aria-valuenow', '0');
+                successEl.style.display = 'block';
             }, 500);
 
+            showToast('success', 'Playlists pushed to TV successfully.');
+
         } catch (e) {
-            alert('Sync failed: ' + e.message);
             progress.style.display = 'none';
+            fill.style.width       = '0%';
+            const msg = e.message.includes('timed out')
+                ? 'Sync timed out. Check your internet connection and try again.'
+                : 'Sync failed: ' + e.message;
+            showToast('error', msg);
         } finally {
             btn.disabled  = false;
             btn.innerHTML = 'Push to TV';
         }
     };
 
-    // ── Step 3: Payment ────────────────────────────────────────────────────
-    // Show paid/unpaid state when navigating to step 3
-    const origGoToStep = window.goToStep;
-    window.goToStep = (n) => {
-        origGoToStep(n);
-        if (n === 3) {
-            const isPaid = deviceData && deviceData.isPaid;
-            document.getElementById('license-paid').style.display   = isPaid ? 'block' : 'none';
-            document.getElementById('license-unpaid').style.display = isPaid ? 'none'  : 'block';
-        }
-    };
-
+    /* ═══════════════════════════════════════════════════════════════
+       STEP 3 — PAYMENT
+       NOTE: isPaid is written here for client fallback only.
+       You should set up a PayPal webhook → Cloud Function that calls:
+         admin.firestore().doc(`playlists/${deviceId}`).update({ isPaid: true })
+       That server-side write is the authoritative source of truth.
+    ═══════════════════════════════════════════════════════════════ */
     window.showPayment = () => {
-        if (!currentDeviceId) { alert('Please complete Step 1 first.'); return; }
+        if (!currentDeviceId) {
+            showToast('error', 'Please complete Step 1 first.');
+            return;
+        }
+        if (paypalRendered) return; // Don't double-render PayPal buttons
+        paypalRendered = true;
         document.getElementById('show-pay-btn').style.display = 'none';
 
         paypal.Buttons({
             createOrder: (data, actions) => actions.order.create({
                 purchase_units: [{
-                    amount: { value: '5.99' },
+                    amount:      { value: '5.99' },
                     description: `tivipal Lifetime: ${currentDeviceId}`
                 }]
             }),
-            onApprove: (data, actions) => actions.order.capture().then(async () => {
+            onApprove: (data, actions) => actions.order.capture().then(async (details) => {
+                // Client-side fallback write — server-side webhook should be primary
                 try {
-                    await setDoc(doc(db, 'playlists', currentDeviceId), { isPaid: true }, { merge: true });
+                    await withTimeout(
+                        setDoc(doc(db, 'playlists', currentDeviceId), { isPaid: true }, { merge: true }),
+                        FIRESTORE_TIMEOUT_MS,
+                        'License activation'
+                    );
                     if (deviceData) deviceData.isPaid = true;
                     document.getElementById('license-paid').style.display   = 'block';
                     document.getElementById('license-unpaid').style.display = 'none';
                     document.getElementById('step-btn-3').classList.add('done');
+                    showToast('success', 'License activated! Enjoy tivipal.');
                 } catch (err) {
-                    alert('Payment recorded but database update failed. Contact support with your Device ID: ' + currentDeviceId);
+                    showToast('warning',
+                        `Payment received but activation failed. Contact support with Device ID: ${currentDeviceId}`);
                 }
-            })
+            }),
+            onError: (err) => {
+                console.error('PayPal error:', err);
+                showToast('error', 'Payment could not be completed. Please try again.');
+                paypalRendered = false;
+                document.getElementById('show-pay-btn').style.display = 'block';
+            },
+            onCancel: () => {
+                paypalRendered = false;
+                document.getElementById('show-pay-btn').style.display = 'block';
+                document.getElementById('paypal-button-container').innerHTML = '';
+            }
         }).render('#paypal-button-container');
     };
 
-    // ── Cookies ────────────────────────────────────────────────────────────
+    /* ═══════════════════════════════════════════════════════════════
+       COOKIES
+    ═══════════════════════════════════════════════════════════════ */
     window.acceptCookies = () => {
         localStorage.setItem('cookiesAccepted', '1');
         document.getElementById('cookie-banner').style.display = 'none';
@@ -1593,13 +2052,15 @@ Website Cluade
 
     window.contactSupport = () => {
         const id = currentDeviceId || 'NEW_DEVICE';
-        window.location.href = `mailto:tivipalpro@gmail.com?subject=Support: ${id}`;
+        window.location.href = `mailto:tivipalpro@gmail.com?subject=Support%3A%20${encodeURIComponent(id)}`;
     };
 
-    // ── Helpers ────────────────────────────────────────────────────────────
+    /* ═══════════════════════════════════════════════════════════════
+       HELPERS
+    ═══════════════════════════════════════════════════════════════ */
     function showStatus(el, type, html) {
-        el.className = 'status-box ' + type;
-        el.innerHTML = html;
+        el.className     = 'status-box ' + type;
+        el.innerHTML     = html;
         el.style.display = 'block';
     }
 
@@ -1609,7 +2070,13 @@ Website Cluade
             .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // ── Init ───────────────────────────────────────────────────────────────
+    function escAttr(str) {
+        return String(str).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       INIT
+    ═══════════════════════════════════════════════════════════════ */
     window.addEventListener('load', () => {
         if (!localStorage.getItem('cookiesAccepted')) {
             document.getElementById('cookie-banner').style.display = 'flex';
@@ -1617,14 +2084,16 @@ Website Cluade
         const params = new URLSearchParams(window.location.search);
         const qrId   = params.get('id');
         if (qrId) {
-            document.getElementById('deviceId').value = qrId.toUpperCase();
-            currentDeviceId = qrId.toUpperCase();
-            window.openPortal();
-            window.checkDeviceAndProceed();
+            const sanitised = qrId.toUpperCase().replace(/[^A-Z0-9-]/g,'').substring(0, 9);
+            if (DEVICE_ID_RE.test(sanitised)) {
+                document.getElementById('deviceId').value = sanitised;
+                currentDeviceId = sanitised;
+                window.openPortal();
+                window.checkDeviceAndProceed();
+            }
         }
     });
 </script>
-```
 
 </body>
 </html>
