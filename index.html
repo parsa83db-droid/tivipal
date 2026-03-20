@@ -1025,7 +1025,7 @@
     What is a Device ID and where do I find it?
     <svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
   </button>
-  <div class="faq-a">Your Device ID is a unique identifier (format: TP-XXXXXX) assigned to your Samsung TV when you first open tivipal. You can find it in the app's Settings screen, or by scanning the QR code shown at startup. It looks like <strong style="color:#fff;">TP-A1B2C3</strong>.</div>
+  <div class="faq-a">Your Device ID is a unique identifier derived from your Samsung TV's hardware (format: TP-XXXXXXXX). It is generated automatically the first time you open tivipal and is permanently tied to your physical TV. You can find it in the app's Settings screen, or by scanning the QR code shown at startup. It looks like <strong style="color:#fff;">TP-1A2B3C4D</strong>.</div>
 </div>
 
 <div class="faq-item" role="listitem">
@@ -1110,11 +1110,11 @@
   <div id="step-1" role="tabpanel">
     <label class="field-label" for="deviceId">Device ID</label>
     <input class="field-input" id="deviceId"
-      placeholder="TP-XXXXXX"
+      placeholder="TP-XXXXXXXX"
       autocomplete="off" autocapitalize="characters" spellcheck="false"
-      maxlength="9"
+      maxlength="11"
       oninput="onDeviceIdInput(this)">
-    <div class="field-hint" id="deviceId-hint">Format: TP- followed by 6 characters (e.g. TP-A1B2C3)</div>
+    <div class="field-hint" id="deviceId-hint">Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)</div>
     <button class="btn-primary" onclick="checkDeviceAndProceed()" id="step1-continue-btn">Continue →</button>
     <div class="status-box" id="device-status" role="status"></div>
     <div class="divider"></div>
@@ -1361,7 +1361,9 @@
   const db          = getFirestore(firebaseApp);
 
   /* ─── CONSTANTS ─── */
-  const DEVICE_ID_RE         = /^TP-[A-Z0-9]{6}$/;
+  // UID-based IDs: TP- followed by exactly 8 hex characters (FNV-1a hash of Tizen UID)
+  // e.g. TP-1A2B3C4D  — all uppercase hex [0-9A-F]
+  const DEVICE_ID_RE         = /^TP-[0-9A-F]{8}$/;
   const FIRESTORE_TIMEOUT_MS = 9000;
   const RATE_LIMIT_MS        = 3000; // min ms between device lookup calls
   const MAX_PLAYLISTS        = 10;
@@ -1537,7 +1539,8 @@
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
     document.body.style.overflow = '';
     ['#portal-modal .modal-box','#privacy-modal .modal-box','#tos-modal .modal-box'].forEach(releaseFocus);
-    cleanupSyncListener(); // cancel any in-flight TV handshake
+    cleanupSyncListener();    // cancel any in-flight TV handshake
+    cleanupLicenceListener(); // cancel any in-flight licence poll
   };
   window.openPrivacy = () => {
     document.getElementById('privacy-modal').classList.add('open');
@@ -1576,22 +1579,31 @@
 
   /* ─── STEP 1: DEVICE ID ─── */
   window.onDeviceIdInput = (input) => {
-    let v = input.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');
-    if (v.length >= 2 && !v.startsWith('TP')) v = 'TP-' + v.replace(/^TP-?/,'');
-    if (v.startsWith('TP') && v.length === 2) v = 'TP-';
+    // UID-based IDs are hex only: TP-[0-9A-F]{8}
+    let v = input.value.toUpperCase().replace(/[^0-9A-F-]/g,'');
+    // Auto-insert "TP-" prefix if user starts typing raw hex
+    if (v.length > 0 && !v.startsWith('T')) v = 'TP-' + v.replace(/^T?P?-?/,'');
+    if (v === 'T')  v = 'TP-';
+    if (v === 'TP') v = 'TP-';
+    // Cap at 11 chars (TP- + 8 hex)
+    if (v.length > 11) v = v.substring(0, 11);
     input.value = v;
+
     const hint  = document.getElementById('deviceId-hint');
     const valid = DEVICE_ID_RE.test(v);
     if (!v.length) {
       input.classList.remove('invalid','valid');
-      hint.textContent = 'Format: TP- followed by 6 characters (e.g. TP-A1B2C3)';
+      hint.textContent = 'Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)';
       hint.classList.remove('error');
     } else if (valid) {
-      input.classList.replace('invalid','valid') || input.classList.add('valid');
+      input.classList.remove('invalid'); input.classList.add('valid');
       hint.textContent = ''; hint.classList.remove('error');
     } else {
-      input.classList.replace('valid','invalid') || input.classList.add('invalid');
-      hint.textContent = v.length < 9 ? `${9 - v.length} character(s) remaining` : 'Invalid format';
+      input.classList.remove('valid'); input.classList.add('invalid');
+      const hexPart = v.startsWith('TP-') ? v.slice(3) : '';
+      hint.textContent = hexPart.length < 8
+        ? `${8 - hexPart.length} character(s) remaining`
+        : 'Invalid format — must be TP- followed by exactly 8 hex characters';
       hint.classList.add('error');
     }
   };
@@ -2003,7 +2015,25 @@
     );
   };
 
-  /* ─── STEP 3: PAYMENT (lazy PayPal SDK) ─── */
+  /* ═══════════════════════════════════════════════════════════════
+     STEP 3 — PAYMENT
+     Flow:
+       1. User clicks buy → PayPal SDK loads lazily
+       2. User completes payment → PayPal fires onApprove
+       3. Website opens a Firestore onSnapshot listener waiting for isPaid:true
+       4. Netlify Function receives PayPal webhook → verifies signature →
+          writes isPaid:true via Admin SDK (the ONLY place this is written)
+       5. onSnapshot fires → website shows confirmed state
+       6. Timeout after 60s with instructions to contact support
+  ═══════════════════════════════════════════════════════════════ */
+
+  const LICENCE_POLL_TIMEOUT_MS = 60000; // 60s for webhook to fire
+  let   licenceUnsubscribe      = null;
+
+  function cleanupLicenceListener() {
+    if (licenceUnsubscribe) { licenceUnsubscribe(); licenceUnsubscribe = null; }
+  }
+
   window.initPayment = async () => {
     if (!currentDeviceId) { showToast('error','Please complete Step 1 first.'); return; }
     if (paypalRendered || paypalLoading) return;
@@ -2020,41 +2050,74 @@
       container.style.display  = 'block';
       paypalRendered = true;
 
-      /* ──────────────────────────────────────────────────────────
-         SECURITY NOTE: isPaid is set here as a client-side fallback
-         ONLY. The authoritative write MUST come from your PayPal
-         webhook → Firebase Cloud Function:
-           admin.firestore().doc(`playlists/${deviceId}`).update({ isPaid: true })
-         Until you ship that webhook, the current flow is functional
-         but bypassable via DevTools. Do not ship to production
-         without the server-side webhook in place.
-      ────────────────────────────────────────────────────────── */
       paypal.Buttons({
+        style: { layout:'vertical', color:'black', shape:'rect', label:'pay' },
+
         createOrder: (data, actions) => actions.order.create({
           purchase_units: [{
             amount:      { value:'5.99', currency_code:'GBP' },
+            // Device ID embedded here — Netlify webhook extracts it
             description: `tivipal Lifetime Licence: ${currentDeviceId}`
           }]
         }),
-        onApprove: (data, actions) => actions.order.capture().then(async () => {
-          try {
-            // Client fallback — server-side webhook is the authority
-            const payload = sanitisePayload({ updatedAt: Date.now() });
-            // isPaid is intentionally NOT in ALLOWED_FIELDS — only server writes it.
-            // Here we write it separately knowing it's a fallback only.
-            await withTimeout(
-              setDoc(doc(db,'playlists',currentDeviceId), { isPaid:true, ...payload }, { merge:true }),
-              FIRESTORE_TIMEOUT_MS, 'Licence activation'
-            );
-            if (deviceData) deviceData.isPaid = true;
-            document.getElementById('license-paid').style.display   = 'block';
-            document.getElementById('license-unpaid').style.display = 'none';
-            document.getElementById('step-btn-3').classList.add('done');
-            showToast('success','Licence activated! Enjoy tivipal.');
-          } catch {
-            showToast('warning',`Payment received but activation failed. Contact support@tivipal.co.uk with Device ID: ${currentDeviceId}`);
-          }
-        }),
+
+        onApprove: async (data, actions) => {
+          // Capture the order — this is what actually moves the money
+          await actions.order.capture();
+
+          // Show a "processing" state — we now wait for the server webhook
+          // to write isPaid:true. The client NEVER writes isPaid.
+          showPayBtn.style.display = 'none';
+          container.innerHTML = `
+            <div style="text-align:center;padding:20px 10px;">
+              <span class="spinner" style="width:20px;height:20px;border-width:3px;margin:0 0 12px;display:block;margin:0 auto 12px;"></span>
+              <div style="font-size:0.88rem;color:var(--text-mid);line-height:1.6;">
+                Payment received — activating your licence…<br>
+                <span style="font-size:0.78rem;color:var(--text-dim);">This usually takes 5–10 seconds.</span>
+              </div>
+            </div>`;
+
+          // Listen for isPaid:true written by the Netlify webhook via Admin SDK
+          const timeoutId = setTimeout(() => {
+            cleanupLicenceListener();
+            container.innerHTML = `
+              <div style="padding:14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-sm);font-size:0.84rem;color:var(--warning);line-height:1.6;">
+                ⚠️ Activation is taking longer than expected.<br>
+                Your payment was captured — please email
+                <a href="mailto:support@tivipal.co.uk?subject=Licence%20Activation%3A%20${encodeURIComponent(currentDeviceId)}&body=My%20Device%20ID%20is%20${encodeURIComponent(currentDeviceId)}%20and%20my%20payment%20was%20captured%20but%20not%20activated."
+                   style="color:var(--red);">support@tivipal.co.uk</a>
+                with your Device ID <strong style="color:#fff;">${escHtml(currentDeviceId)}</strong>
+                and we'll activate it manually within the hour.
+              </div>`;
+            showToast('warning','Activation delayed — check your email for next steps.');
+          }, LICENCE_POLL_TIMEOUT_MS);
+
+          licenceUnsubscribe = onSnapshot(
+            doc(db, 'playlists', currentDeviceId),
+            (snap) => {
+              if (!snap.exists()) return;
+              const d = snap.data();
+              if (d.isPaid !== true) return; // keep waiting
+
+              // isPaid:true confirmed — written by server webhook only
+              clearTimeout(timeoutId);
+              cleanupLicenceListener();
+
+              if (deviceData) deviceData.isPaid = true;
+              document.getElementById('license-paid').style.display   = 'block';
+              document.getElementById('license-unpaid').style.display = 'none';
+              document.getElementById('step-btn-3').classList.add('done');
+              showToast('success','Licence activated! Your TV is now unlocked.');
+            },
+            (err) => {
+              clearTimeout(timeoutId);
+              cleanupLicenceListener();
+              console.error('Licence listener error:', err);
+              showToast('warning',`Could not confirm activation. Email support@tivipal.co.uk with Device ID: ${currentDeviceId}`);
+            }
+          );
+        },
+
         onError: (err) => {
           console.error('PayPal error:', err);
           showToast('error','Payment could not be completed. Please try again.');
@@ -2065,6 +2128,7 @@
           showPayBtn.innerHTML     = 'Buy Lifetime Licence — £5.99';
           container.style.display  = 'none';
         },
+
         onCancel: () => {
           paypalRendered = false;
           paypalLoading  = false;
@@ -2075,12 +2139,13 @@
           container.innerHTML      = '';
         }
       }).render('#paypal-button-container');
+
     } catch (err) {
       console.error('PayPal SDK load error:', err);
       showToast('error','Could not load PayPal. Check your connection.');
-      paypalLoading           = false;
-      showPayBtn.disabled     = false;
-      showPayBtn.innerHTML    = 'Buy Lifetime Licence — £5.99';
+      paypalLoading        = false;
+      showPayBtn.disabled  = false;
+      showPayBtn.innerHTML = 'Buy Lifetime Licence — £5.99';
     }
   };
 
@@ -2088,10 +2153,10 @@
   function loadPayPalSDK(clientId) {
     return new Promise((resolve, reject) => {
       if (window.paypal) { resolve(); return; }
-      const s    = document.createElement('script');
-      s.src      = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=GBP`;
-      s.onload   = resolve;
-      s.onerror  = () => reject(new Error('PayPal SDK failed to load'));
+      const s  = document.createElement('script');
+      s.src    = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=GBP`;
+      s.onload  = resolve;
+      s.onerror = () => reject(new Error('PayPal SDK failed to load'));
       document.head.appendChild(s);
     });
   }
@@ -2115,13 +2180,13 @@
     const params = new URLSearchParams(window.location.search);
     const qrId   = params.get('id');
     if (qrId) {
-      const sanitised = qrId.toUpperCase().replace(/[^A-Z0-9-]/g,'').substring(0,9);
+      // UID-based IDs are TP- + 8 hex chars = 11 chars total
+      const sanitised = qrId.toUpperCase().replace(/[^0-9A-F-]/g,'').substring(0, 11);
       if (DEVICE_ID_RE.test(sanitised)) {
         document.getElementById('deviceId').value = sanitised;
         currentDeviceId = sanitised;
         window.openPortal();
-        // Pre-fill and let the user confirm by clicking Continue
-        // (removed auto-proceed to prevent silent enumeration via crafted URLs)
+        // Pre-fill only — user must click Continue (prevents silent Firestore enumeration)
       }
     }
   });
