@@ -596,6 +596,73 @@
     .spinner { display:inline-block; width:15px; height:15px; border:2px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:7px; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
+    /* ═══════════════════════ SYNC HANDSHAKE UI ═══════════════════════ */
+    .sync-handshake {
+      display: none;
+      padding: 18px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      margin-top: 14px;
+    }
+    .sync-handshake.visible { display: block; }
+
+    .sync-phase {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.84rem;
+      color: var(--text-dim);
+      transition: color 0.3s;
+    }
+    .sync-phase:last-child { border-bottom: none; padding-bottom: 0; }
+    .sync-phase:first-child { padding-top: 0; }
+
+    .sync-phase-icon {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--bg); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .sync-phase.pending .sync-phase-icon {
+      border-color: rgba(229,9,20,0.4);
+      background: rgba(229,9,20,0.08);
+    }
+    .sync-phase.pending .sync-phase-icon::after { content: ''; display: inline-block; width: 10px; height: 10px; border: 2px solid rgba(255,255,255,0.15); border-top-color: var(--red); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .sync-phase.ok  .sync-phase-icon { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.1); color: var(--success); }
+    .sync-phase.ok  .sync-phase-icon::after { content: '✓'; font-size: 0.8rem; font-weight: 700; color: var(--success); }
+    .sync-phase.err .sync-phase-icon { border-color: rgba(229,9,20,0.5); background: rgba(229,9,20,0.1); }
+    .sync-phase.err .sync-phase-icon::after { content: '✕'; font-size: 0.75rem; font-weight: 700; color: var(--red); }
+    .sync-phase.wait .sync-phase-icon::after { content: '–'; color: var(--text-dim); }
+
+    .sync-phase.ok  { color: var(--text-mid); }
+    .sync-phase.err { color: #ff6b6b; }
+
+    .sync-phase-label { flex: 1; line-height: 1.3; }
+    .sync-phase-sub   { font-size: 0.72rem; color: var(--text-dim); margin-top: 2px; }
+    .sync-phase.err .sync-phase-sub { color: #ff6b6b; opacity: 0.8; }
+
+    .sync-tv-waiting {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px;
+      background: rgba(229,9,20,0.05);
+      border: 1px solid var(--border-red);
+      border-radius: var(--radius-sm);
+      margin-top: 14px;
+      font-size: 0.84rem;
+      color: var(--text-mid);
+      display: none;
+    }
+    .sync-tv-waiting.visible { display: flex; }
+    .tv-pulse {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--red); flex-shrink: 0;
+      animation: pulseDot 1.2s infinite;
+    }
+
     /* ═══════════════════════ REDUCED MOTION ═══════════════════════ */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
@@ -1091,17 +1158,48 @@
       </div>
     </div>
 
-    <div class="progress-wrap" id="sync-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-      <div class="progress-fill" id="sync-fill"></div>
+    <!-- Sync handshake status panel -->
+    <div class="sync-handshake" id="sync-handshake" aria-live="polite" role="status">
+      <!-- Phase 1: website writes to Firestore -->
+      <div class="sync-phase wait" id="phase-write">
+        <div class="sync-phase-icon"></div>
+        <div class="sync-phase-label">
+          Sending to cloud
+          <div class="sync-phase-sub">Writing playlist data to Firestore</div>
+        </div>
+      </div>
+      <!-- Phase 2: waiting for TV to acknowledge -->
+      <div class="sync-phase wait" id="phase-tv">
+        <div class="sync-phase-icon"></div>
+        <div class="sync-phase-label">
+          Waiting for TV
+          <div class="sync-phase-sub" id="phase-tv-sub">TV app must be open and connected</div>
+        </div>
+      </div>
+      <!-- Phase 3: TV validates playlist -->
+      <div class="sync-phase wait" id="phase-validate">
+        <div class="sync-phase-icon"></div>
+        <div class="sync-phase-label">
+          Validating playlist
+          <div class="sync-phase-sub" id="phase-validate-sub">TV checks the stream is reachable</div>
+        </div>
+      </div>
     </div>
-    <div class="sync-success" id="sync-success" role="status">
+
+    <!-- Shown while waiting for TV response -->
+    <div class="sync-tv-waiting" id="sync-tv-waiting">
+      <div class="tv-pulse"></div>
+      <span id="sync-tv-waiting-msg">Waiting for your TV to respond… make sure tivipal is open.</span>
+    </div>
+
+    <div class="sync-success" id="sync-success" role="status" style="display:none;">
       <div class="sync-success-icon" aria-hidden="true">✅</div>
-      <h4>Synced to TV</h4>
-      <p>Your playlists have been pushed to your device. Open tivipal on your TV to apply changes.</p>
+      <h4>Verified &amp; Synced to TV</h4>
+      <p>Your playlist was confirmed by the TV. tivipal is applying the changes now.</p>
     </div>
 
     <div class="divider"></div>
-    <button class="btn-primary"    onclick="syncToTV()"  id="sync-btn">Push to TV</button>
+    <button class="btn-primary" onclick="syncToTV()" id="sync-btn">Push to TV</button>
     <button class="btn-secondary"  onclick="goToStep(3)">Next: Activate Licence →</button>
   </div>
 
@@ -1245,7 +1343,7 @@
 
 <script type="module">
   import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, deleteField }
+  import { getFirestore, doc, setDoc, getDoc, deleteField, onSnapshot }
                             from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   /* ─── CONFIG ─── */
@@ -1276,7 +1374,7 @@
 
   /** Explicitly-allowed client-writable fields */
   const ALLOWED_FIELDS = new Set([
-    'playlists','updatedAt','syncRequest',
+    'playlists','updatedAt','syncRequest','syncAt','syncStatus',
     'playlistName','mode','m3u_url','xtream','deviceId'
   ]);
 
@@ -1439,6 +1537,7 @@
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
     document.body.style.overflow = '';
     ['#portal-modal .modal-box','#privacy-modal .modal-box','#tos-modal .modal-box'].forEach(releaseFocus);
+    cleanupSyncListener(); // cancel any in-flight TV handshake
   };
   window.openPrivacy = () => {
     document.getElementById('privacy-modal').classList.add('open');
@@ -1719,74 +1818,189 @@
     document.getElementById('tab-xtream').setAttribute('aria-selected', String(mode === 'xtream'));
   };
 
-  /* ─── SYNC ─── */
+  /* ═══════════════════════════════════════════════════════════════
+     SYNC — 3-PHASE HANDSHAKE
+     Phase 1: website writes syncRequest + syncStatus:'pending' to Firestore
+     Phase 2: TV app sees the new syncRequest via onSnapshot, validates playlist
+     Phase 3: TV writes back syncStatus:'confirmed' or 'error' + syncError
+              website's onSnapshot listener reads the response and resolves
+  ═══════════════════════════════════════════════════════════════ */
+
+  const TV_RESPONSE_TIMEOUT_MS = 30000; // 30s — TV may be slow to wake listener
+  let   syncUnsubscribe        = null;  // holds the active onSnapshot unsubscribe fn
+
+  /** Human-readable error messages for TV-reported error codes */
+  const SYNC_ERROR_MESSAGES = {
+    NO_PLAYLIST:       'No active playlist found on device.',
+    M3U_UNREACHABLE:   'The M3U URL is unreachable. Check the URL is correct and the server is online.',
+    M3U_EMPTY:         'The M3U playlist loaded but contains no channels.',
+    XTREAM_AUTH_FAILED:'Xtream credentials were rejected by the server. Check your username and password.',
+    XTREAM_UNREACHABLE:'The Xtream server could not be reached. Check the server URL.',
+    FETCH_ERROR:       'The TV could not connect to the playlist server.',
+    UNKNOWN:           'The TV reported an unknown error. Check your playlist details.',
+  };
+
+  /** Update one of the three phase rows in the handshake panel */
+  function setPhase(phaseId, state, subText) {
+    const el  = document.getElementById(phaseId);
+    const sub = el.querySelector('.sync-phase-sub');
+    el.className = 'sync-phase ' + state; // 'wait' | 'pending' | 'ok' | 'err'
+    if (subText !== undefined && sub) sub.textContent = subText;
+  }
+
+  /** Cancel any in-flight onSnapshot listener */
+  function cleanupSyncListener() {
+    if (syncUnsubscribe) { syncUnsubscribe(); syncUnsubscribe = null; }
+  }
+
   window.syncToTV = async () => {
     if (!currentDeviceId) { showToast('error','No Device ID set. Go back to Step 1.'); return; }
     if (!Object.keys(playlists).length) { showToast('warning','Add at least one playlist before syncing.'); return; }
 
-    const progress  = document.getElementById('sync-progress');
-    const fill      = document.getElementById('sync-fill');
-    const successEl = document.getElementById('sync-success');
-    const btn       = document.getElementById('sync-btn');
+    // Cancel any previous listener still running
+    cleanupSyncListener();
 
+    const handshake   = document.getElementById('sync-handshake');
+    const tvWaiting   = document.getElementById('sync-tv-waiting');
+    const tvWaitMsg   = document.getElementById('sync-tv-waiting-msg');
+    const successEl   = document.getElementById('sync-success');
+    const btn         = document.getElementById('sync-btn');
+
+    // Reset UI
     successEl.style.display = 'none';
-    progress.style.display  = 'block';
-    progress.setAttribute('aria-valuenow','30');
-    fill.style.width        = '30%';
-    btn.disabled            = true;
-    btn.innerHTML           = '<span class="spinner"></span>Syncing…';
+    handshake.classList.add('visible');
+    tvWaiting.classList.remove('visible');
+    setPhase('phase-write',    'wait');
+    setPhase('phase-tv',       'wait', 'TV app must be open and connected');
+    setPhase('phase-validate', 'wait', 'TV checks the stream is reachable');
+    btn.disabled  = true;
+    btn.innerHTML = '<span class="spinner"></span>Syncing…';
+
+    // ── Phase 1: build payload ──
+    setPhase('phase-write', 'pending');
+
+    const activePl    = Object.values(playlists).find(p => p.active) || Object.values(playlists)[0];
+    const syncReqId   = crypto.randomUUID(); // nonce — TV must echo this back
+
+    const rawData = {
+      playlists:   playlists,
+      updatedAt:   Date.now(),
+      syncRequest: syncReqId,
+      syncStatus:  'pending',  // TV will overwrite this
+      syncAt:      Date.now(),
+    };
+    if (activePl) {
+      rawData.playlistName = activePl.name;
+      if (activePl.type === 'm3u') {
+        rawData.mode    = 'm3u';
+        rawData.m3u_url = activePl.url;
+        rawData.xtream  = deleteField();
+      } else {
+        rawData.mode    = 'xtream';
+        rawData.xtream  = activePl.xtream;
+        rawData.m3u_url = deleteField();
+      }
+    }
+
+    const saveData = sanitisePayload(rawData);
 
     try {
-      const activePl = Object.values(playlists).find(p => p.active) || Object.values(playlists)[0];
-      const rawData  = {
-        playlists:   playlists,
-        updatedAt:   Date.now(),
-        syncRequest: crypto.randomUUID()
-      };
-      if (activePl) {
-        rawData.playlistName = activePl.name;
-        if (activePl.type === 'm3u') {
-          rawData.mode    = 'm3u';
-          rawData.m3u_url = activePl.url;
-          rawData.xtream  = deleteField();
-        } else {
-          rawData.mode    = 'xtream';
-          rawData.xtream  = activePl.xtream;
-          rawData.m3u_url = deleteField();
-        }
-      }
-
-      /* ⚠️ Strip server-only + non-allowlisted fields before writing */
-      const saveData = sanitisePayload(rawData);
-
-      fill.style.width = '70%';
-      progress.setAttribute('aria-valuenow','70');
-
       await withTimeout(
         setDoc(doc(db,'playlists',currentDeviceId), saveData, { merge:true }),
-        FIRESTORE_TIMEOUT_MS, 'Sync'
+        FIRESTORE_TIMEOUT_MS, 'Sync write'
       );
-
-      fill.style.width = '100%';
-      progress.setAttribute('aria-valuenow','100');
-      setTimeout(() => {
-        progress.style.display  = 'none';
-        fill.style.width        = '0%';
-        progress.setAttribute('aria-valuenow','0');
-        successEl.style.display = 'block';
-      }, 500);
-
-      showToast('success','Playlists pushed to TV successfully.');
     } catch (e) {
-      progress.style.display = 'none';
-      fill.style.width       = '0%';
-      showToast('error', e.message.includes('timed out')
-        ? 'Sync timed out. Check your internet connection.'
-        : 'Sync failed: ' + e.message);
-    } finally {
+      setPhase('phase-write', 'err', e.message.includes('timed out') ? 'Connection timed out.' : e.message);
+      showToast('error', 'Could not write to Firestore. Check your connection.');
       btn.disabled  = false;
       btn.innerHTML = 'Push to TV';
+      return;
     }
+
+    setPhase('phase-write', 'ok', 'Data written to cloud successfully');
+
+    // ── Phase 2: wait for TV to respond via onSnapshot ──
+    setPhase('phase-tv', 'pending', 'Waiting for TV app to receive the update…');
+    tvWaitMsg.textContent = 'Waiting for your TV to respond… make sure tivipal is open.';
+    tvWaiting.classList.add('visible');
+
+    // Set a hard timeout — if TV doesn't respond, tell the user
+    const tvTimeoutId = setTimeout(() => {
+      cleanupSyncListener();
+      setPhase('phase-tv', 'err', 'No response — is tivipal open on your TV?');
+      setPhase('phase-validate', 'wait', 'Could not reach TV');
+      tvWaiting.classList.remove('visible');
+      showToast('error', 'TV did not respond within 30 seconds. Make sure tivipal is open and connected to the internet.');
+      btn.disabled  = false;
+      btn.innerHTML = 'Push to TV';
+    }, TV_RESPONSE_TIMEOUT_MS);
+
+    // Ticker: update the waiting message every 5s so user knows we're still trying
+    let waitSecs = 0;
+    const tickerId = setInterval(() => {
+      waitSecs += 5;
+      if (waitSecs < TV_RESPONSE_TIMEOUT_MS / 1000) {
+        tvWaitMsg.textContent = `Waiting for TV… (${waitSecs}s). Make sure tivipal is open.`;
+      }
+    }, 5000);
+
+    // Listen for the TV's response
+    syncUnsubscribe = onSnapshot(
+      doc(db, 'playlists', currentDeviceId),
+      (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data();
+
+        // Ignore snapshots that aren't for THIS sync request
+        if (data.syncRequest !== syncReqId) return;
+        // Ignore if status is still pending (TV hasn't written back yet)
+        if (!data.syncStatus || data.syncStatus === 'pending') return;
+
+        // TV has responded — clear timers and listener
+        clearTimeout(tvTimeoutId);
+        clearInterval(tickerId);
+        cleanupSyncListener();
+        tvWaiting.classList.remove('visible');
+
+        // ── Phase 2 result ──
+        if (data.syncStatus === 'error' && data.syncError === 'NO_PLAYLIST') {
+          setPhase('phase-tv', 'err', 'TV could not find an active playlist.');
+          setPhase('phase-validate', 'wait');
+          showToast('error', SYNC_ERROR_MESSAGES['NO_PLAYLIST']);
+          btn.disabled  = false;
+          btn.innerHTML = 'Push to TV';
+          return;
+        }
+
+        setPhase('phase-tv', 'ok', 'TV received the update');
+        setPhase('phase-validate', 'pending', 'TV is checking the stream…');
+
+        // ── Phase 3 result ──
+        if (data.syncStatus === 'confirmed') {
+          setPhase('phase-validate', 'ok', 'Stream verified — playlist is live');
+          successEl.style.display = 'block';
+          showToast('success', `Playlist verified and active on your TV.`);
+        } else if (data.syncStatus === 'error') {
+          const code    = data.syncError || 'UNKNOWN';
+          const userMsg = SYNC_ERROR_MESSAGES[code] || SYNC_ERROR_MESSAGES['UNKNOWN'];
+          setPhase('phase-validate', 'err', userMsg);
+          showToast('error', userMsg);
+        }
+
+        btn.disabled  = false;
+        btn.innerHTML = 'Push to TV';
+      },
+      (err) => {
+        clearTimeout(tvTimeoutId);
+        clearInterval(tickerId);
+        cleanupSyncListener();
+        tvWaiting.classList.remove('visible');
+        setPhase('phase-tv', 'err', 'Firestore listener error.');
+        showToast('error', 'Lost connection while waiting for TV. Try again.');
+        btn.disabled  = false;
+        btn.innerHTML = 'Push to TV';
+      }
+    );
   };
 
   /* ─── STEP 3: PAYMENT (lazy PayPal SDK) ─── */
