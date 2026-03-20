@@ -1110,11 +1110,11 @@
   <div id="step-1" role="tabpanel">
     <label class="field-label" for="deviceId">Device ID</label>
     <input class="field-input" id="deviceId"
-      placeholder="Device ID"
+      placeholder="TP-XXXXXXXX"
       autocomplete="off" autocapitalize="characters" spellcheck="false"
       maxlength="11"
       oninput="onDeviceIdInput(this)">
-    <div class="field-hint" id="deviceId-hint">Format: uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</div>
+    <div class="field-hint" id="deviceId-hint">Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)</div>
     <button class="btn-primary" onclick="checkDeviceAndProceed()" id="step1-continue-btn">Continue →</button>
     <div class="status-box" id="device-status" role="status"></div>
     <div class="divider"></div>
