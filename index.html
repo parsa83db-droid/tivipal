@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>tivipal | Premium IPTV Player for Smart TVs</title>
-  <meta name="description" content="The most advanced IPTV player for Smart TVs. QR cloud sync, multi-playlist management, and a cinema-grade interface built for your remote. One-time £5.99 lifetime licence.">
+  <title>tivipal | Premium IPTV Player for Samsung Smart TV</title>
+  <meta name="description" content="The most advanced IPTV player for Samsung Smart TVs. QR cloud sync, multi-playlist management, and a cinema-grade interface built for your remote. One-time £5.99 lifetime licence.">
   <!-- Open Graph -->
   <meta property="og:type"        content="website">
   <meta property="og:url"         content="https://tivipal.co.uk/">
-  <meta property="og:title"       content="tivipal | Premium IPTV Player for Smart TVs">
+  <meta property="og:title"       content="tivipal | Premium IPTV Player for Samsung Smart TV">
   <meta property="og:description" content="QR cloud sync, multi-playlist management, and a cinema-grade interface built for your TV remote. Lifetime licence — £5.99.">
   <meta property="og:image"       content="https://tivipal.co.uk/og-image.png">
   <meta name="twitter:card"       content="summary_large_image">
@@ -112,13 +112,13 @@
       padding: 14px 6%;
       backdrop-filter: blur(20px);
     }
-    .logo { font-family:'DM Sans',sans-serif; font-size:4.2rem; letter-spacing:2px; cursor:pointer; text-decoration:none; }
+    .logo { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; letter-spacing:2px; cursor:pointer; text-decoration:none; }
     .logo .tivi { color:#fff; }
     .logo .pal  { color:var(--red); }
     .nav-right { display:flex; align-items:center; gap:16px; }
     .btn-portal {
       background: var(--red); color:#fff; border:none;
-      padding: 11px 26px; border-radius:20px;
+      padding: 11px 26px; border-radius:6px;
       font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.88rem;
       cursor:pointer; letter-spacing:0.3px;
       transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
@@ -175,7 +175,7 @@
     @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.4;transform:scale(1.4);} }
 
     .hero h1 {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'Bebas Neue', sans-serif;
       font-size: clamp(3.8rem, 10vw, 8rem);
       line-height: 0.92; letter-spacing: 3px;
       margin-bottom: 28px; color:#fff;
@@ -190,7 +190,7 @@
 
     .btn-hero-primary {
       background: var(--red); color:#fff; border:none;
-      padding: 17px 44px; border-radius:30px;
+      padding: 17px 44px; border-radius:6px;
       font-family:'DM Sans',sans-serif; font-weight:700; font-size:1rem;
       cursor:pointer; transition:all 0.2s;
       box-shadow: 0 8px 30px var(--red-glow);
@@ -199,7 +199,7 @@
     .btn-hero-secondary {
       background: rgba(255,255,255,0.06); color:#fff;
       border: 1px solid var(--border);
-      padding: 17px 44px; border-radius:30px;
+      padding: 17px 44px; border-radius:6px;
       font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem;
       cursor:pointer; transition:all 0.2s; backdrop-filter:blur(10px);
     }
@@ -240,7 +240,7 @@
     .sim-topbar {
       display: flex; align-items:center; justify-content:space-between;
     }
-    .sim-logo { font-family:'DM Sans',sans-serif; font-size:1.1rem; letter-spacing:2px; }
+    .sim-logo { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:2px; }
     .sim-logo .tivi { color:#fff; }
     .sim-logo .pal  { color:var(--red); }
     .sim-clock { font-size:0.65rem; color:rgba(255,255,255,0.4); font-weight:500; }
@@ -423,7 +423,7 @@
       position:sticky; top:0; background:var(--bg2); z-index:10;
       border-bottom:1px solid var(--border);
     }
-    .modal-title { font-family:'DM Sans',sans-serif; font-size:1.7rem; letter-spacing:2px; }
+    .modal-title { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:2px; }
     .modal-close {
       width:34px; height:34px; background:var(--bg3); border:1px solid var(--border);
       border-radius:50%; color:var(--text-dim); font-size:1rem; cursor:pointer;
@@ -455,7 +455,7 @@
     .field-label { font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); margin-bottom:7px; display:block; }
     .field-input {
       width:100%; padding:13px 15px; background:var(--bg3);
-      border:1px solid var(--border); border-radius:25px;
+      border:1px solid var(--border); border-radius:var(--radius-sm);
       color:#fff; font-family:'DM Sans',sans-serif; font-size:0.93rem;
       outline:none; transition:border-color 0.2s, box-shadow 0.2s; margin-bottom:13px;
     }
@@ -472,14 +472,14 @@
 
     .btn-primary {
       width:100%; padding:14px; background:var(--red); color:#fff; border:none;
-      border-radius:25px; font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.97rem;
+      border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.97rem;
       cursor:pointer; transition:all 0.2s; margin-top:6px;
     }
     .btn-primary:hover { background:#f40612; transform:translateY(-1px); box-shadow:0 6px 20px var(--red-glow); }
     .btn-primary:disabled { opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none; }
     .btn-secondary {
       width:100%; padding:13px; background:var(--bg3); color:var(--text-mid);
-      border:1px solid var(--border); border-radius:25px;
+      border:1px solid var(--border); border-radius:var(--radius-sm);
       font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.93rem;
       cursor:pointer; transition:all 0.2s; margin-top:8px;
     }
@@ -580,7 +580,7 @@
     /* ═══════════════════════ FOOTER ═══════════════════════ */
     footer { background:var(--bg); border-top:1px solid var(--border); padding:60px 6% 36px; }
     .footer-inner { display:flex; justify-content:space-between; align-items:flex-start; gap:40px; flex-wrap:wrap; margin-bottom:48px; }
-    .footer-brand .footer-logo { font-family:'DM Sans',sans-serif; font-size:1.7rem; letter-spacing:2px; margin-bottom:10px; }
+    .footer-brand .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:2px; margin-bottom:10px; }
     .footer-brand p { font-size:0.83rem; color:var(--text-dim); max-width:250px; line-height:1.65; }
     .footer-links-col h4 { font-size:0.68rem; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); font-weight:700; margin-bottom:14px; }
     .footer-links-col a { display:block; color:var(--text-mid); text-decoration:none; font-size:0.86rem; margin-bottom:9px; transition:color 0.2s; }
@@ -663,6 +663,181 @@
       animation: pulseDot 1.2s infinite;
     }
 
+    /* ═══════════════════════ FULL FEATURES SHOWCASE ═══════════════════════ */
+    .all-features-section { background: var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+
+    .af-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      margin-top: 56px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+
+    .af-card {
+      padding: 28px 26px;
+      background: var(--bg3);
+      position: relative;
+      overflow: hidden;
+      transition: background 0.25s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .af-card:hover { background: var(--bg4); }
+    .af-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--red), transparent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s ease;
+    }
+    .af-card:hover::after { transform: scaleX(1); }
+
+    .af-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(229,9,20,0.1);
+      border: 1px solid var(--border-red);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .af-icon svg { width: 18px; height: 18px; stroke: var(--red); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .af-title { font-family:'Bebas Neue',sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: #fff; line-height: 1.1; }
+    .af-desc  { font-size: 0.8rem; color: var(--text-dim); line-height: 1.65; }
+
+    /* ═══════════════════════ HAMBURGER MENU ═══════════════════════ */
+    .hamburger {
+      width: 40px; height: 40px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 5px;
+      transition: border-color 0.2s, background 0.2s;
+      flex-shrink: 0;
+      z-index: 101;
+      position: relative;
+    }
+    .hamburger:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+    .hamburger.open  { border-color: var(--border-red); background: rgba(229,9,20,0.06); }
+
+    .hamburger-bar {
+      width: 16px; height: 1.5px;
+      background: #fff;
+      border-radius: 2px;
+      transition: transform 0.3s ease, opacity 0.2s ease, width 0.3s ease;
+      transform-origin: center;
+    }
+    /* Animate bars into X when open */
+    .hamburger.open .hamburger-bar:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .hamburger.open .hamburger-bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger.open .hamburger-bar:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    /* Slide-in drawer */
+    .nav-drawer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 280px;
+      height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      z-index: 200;
+      display: flex; flex-direction: column;
+      padding: 0;
+      transform: translateX(-100%);
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 8px 0 40px rgba(0,0,0,0.6);
+    }
+    .nav-drawer.open { transform: translateX(0); }
+
+    .nav-drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .nav-drawer-logo {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.6rem; letter-spacing: 2px;
+      text-decoration: none; cursor: pointer;
+    }
+    .nav-drawer-close {
+      width: 32px; height: 32px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-dim);
+      font-size: 0.9rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .nav-drawer-close:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+    .nav-drawer-body {
+      flex: 1; overflow-y: auto; padding: 24px 0 32px;
+      scrollbar-width: thin; scrollbar-color: #333 transparent;
+    }
+
+    .nav-drawer-section {
+      padding: 0 24px;
+      margin-bottom: 28px;
+    }
+    .nav-drawer-section-label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-drawer-link {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; background: none; border: none;
+      color: var(--text-mid); text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem; font-weight: 500;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, padding-left 0.15s;
+      text-align: left;
+    }
+    .nav-drawer-link:hover {
+      background: rgba(229,9,20,0.07);
+      color: #fff;
+      padding-left: 16px;
+    }
+    .nav-drawer-link:hover .ndl-icon { color: var(--red); }
+
+    .ndl-icon {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+      color: var(--text-dim);
+      transition: color 0.15s;
+    }
+
+    /* Drawer backdrop */
+    .nav-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 199;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .nav-backdrop.open { opacity: 1; pointer-events: all; }
+
     /* ═══════════════════════ REDUCED MOTION ═══════════════════════ */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
@@ -685,11 +860,13 @@
       .toast           { max-width:100%; }
       .hero-stats-bar  { display:none; }
       .reviews-grid    { grid-template-columns:1fr 1fr; }
+      .af-grid         { grid-template-columns:repeat(2,1fr); }
     }
     @media (max-width:480px) {
       .step-row  { gap:0; }
       .step-btn  { font-size:0.62rem; padding:10px 4px; }
       .reviews-grid { grid-template-columns:1fr; }
+      .af-grid  { grid-template-columns:1fr; }
     }
   </style>
 
@@ -713,12 +890,72 @@
   </div>
 </div>
 
+<!-- HAMBURGER DRAWER -->
+
+<div class="nav-backdrop" id="nav-backdrop" onclick="closeDrawer()"></div>
+<nav class="nav-drawer" id="nav-drawer" aria-label="Site navigation" aria-hidden="true">
+  <div class="nav-drawer-header">
+    <span class="nav-drawer-logo">
+      <span class="tivi" style="color:#fff">tivi</span><span class="pal" style="color:var(--red)">pal</span>
+    </span>
+    <button class="nav-drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
+  </div>
+  <div class="nav-drawer-body">
+
+```
+<div class="nav-drawer-section">
+  <div class="nav-drawer-section-label">Product</div>
+  <button class="nav-drawer-link" onclick="drawerAction(()=>openPortal())">
+    <svg class="ndl-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+    Portal Access
+  </button>
+  <button class="nav-drawer-link" onclick="drawerAction(()=>scrollToId('features'))">
+    <svg class="ndl-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    Features
+  </button>
+  <button class="nav-drawer-link" onclick="drawerAction(()=>scrollToId('all-features'))">
+    <svg class="ndl-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    All Features
+  </button>
+  <button class="nav-drawer-link" onclick="drawerAction(()=>scrollToClass('faq-section'))">
+    <svg class="ndl-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    FAQ
+  </button>
+</div>
+
+<div class="nav-drawer-section">
+  <div class="nav-drawer-section-label">Legal</div>
+  <button class="nav-drawer-link" onclick="drawerAction(()=>openPrivacy())">
+    <svg class="ndl-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Privacy Policy
+  </button>
+  <button class="nav-drawer-link" onclick="drawerAction(()=>openTos())">
+    <svg class="ndl-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Terms of Service
+  </button>
+  <button class="nav-drawer-link" onclick="drawerAction(()=>contactSupport())">
+    <svg class="ndl-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    Contact Support
+  </button>
+</div>
+```
+
+  </div>
+</nav>
+
 <!-- NAVBAR -->
 
 <nav class="navbar" id="navbar">
-  <a class="logo" onclick="scrollToTop()" role="link" tabindex="0" aria-label="tivipal home">
-    <span class="tivi">tivi</span><span class="pal">pal</span>
-  </a>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <button class="hamburger" id="hamburger-btn" onclick="toggleDrawer()" aria-label="Open menu" aria-expanded="false" aria-controls="nav-drawer">
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+    </button>
+    <a class="logo" onclick="scrollToTop()" role="link" tabindex="0" aria-label="tivipal home">
+      <span class="tivi">tivi</span><span class="pal">pal</span>
+    </a>
+  </div>
   <div class="nav-right">
     <button class="btn-portal" onclick="openPortal()">Manage Device</button>
   </div>
@@ -963,6 +1200,156 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ALL FEATURES SHOWCASE -->
+
+<section class="all-features-section" id="all-features">
+  <div style="text-align:center;">
+    <div class="section-label" style="display:flex;justify-content:center;">Everything Included</div>
+    <h2 class="section-title">PACKED WITH POWER</h2>
+    <p class="section-sub" style="margin:0 auto;text-align:center;">Every feature you'd expect from a premium player — and several you won't find anywhere else on Samsung TV.</p>
+  </div>
+  <div class="af-grid">
+
+```
+<!-- 1 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+  </div>
+  <div class="af-title">Ratings &amp; Descriptions</div>
+  <div class="af-desc">Every movie and series displays its IMDb rating, genre tags, and full synopsis so you know exactly what you're watching before you press play.</div>
+</div>
+
+<!-- 2 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+  </div>
+  <div class="af-title">YouTube Trailers</div>
+  <div class="af-desc">Watch the official trailer for any movie or series directly on your TV before committing. One button, full-screen — no switching apps.</div>
+</div>
+
+<!-- 3 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+  </div>
+  <div class="af-title">Favourites List</div>
+  <div class="af-desc">Mark any channel, movie, or series as a favourite. Your personal list is always one click away — curated exactly the way you like it.</div>
+</div>
+
+<!-- 4 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+  </div>
+  <div class="af-title">Series Episodes &amp; Descriptions</div>
+  <div class="af-desc">Browse every season and episode with individual descriptions, air dates, and episode numbers. Never lose your place in a series again.</div>
+</div>
+
+<!-- 5 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </div>
+  <div class="af-title">Lightning-Fast Search</div>
+  <div class="af-desc">Find any channel, movie, or series in milliseconds. Our indexed, multi-layer search works across your entire library with instant, accurate results.</div>
+</div>
+
+<!-- 6 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+  </div>
+  <div class="af-title">Recently Added</div>
+  <div class="af-desc">A dedicated "New" row surfaces the latest movies and content added by your IPTV provider so you never miss fresh releases.</div>
+</div>
+
+<!-- 7 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+  </div>
+  <div class="af-title">Built-In Optimised Player</div>
+  <div class="af-desc">Our native player is tuned specifically for Samsung Tizen. Hardware-accelerated decoding, adaptive buffering, and audio/subtitle track selection built in.</div>
+</div>
+
+<!-- 8 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+  </div>
+  <div class="af-title">Catchup &amp; Replay</div>
+  <div class="af-desc">Missed something? Rewind and replay live TV from earlier in the day. Full catchup support for any channel your provider enables it on.</div>
+</div>
+
+<!-- 9 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  </div>
+  <div class="af-title">EPG Programme Guide</div>
+  <div class="af-desc">A full Electronic Programme Guide shows what's on now, what's coming up, and lets you browse schedules hours ahead — all on your remote.</div>
+</div>
+
+<!-- 10 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+  </div>
+  <div class="af-title">M3U &amp; Xtream Codes</div>
+  <div class="af-desc">Full support for both M3U / M3U8 playlist URLs and Xtream Codes API. Works with virtually every IPTV provider on the market.</div>
+</div>
+
+<!-- 11 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  </div>
+  <div class="af-title">Multiple Portals &amp; Subscriptions</div>
+  <div class="af-desc">Manage up to 10 different IPTV subscriptions and switch between them instantly. Ideal for households with more than one provider.</div>
+</div>
+
+<!-- 12 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  </div>
+  <div class="af-title">Parental Controls</div>
+  <div class="af-desc">Set a 4-digit PIN to restrict access to adult channels and content categories. Keep your TV safe for the whole family.</div>
+</div>
+
+<!-- 13 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+  </div>
+  <div class="af-title">Subscription Expiry Notice</div>
+  <div class="af-desc">tivipal reads your Xtream account's expiry date and displays a clear countdown notice so you're never caught off guard by a lapsed subscription.</div>
+</div>
+
+<!-- 14 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+  </div>
+  <div class="af-title">Active Connection Counter</div>
+  <div class="af-desc">See how many simultaneous connections your IPTV account is using in real time — useful for shared accounts with connection limits.</div>
+</div>
+
+<!-- 15 -->
+<div class="af-card">
+  <div class="af-icon">
+    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+  </div>
+  <div class="af-title">Reload &amp; Refresh Content</div>
+  <div class="af-desc">Force-refresh your playlist at any time to pick up new channels, updated EPG data, or corrected stream URLs — without re-entering your credentials.</div>
+</div>
+```
+
   </div>
 </section>
 
@@ -1299,6 +1686,7 @@
         <p>We offer a 7-day refund if tivipal is incompatible with your device. Contact <a href="mailto:support@tivipal.co.uk" style="color:var(--red);">support@tivipal.co.uk</a> within 7 days of purchase with your Device ID and PayPal order reference.</p>
         <h3>6. Disclaimer</h3>
         <p>tivipal is provided "as is" without warranties of any kind. We are not responsible for the availability, quality, or legality of any IPTV content accessed through the application.</p>
+        <p>All movie and series cover artwork, posters, and thumbnails displayed on the tivipal website are used for illustrative purposes only to demonstrate the capabilities of our media player interface. They are not intended to imply any affiliation with, endorsement by, or ownership of the intellectual property of the respective rights holders. tivipal does not host, distribute, or stream any of the content depicted.</p>
         <h3>7. Governing Law</h3>
         <p>These Terms are governed by the laws of England and Wales.</p>
         <h3>Contact</h3>
@@ -1330,6 +1718,7 @@
       <h4>Product</h4>
       <a href="javascript:void(0)" onclick="openPortal()">Portal Access</a>
       <a href="javascript:void(0)" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+      <a href="javascript:void(0)" onclick="document.getElementById('all-features').scrollIntoView({behavior:'smooth'})">All Features</a>
       <a href="javascript:void(0)" onclick="document.querySelector('.faq-section').scrollIntoView({behavior:'smooth'})">FAQ</a>
     </div>
     <div class="footer-links-col">
@@ -1342,6 +1731,9 @@
   <div class="footer-bottom">
     <div class="footer-copy">© 2026 tivipal. All rights reserved.</div>
     <div class="footer-version">v1.0 · Samsung Tizen · March 2026</div>
+  </div>
+  <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);font-size:0.72rem;color:#3a3a50;line-height:1.6;text-align:center;">
+    All movie and series covers, posters, and artwork shown on this website are used for illustrative purposes only to demonstrate our media player interface. tivipal does not host, stream, or distribute any media content.
   </div>
 </footer>
 
@@ -2174,6 +2566,63 @@
     const id = currentDeviceId || 'NEW_DEVICE';
     window.location.href = `mailto:support@tivipal.co.uk?subject=Support%3A%20${encodeURIComponent(id)}`;
   };
+
+  /* ─── HAMBURGER DRAWER ─── */
+  function toggleDrawer() {
+    const drawer   = document.getElementById('nav-drawer');
+    const backdrop = document.getElementById('nav-backdrop');
+    const btn      = document.getElementById('hamburger-btn');
+    const isOpen   = drawer.classList.contains('open');
+    if (isOpen) {
+      closeDrawer();
+    } else {
+      drawer.classList.add('open');
+      backdrop.classList.add('open');
+      btn.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      drawer.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      // Focus first link inside drawer for accessibility
+      setTimeout(() => {
+        const first = drawer.querySelector('.nav-drawer-link, .nav-drawer-close');
+        if (first) first.focus();
+      }, 60);
+    }
+  }
+
+  window.closeDrawer = function() {
+    const drawer   = document.getElementById('nav-drawer');
+    const backdrop = document.getElementById('nav-backdrop');
+    const btn      = document.getElementById('hamburger-btn');
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    btn.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+    drawer.setAttribute('aria-hidden', 'true');
+    // Only restore scroll if no modal is open
+    if (!document.querySelector('.modal-overlay.open')) {
+      document.body.style.overflow = '';
+    }
+  };
+
+  /**
+   * Close the drawer then run an action.
+   * The slight delay lets the drawer animate out before the modal/scroll fires.
+   */
+  window.drawerAction = function(fn) {
+    closeDrawer();
+    setTimeout(fn, 180);
+  };
+
+  window.scrollToId    = (id)  => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  window.scrollToClass = (cls) => document.querySelector('.' + cls)?.scrollIntoView({ behavior: 'smooth' });
+
+  // Close drawer on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('nav-drawer').classList.contains('open')) {
+      closeDrawer();
+    }
+  });
 
   /* ─── INIT ─── */
   window.addEventListener('load', () => {
