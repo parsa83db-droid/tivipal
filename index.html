@@ -575,7 +575,7 @@
     </a>
   </div>
   <div class="nav-right">
-    <button class="btn-portal" id="nav-manage-btn">Portal</button>
+    <button class="btn-portal" id="nav-manage-btn">Manage Device</button>
   </div>
 </nav>
 
@@ -1212,12 +1212,28 @@
   const deviceIdInput = document.getElementById('deviceId');
 
   deviceIdInput.addEventListener('input', function() {
-    let v = this.value.toUpperCase().replace(/[^0-9A-F-]/g,'');
-    if (v.length > 0 && !v.startsWith('T')) v = 'TP-' + v.replace(/^T?P?-?/,'');
+    // Uppercase first so lowercase paste (e.g. tp-1a2b3c4d) is handled correctly
+    let v = this.value.toUpperCase().replace(/[^0-9A-F-]/g, '');
+
+    // Auto-prefix: user typed/pasted raw hex without TP- prefix
+    if (v.length > 0 && !v.startsWith('T') && !v.startsWith('TP') && !v.startsWith('TP-')) {
+      v = 'TP-' + v;
+    }
+    // Handle partial prefix while typing
     if (v === 'T')  v = 'TP-';
     if (v === 'TP') v = 'TP-';
-    if (v.length > 11) v = v.substring(0,11);
+
+    // Normalise: extract clean hex part and rebuild
+    if (v.startsWith('TP-')) {
+      const hex = v.slice(3).replace(/[^0-9A-F]/g, '').substring(0, 8);
+      v = 'TP-' + hex;
+    } else if (v.startsWith('TP')) {
+      const hex = v.slice(2).replace(/[^0-9A-F]/g, '').substring(0, 8);
+      v = 'TP-' + hex;
+    }
+
     this.value = v;
+
     const hint  = document.getElementById('deviceId-hint');
     const valid = DEVICE_ID_RE.test(v);
     if (!v.length) {
@@ -1230,7 +1246,9 @@
     } else {
       this.classList.remove('valid'); this.classList.add('invalid');
       const hex = v.startsWith('TP-') ? v.slice(3) : '';
-      hint.textContent = hex.length < 8 ? `${8-hex.length} character(s) remaining` : 'Invalid format — must be TP- followed by exactly 8 hex characters';
+      hint.textContent = hex.length < 8
+        ? `${8 - hex.length} character(s) remaining`
+        : 'Invalid format — must be TP- followed by exactly 8 hex characters';
       hint.classList.add('error');
     }
   });
