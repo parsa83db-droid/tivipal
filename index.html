@@ -1523,7 +1523,21 @@
     const params = new URLSearchParams(window.location.search);
     const qrId   = params.get('id');
     if (qrId) {
-      const sanitised = qrId.toUpperCase().replace(/[^0-9A-F-]/g,'').substring(0,11);
+      // Uppercase first, then extract the hex part cleanly
+      const upper = qrId.toUpperCase();
+      let sanitised = '';
+      if (upper.startsWith('TP-')) {
+        // Has prefix — take the hex part after TP-
+        const hex = upper.slice(3).replace(/[^0-9A-F]/g, '').substring(0, 8);
+        sanitised = 'TP-' + hex;
+      } else if (upper.startsWith('TP')) {
+        const hex = upper.slice(2).replace(/[^0-9A-F]/g, '').substring(0, 8);
+        sanitised = 'TP-' + hex;
+      } else {
+        // No prefix — treat the whole thing as hex
+        const hex = upper.replace(/[^0-9A-F]/g, '').substring(0, 8);
+        sanitised = 'TP-' + hex;
+      }
       if (DEVICE_ID_RE.test(sanitised)) {
         document.getElementById('deviceId').value = sanitised;
         currentDeviceId = sanitised;
