@@ -575,7 +575,7 @@
     </a>
   </div>
   <div class="nav-right">
-    <button class="btn-portal" id="nav-manage-btn">Portal</button>
+    <button class="btn-portal" id="nav-manage-btn">Manage Device</button>
   </div>
 </nav>
 
@@ -1212,39 +1212,21 @@
   const deviceIdInput = document.getElementById('deviceId');
 
   deviceIdInput.addEventListener('input', function() {
-    // Keep only characters valid in a Device ID: hex digits, hyphen, T and P (for the TP- prefix)
-    // IMPORTANT: T and P must be allowed through the filter or the prefix gets destroyed
-    let v = this.value.toUpperCase().replace(/[^0-9A-F\-TP]/g, '');
+    const raw   = this.value;
+    const upper = raw.toUpperCase();
+    const hint  = document.getElementById('deviceId-hint');
 
-    // Normalise the prefix region first
-    if (v === 'T')  { this.value = 'TP-'; return; }
-    if (v === 'TP') { this.value = 'TP-'; return; }
-
-    // If it already has the full prefix, just clean and cap the hex tail
-    if (v.startsWith('TP-')) {
-      const hex = v.slice(3).replace(/[^0-9A-F]/g, '').substring(0, 8);
-      v = 'TP-' + hex;
-
-    // Partial prefix with hyphen already there but missing letters (e.g. user deleted T)
-    } else if (v.startsWith('P-') || v.startsWith('-')) {
-      const hex = v.replace(/[^0-9A-F]/g, '').substring(0, 8);
-      v = 'TP-' + hex;
-
-    // Has TP without hyphen (e.g. paste of "TP1A2B3C4D")
-    } else if (v.startsWith('TP')) {
-      const hex = v.slice(2).replace(/[^0-9A-F]/g, '').substring(0, 8);
-      v = 'TP-' + hex;
-
-    // No prefix at all — raw hex pasted
-    } else if (v.length > 0) {
-      const hex = v.replace(/[^0-9A-F]/g, '').substring(0, 8);
-      v = 'TP-' + hex;
+    // Auto-uppercase what the user types without blocking any characters
+    // This preserves cursor position better than replacing the whole value
+    if (raw !== upper) {
+      const pos = this.selectionStart;
+      this.value = upper;
+      this.setSelectionRange(pos, pos);
     }
 
-    this.value = v;
-
-    const hint  = document.getElementById('deviceId-hint');
+    const v     = this.value;
     const valid = DEVICE_ID_RE.test(v);
+
     if (!v.length) {
       this.classList.remove('invalid', 'valid');
       hint.textContent = 'Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)';
@@ -1253,11 +1235,28 @@
       this.classList.remove('invalid'); this.classList.add('valid');
       hint.textContent = ''; hint.classList.remove('error');
     } else {
+      // Show remaining count while typing but don't block or rewrite
+      this.classList.remove('valid', 'invalid');
+      hint.classList.remove('error');
+      hint.textContent = '';
+    }
+  });
+
+  // Validate format strictly only when the user leaves the field
+  deviceIdInput.addEventListener('blur', function() {
+    const v    = this.value.trim().toUpperCase();
+    const hint = document.getElementById('deviceId-hint');
+    this.value = v;
+    if (!v.length) {
+      this.classList.remove('invalid', 'valid');
+      hint.textContent = 'Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)';
+      hint.classList.remove('error');
+    } else if (DEVICE_ID_RE.test(v)) {
+      this.classList.remove('invalid'); this.classList.add('valid');
+      hint.textContent = ''; hint.classList.remove('error');
+    } else {
       this.classList.remove('valid'); this.classList.add('invalid');
-      const hex = v.startsWith('TP-') ? v.slice(3) : '';
-      hint.textContent = hex.length < 8
-        ? `${8 - hex.length} character(s) remaining`
-        : 'Invalid format — must be TP- followed by exactly 8 hex characters';
+      hint.textContent = 'Invalid format — expected TP- followed by exactly 8 characters (e.g. TP-1A2B3C4D)';
       hint.classList.add('error');
     }
   });
