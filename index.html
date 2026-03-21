@@ -575,7 +575,7 @@
     </a>
   </div>
   <div class="nav-right">
-    <button class="btn-portal" id="nav-manage-btn">Manage Device</button>
+    <button class="btn-portal" id="nav-manage-btn">Portal</button>
   </div>
 </nav>
 
@@ -808,7 +808,7 @@
       <!-- STEP 1 -->
       <div id="step-1" role="tabpanel">
         <label class="field-label" for="deviceId">Device ID</label>
-        <input class="field-input" id="deviceId" placeholder="TP-XXXXXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="11">
+        <input class="field-input" id="deviceId" placeholder="TP-XXXXXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">
         <div class="field-hint" id="deviceId-hint">Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)</div>
         <button class="btn-primary" id="step1-continue-btn">Continue →</button>
         <div class="status-box" id="device-status" role="status"></div>
@@ -1212,23 +1212,32 @@
   const deviceIdInput = document.getElementById('deviceId');
 
   deviceIdInput.addEventListener('input', function() {
-    // Uppercase first so lowercase paste (e.g. tp-1a2b3c4d) is handled correctly
-    let v = this.value.toUpperCase().replace(/[^0-9A-F-]/g, '');
+    // Keep only characters valid in a Device ID: hex digits, hyphen, T and P (for the TP- prefix)
+    // IMPORTANT: T and P must be allowed through the filter or the prefix gets destroyed
+    let v = this.value.toUpperCase().replace(/[^0-9A-F\-TP]/g, '');
 
-    // Auto-prefix: user typed/pasted raw hex without TP- prefix
-    if (v.length > 0 && !v.startsWith('T') && !v.startsWith('TP') && !v.startsWith('TP-')) {
-      v = 'TP-' + v;
-    }
-    // Handle partial prefix while typing
-    if (v === 'T')  v = 'TP-';
-    if (v === 'TP') v = 'TP-';
+    // Normalise the prefix region first
+    if (v === 'T')  { this.value = 'TP-'; return; }
+    if (v === 'TP') { this.value = 'TP-'; return; }
 
-    // Normalise: extract clean hex part and rebuild
+    // If it already has the full prefix, just clean and cap the hex tail
     if (v.startsWith('TP-')) {
       const hex = v.slice(3).replace(/[^0-9A-F]/g, '').substring(0, 8);
       v = 'TP-' + hex;
+
+    // Partial prefix with hyphen already there but missing letters (e.g. user deleted T)
+    } else if (v.startsWith('P-') || v.startsWith('-')) {
+      const hex = v.replace(/[^0-9A-F]/g, '').substring(0, 8);
+      v = 'TP-' + hex;
+
+    // Has TP without hyphen (e.g. paste of "TP1A2B3C4D")
     } else if (v.startsWith('TP')) {
       const hex = v.slice(2).replace(/[^0-9A-F]/g, '').substring(0, 8);
+      v = 'TP-' + hex;
+
+    // No prefix at all — raw hex pasted
+    } else if (v.length > 0) {
+      const hex = v.replace(/[^0-9A-F]/g, '').substring(0, 8);
       v = 'TP-' + hex;
     }
 
@@ -1237,7 +1246,7 @@
     const hint  = document.getElementById('deviceId-hint');
     const valid = DEVICE_ID_RE.test(v);
     if (!v.length) {
-      this.classList.remove('invalid','valid');
+      this.classList.remove('invalid', 'valid');
       hint.textContent = 'Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)';
       hint.classList.remove('error');
     } else if (valid) {
@@ -1520,28 +1529,36 @@
     if (!localStorage.getItem('cookiesAccepted')) {
       document.getElementById('cookie-banner').style.display = 'flex';
     }
+
     const params = new URLSearchParams(window.location.search);
     const qrId   = params.get('id');
     if (qrId) {
-      // Uppercase first, then extract the hex part cleanly
       const upper = qrId.toUpperCase();
       let sanitised = '';
+
       if (upper.startsWith('TP-')) {
-        // Has prefix — take the hex part after TP-
         const hex = upper.slice(3).replace(/[^0-9A-F]/g, '').substring(0, 8);
         sanitised = 'TP-' + hex;
       } else if (upper.startsWith('TP')) {
         const hex = upper.slice(2).replace(/[^0-9A-F]/g, '').substring(0, 8);
         sanitised = 'TP-' + hex;
       } else {
-        // No prefix — treat the whole thing as hex
         const hex = upper.replace(/[^0-9A-F]/g, '').substring(0, 8);
         sanitised = 'TP-' + hex;
       }
+
       if (DEVICE_ID_RE.test(sanitised)) {
-        document.getElementById('deviceId').value = sanitised;
-        currentDeviceId = sanitised;
+        // Open the portal first, then set the value AFTER the modal is visible
+        // (setting before open causes some browsers to reset the field on modal show)
         openPortal();
+        setTimeout(() => {
+          const field = document.getElementById('deviceId');
+          field.value = sanitised;
+          currentDeviceId = sanitised;
+          // Trigger visual validation state so the field shows green
+          field.classList.remove('invalid'); field.classList.add('valid');
+          document.getElementById('deviceId-hint').textContent = '';
+        }, 80);
       }
     }
   });
