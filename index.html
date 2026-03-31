@@ -1,537 +1,1569 @@
+
+
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tivipal | Premium IPTV Player for Smart TVs</title>
-    
-    <link rel="icon" type="image/png" href="favicon.png">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script src="https://www.paypal.com/sdk/js?client-id=AZcDmimBoWyAxx2HZk61mJilTyOvgm4h1EiFCiuZi2DIuHPm3S7h_vdQoWXs73F1mL7X9EJke6Bt2wJ1&currency=GBP"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tivipal | Premium IPTV Player for Smart TVs</title>
+  <meta name="description" content="The most advanced IPTV player for Smart TVs. QR cloud sync, multi-playlist management, and a cinema-grade interface built for your remote. One-time £5.99 lifetime licence.">
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://tivipal.co.uk/">
+  <meta property="og:title"       content="tivipal | Premium IPTV Player for Smart TVs">
+  <meta property="og:description" content="QR cloud sync, multi-playlist management, and a cinema-grade interface built for your TV remote. Lifetime licence — £5.99.">
+  <meta property="og:image"       content="https://tivipal.co.uk/og-image.png">
+  <meta name="twitter:card"       content="summary_large_image">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 script-src 'self' 'unsafe-inline' https://www.paypal.com https://www.gstatic.com https://apis.google.com;
+                 style-src  'self' 'unsafe-inline' https://fonts.googleapis.com;
+                 font-src   'self' https://fonts.gstatic.com;
+                 connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com wss://*.firebaseio.com https://www.paypal.com https://api.paypal.com;
+                 frame-src  https://www.paypal.com;
+                 img-src    'self' data: https: blob:;
+                 referrer   no-referrer;">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 
-    <style>
-        :root { 
-            --primary: #1A73E8; 
-            --glow: rgba(26, 115, 232, 0.6);
-            --bg: #0b0d11; 
-            --card: rgba(22, 26, 33, 0.88); 
-            --input: #1e2229; 
-            --success: #00c853; 
-            --text-main: #ffffff;
-            --text-dim: #9ca3af;
-        }
+  <style>
+    :root {
+      --red:        #e50914;
+      --red-dim:    #b20710;
+      --red-glow:   rgba(229,9,20,0.35);
+      --bg:         #070709;
+      --bg2:        #0d0d0f;
+      --bg3:        #141416;
+      --bg4:        #1a1a1c;
+      --border:     rgba(255,255,255,0.07);
+      --border-hi:  rgba(255,255,255,0.13);
+      --border-red: rgba(229,9,20,0.32);
+      --text:       #ffffff;
+      --text-dim:   #7a7a8a;
+      --text-mid:   #b8b8c8;
+      --success:    #22c55e;
+      --warning:    #f59e0b;
+      --radius-xl:  24px;
+      --radius-lg:  18px;
+      --radius-md:  12px;
+      --radius-sm:  8px;
+    }
 
-        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
-        /* --- Navbar --- */
-        .navbar { 
-            padding: 25px 10%; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: absolute; 
-            width: 100%; 
-            z-index: 10; 
-            background: linear-gradient(to bottom, rgba(11,13,17,0.8) 0%, transparent 100%); 
-        }
-        .logo { font-size: 2.5rem; font-weight: 800; letter-spacing: -1.5px; cursor: pointer; }
-        .logo .tivi { color: #FFFFFF; }
-        .logo .pal { color: var(--primary); }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        /* --- Hero Section --- */
-        .hero { 
-            position: relative; 
-            padding: 220px 10% 120px; 
-            text-align: center; 
-            background: url('https://i.ibb.co/14cTHPq/background.jpg') no-repeat center center; 
-            background-size: cover; 
-            min-height: 85vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
-        
-        .hero::before { 
-            content: ""; 
-            position: absolute; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            background: radial-gradient(circle at center, rgba(11,13,17,0.2) 0%, rgba(11,13,17,0.95) 100%); 
-            z-index: 1; 
-        }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9998; opacity: 0.35;
+    }
 
-        .hero-content { position: relative; z-index: 2; max-width: 950px; }
-        .hero h1 { font-size: 3.0rem; font-weight: 800; margin-bottom: 25px; line-height: 1.05; letter-spacing: -2px; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .hero p { font-size: 1.3rem; color: #cbd5e1; margin-bottom: 45px; max-width: 750px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+    /* ═══════════════════════ TOAST ═══════════════════════ */
+    .toast-container { position:fixed; bottom:32px; right:32px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+    .toast { display:flex; align-items:center; gap:12px; padding:14px 18px; border-radius:var(--radius-md); font-size:0.875rem; font-weight:600; max-width:340px; pointer-events:all; box-shadow:0 8px 32px rgba(0,0,0,0.6); animation:toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both; backdrop-filter:blur(16px); }
+    .toast.removing { animation:toastOut 0.25s ease forwards; }
+    @keyframes toastIn  { from{opacity:0;transform:translateX(20px) scale(0.95);}to{opacity:1;transform:translateX(0) scale(1);} }
+    @keyframes toastOut { from{opacity:1;transform:translateX(0) scale(1);}to{opacity:0;transform:translateX(20px) scale(0.95);} }
+    .toast.success { background:rgba(22,197,94,0.12); border:1px solid rgba(34,197,94,0.3); color:#4ade80; }
+    .toast.error   { background:rgba(229,9,20,0.12);  border:1px solid var(--border-red); color:#ff6b6b; }
+    .toast.info    { background:rgba(255,255,255,0.07); border:1px solid var(--border); color:var(--text-mid); }
+    .toast.warning { background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); color:#fbbf24; }
+    .toast-icon  { font-size:1rem; flex-shrink:0; }
+    .toast-msg   { flex:1; line-height:1.4; }
+    .toast-close { background:none; border:none; color:inherit; opacity:0.5; cursor:pointer; font-size:1rem; padding:0 0 0 4px; flex-shrink:0; transition:opacity 0.15s; }
+    .toast-close:hover { opacity:1; }
 
-        .btn-main { 
-            background: var(--primary); 
-            color: white; 
-            padding: 20px 50px; 
-            border-radius: 50px; 
-            font-weight: 700; 
-            border: none; 
-            cursor: pointer; 
-            font-size: 1.15rem; 
-            box-shadow: 0 10px 30px rgba(26, 115, 232, 0.4); 
-        }
-        .btn-main:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(26, 115, 232, 0.6); }
+    /* ═══════════════════════ HAMBURGER MENU ═══════════════════════ */
+    .hamburger {
+      width: 40px; height: 40px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 5px;
+      transition: border-color 0.2s, background 0.2s;
+      flex-shrink: 0;
+    }
+    .hamburger:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+    .hamburger.open  { border-color: var(--border-red); background: rgba(229,9,20,0.06); }
+    .hamburger-bar {
+      width: 16px; height: 1.5px;
+      background: #fff; border-radius: 2px;
+      transition: transform 0.3s ease, opacity 0.2s ease;
+      transform-origin: center;
+      display: block;
+    }
+    .hamburger.open .hamburger-bar:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .hamburger.open .hamburger-bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger.open .hamburger-bar:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
-        /* --- Platforms Section --- */
-        .platforms { padding: 80px 10%; text-align: center; position: relative; z-index: 5; background: #0b0d11; }
-        .platforms-list { 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            max-width: 650px;
-            margin: 40px auto 0;
-        }
-        .platform-row { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
-            width: 100%;
-            padding: 15px 30px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
+    /* Drawer */
+    .nav-drawer {
+      position: fixed; top: 0; left: 0;
+      width: 280px; height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      z-index: 300;
+      display: flex; flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 8px 0 40px rgba(0,0,0,0.7);
+    }
+    .nav-drawer.open { transform: translateX(0); }
+    .nav-drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .nav-drawer-logo { font-family:'DM Sans',sans-serif; font-size:1.5rem; letter-spacing:2px; }
+    .nav-drawer-close {
+      width:32px; height:32px; background:var(--bg3); border:1px solid var(--border);
+      border-radius:8px; color:var(--text-dim); font-size:0.9rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:all 0.2s;
+    }
+    .nav-drawer-close:hover { background:var(--red); color:#fff; border-color:var(--red); }
+    .nav-drawer-body { flex:1; overflow-y:auto; padding:24px 0 32px; scrollbar-width:thin; scrollbar-color:#333 transparent; }
+    .nav-drawer-section { padding:0 24px; margin-bottom:28px; }
+    .nav-drawer-section-label {
+      font-size:0.62rem; font-weight:800; letter-spacing:2.5px; text-transform:uppercase;
+      color:var(--text-dim); margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border);
+    }
+    .nav-drawer-link {
+      display:flex; align-items:center; gap:12px;
+      width:100%; background:none; border:none;
+      color:var(--text-mid); text-decoration:none;
+      font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:500;
+      padding:10px 12px; border-radius:var(--radius-sm);
+      cursor:pointer; transition:background 0.15s, color 0.15s, padding-left 0.15s;
+      text-align:left;
+    }
+    .nav-drawer-link:hover { background:rgba(229,9,20,0.07); color:#fff; padding-left:16px; }
+    .nav-drawer-link:hover .ndl-icon { color:var(--red); }
+    .ndl-icon { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; color:var(--text-dim); transition:color 0.15s; }
+    .nav-backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,0.65);
+      backdrop-filter:blur(4px); z-index:299;
+      opacity:0; pointer-events:none; transition:opacity 0.3s ease;
+    }
+    .nav-backdrop.open { opacity:1; pointer-events:all; }
 
-        .logo-tile {
-            background: white;
-            width: 65px;
-            height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 16px;
-            padding: 10px;
-            flex-shrink: 0;
-            box-shadow: 0 0 15px var(--glow);
-            animation: pulse-glow 3s infinite ease-in-out;
-        }
-        
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 10px var(--glow); }
-            50% { box-shadow: 0 0 25px var(--glow); transform: scale(1.02); }
-            100% { box-shadow: 0 0 10px var(--glow); }
-        }
+    /* ═══════════════════════ NAVBAR ═══════════════════════ */
+    .navbar {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:20px 6%;
+      background:linear-gradient(to bottom, rgba(7,7,9,0.98) 0%, transparent 100%);
+      transition:background 0.3s, padding 0.3s;
+    }
+    .navbar.scrolled { background:rgba(7,7,9,0.97); border-bottom:1px solid var(--border); padding:14px 6%; backdrop-filter:blur(20px); }
+    .logo { font-family:'DM Sans',sans-serif; font-size:4.2rem; letter-spacing:2px; cursor:pointer; text-decoration:none; }
+    .logo .tivi { color:#fff; }
+    .logo .pal  { color:var(--red); }
+    .nav-left { display:flex; align-items:center; gap:14px; }
+    .nav-right { display:flex; align-items:center; gap:16px; }
+    .btn-portal {
+      background:var(--red); color:#fff; border:none;
+      padding:11px 26px; border-radius:20px;
+      font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.88rem;
+      cursor:pointer; letter-spacing:0.3px;
+      transition:background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-portal:hover { background:#f40612; transform:translateY(-1px); box-shadow:0 6px 20px var(--red-glow); }
 
-        .store-badge { width: 100%; height: 100%; object-fit: contain; }
+    /* ═══════════════════════ HERO ═══════════════════════ */
+    .hero { position:relative; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; overflow:hidden; }
+    .hero-bg { position:absolute; inset:0; background: radial-gradient(ellipse 80% 55% at 50% 38%, rgba(229,9,20,0.09) 0%, transparent 68%), radial-gradient(ellipse 50% 35% at 15% 85%, rgba(229,9,20,0.04) 0%, transparent 60%), radial-gradient(ellipse 50% 35% at 85% 80%, rgba(100,20,255,0.03) 0%, transparent 60%); }
+    .hero-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(229,9,20,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(229,9,20,0.035) 1px,transparent 1px); background-size:56px 56px; mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,black 0%,transparent 100%); -webkit-mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,black 0%,transparent 100%); }
+    .hero-scanlines { position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.006) 2px,rgba(255,255,255,0.006) 4px); pointer-events:none; }
+    .hero-content { position:relative; z-index:2; max-width:920px; padding:0 24px; animation:heroFadeIn 0.9s ease both; }
+    @keyframes heroFadeIn { from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);} }
+    .hero-eyebrow { display:inline-flex; align-items:center; gap:8px; background:rgba(229,9,20,0.1); border:1px solid var(--border-red); color:var(--red); font-size:0.72rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; padding:7px 16px; border-radius:50px; margin-bottom:32px; }
+    .hero-eyebrow::before { content:''; width:6px; height:6px; background:var(--red); border-radius:50%; animation:pulseDot 2s infinite; }
+    @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(1.4);} }
+    .hero h1 { font-family:'Nunito',sans-serif; font-size:clamp(3.8rem,10vw,8rem); line-height:0.92; letter-spacing:3px; margin-bottom:28px; color:#fff; }
+    .hero h1 .accent { color:var(--red); }
+    .hero-sub { font-size:clamp(1rem,2vw,1.18rem); color:var(--text-mid); line-height:1.75; max-width:580px; margin:0 auto 48px; font-weight:400; }
+    .hero-actions { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:70px; }
+    .btn-hero-primary { background:var(--red); color:#fff; border:none; padding:17px 44px; border-radius:30px; font-family:'DM Sans',sans-serif; font-weight:700; font-size:1rem; cursor:pointer; transition:all 0.2s; box-shadow:0 8px 30px var(--red-glow); }
+    .btn-hero-primary:hover { transform:translateY(-3px); box-shadow:0 18px 44px rgba(229,9,20,0.5); }
+    .btn-hero-secondary { background:rgba(255,255,255,0.06); color:#fff; border:1px solid var(--border); padding:17px 44px; border-radius:30px; font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; cursor:pointer; transition:all 0.2s; backdrop-filter:blur(10px); }
+    .btn-hero-secondary:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.2); transform:translateY(-3px); }
 
-        .platform-info { display: flex; align-items: center; gap: 25px; }
-        .platform-name { font-weight: 600; font-size: 1.2rem; color: #fff; }
-        .badge-label { font-size: 0.8rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .label-soon { color: #555 !important; }
-        .platform-row.coming-soon { opacity: 0.5; background: rgba(255,255,255,0.01); }
-        .platform-row.coming-soon .logo-tile { box-shadow: none; animation: none; background: #e0e0e0; }
+    /* TV MOCKUP */
+    .hero-mockup { position:relative; z-index:2; width:100%; max-width:820px; margin:0 auto; animation:heroFadeIn 1s ease 0.25s both; }
+    .tv-frame { position:relative; background:linear-gradient(160deg,#1c1c20 0%,#111113 60%,#0a0a0c 100%); border-radius:20px 20px 8px 8px; padding:14px 14px 0 14px; box-shadow:0 0 0 2px #2a2a30,0 0 0 3px #111,0 40px 80px rgba(0,0,0,0.9),0 0 120px rgba(229,9,20,0.06); }
+    .tv-screen { border-radius:10px 10px 0 0; overflow:hidden; aspect-ratio:16/9; background:linear-gradient(135deg,#0a0a0e 0%,#0f0f14 40%,#0d0d12 100%); position:relative; }
+    .tv-screen-inner { width:100%; height:100%; display:flex; flex-direction:column; padding:16px 20px 12px; gap:10px; }
+    .sim-topbar { display:flex; align-items:center; justify-content:space-between; }
+    .sim-logo { font-family:'DM Sans',sans-serif; font-size:1.1rem; letter-spacing:2px; }
+    .sim-logo .tivi { color:#fff; } .sim-logo .pal { color:var(--red); }
+    .sim-clock { font-size:0.65rem; color:rgba(255,255,255,0.4); font-weight:500; }
+    .sim-nav { display:flex; gap:20px; padding:2px 0; }
+    .sim-nav-item { font-size:0.62rem; color:rgba(255,255,255,0.35); font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+    .sim-nav-item.active { color:#fff; border-bottom:2px solid var(--red); padding-bottom:2px; }
+    .sim-row-label { font-size:0.6rem; color:rgba(255,255,255,0.35); font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:6px; }
+    .sim-cards { display:flex; gap:8px; }
+    .sim-card { flex-shrink:0; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.06); overflow:hidden; }
+    .sim-card.focus { border-color:var(--red); box-shadow:0 0 0 2px rgba(229,9,20,0.4),0 8px 20px rgba(0,0,0,0.6); transform:scale(1.04); }
+    .sim-card-poster { width:100%; aspect-ratio:2/3; background:linear-gradient(160deg,#1e1e28 0%,#141420 100%); display:flex; align-items:center; justify-content:center; }
+    .sim-card-bar { height:3px; background:rgba(255,255,255,0.06); }
+    .sim-card-bar .fill { height:100%; background:var(--red); border-radius:2px; }
+    .sim-card-label { font-size:0.48rem; color:rgba(255,255,255,0.5); padding:4px 5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tv-stand-neck { width:14%; margin:0 auto; height:22px; background:linear-gradient(to bottom,#1a1a1e,#131315); border-left:2px solid #222; border-right:2px solid #222; }
+    .tv-stand-base { width:42%; margin:0 auto; height:8px; background:linear-gradient(to bottom,#1c1c20,#111113); border-radius:0 0 8px 8px; box-shadow:0 6px 20px rgba(0,0,0,0.6); }
 
-        /* --- Features Section --- */
-        .features { padding: 80px 10%; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 35px; position: relative; z-index: 3; background: #0b0d11; }
-        .feat-card { 
-            background: var(--card); 
-            padding: 50px 40px; 
-            border-radius: 32px; 
-            border: 1px solid rgba(255,255,255,0.07); 
-            backdrop-filter: blur(14px); 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.4); 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .feat-card h3 { color: var(--primary); margin-top: 0; font-size: 1.5rem; margin-bottom: 15px; font-weight: 800; }
-        .feat-card p { font-size: 1rem; color: var(--text-dim); line-height: 1.7; margin: 0; }
+    /* STATS BAR */
+    .hero-stats-bar { position:relative; z-index:2; display:flex; justify-content:center; gap:0; margin-top:48px; border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; max-width:600px; margin-left:auto; margin-right:auto; animation:heroFadeIn 1s ease 0.5s both; }
+    .stat-item { flex:1; text-align:center; padding:20px 16px; border-right:1px solid var(--border); }
+    .stat-item:last-child { border-right:none; }
+    .stat-num { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:1px; color:#fff; line-height:1; }
+    .stat-num span { color:var(--red); }
+    .stat-label { font-size:0.68rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.5px; margin-top:4px; }
 
-        /* --- Modals --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.94); backdrop-filter: blur(20px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: #161a21; width: 100%; max-width: 550px; padding: 45px; border-radius: 36px; position: relative; border: 1px solid #333; max-height: 92vh; overflow-y: auto; }
-        .close-modal { position: absolute; top: 25px; right: 30px; font-size: 2rem; color: #555; cursor: pointer; border: none; background: none; }
+    /* ═══════════════════════ SECTIONS ═══════════════════════ */
+    section { padding:100px 6%; }
+    .section-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:3px; color:var(--red); font-weight:700; margin-bottom:16px; }
+    .section-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(2.4rem,5vw,3.8rem); letter-spacing:2px; line-height:1; margin-bottom:20px; }
+    .section-sub { font-size:1rem; color:var(--text-dim); line-height:1.75; max-width:520px; }
 
-        .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin: 30px 0 12px; border-bottom: 1px solid #333; padding-bottom: 6px; letter-spacing: 1px; }
-        input { width: 100%; padding: 18px; margin: 10px 0; border-radius: 16px; border: 1px solid #333; background: #1e2229; color: white; font-size: 1rem; outline: none; }
-        
-        .tab-container { display: flex; gap: 10px; margin-bottom: 15px; background: #0b0d11; padding: 6px; border-radius: 16px; border: 1px solid #222; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-weight: 700; border-radius: 12px; font-size: 0.9rem; }
-        .tab-btn.active { background: var(--primary); color: white; }
+    /* ═══════════════════════ PLATFORMS ═══════════════════════ */
+    .platforms-section { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+    .platforms-inner { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; max-width:1100px; margin:0 auto; }
+    .platform-list { display:flex; flex-direction:column; gap:10px; }
+    .platform-item { display:flex; align-items:center; gap:18px; padding:16px 22px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-md); transition:border-color 0.2s, background 0.2s; }
+    .platform-item.active { border-color:var(--border-red); background:rgba(229,9,20,0.04); }
+    .platform-item.active:hover { border-color:rgba(229,9,20,0.5); }
+    .platform-logo { width:42px; height:42px; background:#fff; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:7px; flex-shrink:0; }
+    .platform-logo img { width:100%; height:100%; object-fit:contain; }
+    .platform-logo.dim { background:#252528; }
+    .platform-name { font-weight:600; font-size:0.92rem; color:#fff; }
+    .platform-sub  { font-size:0.78rem; color:var(--text-dim); margin-top:2px; }
+    .platform-badge { margin-left:auto; font-size:0.68rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:4px 11px; border-radius:50px; }
+    .badge-live { background:rgba(229,9,20,0.15); color:var(--red); border:1px solid var(--border-red); }
+    .badge-soon { background:rgba(255,255,255,0.05); color:var(--text-dim); border:1px solid var(--border); }
 
-        .btn-action { width: 100%; padding: 18px; border: none; color: white; font-weight: 700; border-radius: 16px; cursor: pointer; margin-top: 15px; font-size: 1.1rem; }
-        .bg-blue { background: var(--primary); }
-        .bg-grey { background: #333; }
+    /* ═══════════════════════ FEATURES ═══════════════════════ */
+    .features-section { background:var(--bg); }
+    .features-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; margin-top:60px; border:1px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
+    .feat-card { padding:48px 44px; background:var(--bg2); position:relative; overflow:hidden; transition:background 0.3s; }
+    .feat-card.wide { grid-column:1/-1; }
+    .feat-card:hover { background:var(--bg3); }
+    .feat-card::before { content:''; position:absolute; top:0; left:0; width:100%; height:2px; background:linear-gradient(90deg,var(--red),transparent); transform:scaleX(0); transform-origin:left; transition:transform 0.4s ease; }
+    .feat-card:hover::before { transform:scaleX(1); }
+    .feat-icon-wrap { width:48px; height:48px; border-radius:12px; background:rgba(229,9,20,0.1); border:1px solid var(--border-red); display:flex; align-items:center; justify-content:center; margin-bottom:24px; }
+    .feat-icon-svg { width:22px; height:22px; stroke:var(--red); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .feat-card h3 { font-family:'Bebas Neue',sans-serif; font-size:1.5rem; letter-spacing:1.5px; color:#fff; margin-bottom:12px; }
+    .feat-card p  { font-size:0.92rem; color:var(--text-dim); line-height:1.78; }
+    .feat-wide-inner { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
+    .feat-wide-pills { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+    .feat-pill { font-size:0.75rem; font-weight:600; padding:6px 14px; border-radius:50px; background:rgba(229,9,20,0.08); border:1px solid var(--border-red); color:var(--red); }
 
-        /* --- Progress Bar --- */
-        #syncProgress { width: 100%; height: 6px; background: #0b0d11; border-radius: 10px; margin-top: 20px; overflow: hidden; display: none; border: 1px solid rgba(255,255,255,0.05); }
-        #syncProgressBar { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 10px var(--glow); transition: width 0.4s ease; }
+    /* ═══════════════════════ ALL FEATURES SHOWCASE ═══════════════════════ */
+    .all-features-section { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+    .af-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-top:56px; border:1px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
+    .af-card { padding:28px 26px; background:var(--bg3); position:relative; overflow:hidden; transition:background 0.25s; display:flex; flex-direction:column; gap:10px; }
+    .af-card:hover { background:var(--bg4); }
+    .af-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--red),transparent); transform:scaleX(0); transform-origin:left; transition:transform 0.35s ease; }
+    .af-card:hover::after { transform:scaleX(1); }
+    .af-icon { width:40px; height:40px; border-radius:10px; background:rgba(229,9,20,0.1); border:1px solid var(--border-red); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .af-icon svg { width:18px; height:18px; stroke:var(--red); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .af-title { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:1px; color:#fff; line-height:1.1; }
+    .af-desc  { font-size:0.8rem; color:var(--text-dim); line-height:1.65; }
 
-        /* --- Sync Dashboard Styles --- */
-        .sync-card { background: #0b0d11; border-radius: 20px; border: 1px solid #222; padding: 20px; margin-top: 20px; display: none; animation: slideUp 0.4s ease-out; }
-        .sync-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .sync-row:last-child { border-bottom: none; }
-        .sync-label { font-size: 0.9rem; color: var(--text-dim); display: flex; align-items: center; gap: 10px; }
-        .sync-value { font-weight: 800; color: var(--success); font-size: 1rem; }
-        
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse-btn { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-        .sync-loading { animation: pulse-btn 1.5s infinite; pointer-events: none; }
+    /* ═══════════════════════ SOCIAL PROOF ═══════════════════════ */
+    .social-section { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+    .reviews-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:48px; }
+    .review-card { padding:24px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-lg); transition:border-color 0.2s, transform 0.2s; }
+    .review-card:hover { border-color:var(--border-hi); transform:translateY(-2px); }
+    .review-stars { color:var(--red); font-size:0.85rem; letter-spacing:2px; margin-bottom:12px; }
+    .review-text  { font-size:0.88rem; color:var(--text-mid); line-height:1.7; margin-bottom:16px; font-style:italic; }
+    .review-author { display:flex; align-items:center; gap:10px; }
+    .review-avatar { width:32px; height:32px; border-radius:50%; background:rgba(229,9,20,0.15); border:1px solid var(--border-red); display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; color:var(--red); flex-shrink:0; }
+    .review-name { font-size:0.82rem; font-weight:700; color:#fff; }
+    .review-device { font-size:0.72rem; color:var(--text-dim); }
 
-        /* --- Cookie Banner --- */
-        .cookie-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; background: #161a21; border: 1px solid #333; padding: 20px 30px; border-radius: 20px; display: none; align-items: center; justify-content: space-between; z-index: 2000; box-shadow: 0 10px 40px rgba(0,0,0,0.8); gap: 20px; }
-        .cookie-text { font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; }
-        .btn-cookie { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 0.85rem; }
+    /* ═══════════════════════ FAQ ═══════════════════════ */
+    .faq-section { background:var(--bg); }
+    .faq-list { max-width:720px; margin:48px auto 0; display:flex; flex-direction:column; gap:2px; border:1px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
+    .faq-item { background:var(--bg2); }
+    .faq-q { width:100%; background:none; border:none; color:#fff; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.95rem; padding:22px 28px; text-align:left; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:16px; transition:color 0.2s, background 0.2s; }
+    .faq-q:hover { color:var(--red); background:var(--bg3); }
+    .faq-q.open { color:var(--red); background:rgba(229,9,20,0.04); }
+    .faq-chevron { flex-shrink:0; width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; transition:transform 0.3s ease; }
+    .faq-q.open .faq-chevron { transform:rotate(180deg); }
+    .faq-a { font-size:0.88rem; color:var(--text-mid); line-height:1.75; padding:0 28px 22px; display:none; }
+    .faq-a.open { display:block; }
 
-        footer { padding: 100px 10% 60px; text-align: center; border-top: 1px solid #1a1d23; color: #555; font-size: 0.9rem; background: #0b0d11; }
-        .footer-links a { color: #666; text-decoration: none; margin: 0 18px; font-weight: 600; font-size: 0.85rem; }
+    /* ═══════════════════════ MODAL ═══════════════════════ */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.92); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:var(--bg2); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-xl); width:100%; max-width:580px; max-height:92vh; overflow-y:auto; position:relative; scrollbar-width:thin; scrollbar-color:#333 transparent; animation:modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes modalIn { from{opacity:0;transform:scale(0.92) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);} }
+    .modal-header { padding:30px 34px 22px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:var(--bg2); z-index:10; border-bottom:1px solid var(--border); }
+    .modal-title { font-family:'DM Sans',sans-serif; font-size:1.7rem; letter-spacing:2px; }
+    .modal-close { width:34px; height:34px; background:var(--bg3); border:1px solid var(--border); border-radius:50%; color:var(--text-dim); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+    .modal-close:hover { background:var(--red); color:#fff; border-color:var(--red); }
+    .modal-body { padding:26px 34px 34px; }
 
-        @media (max-width: 768px) { 
-            .hero h1 { font-size: 2.8rem; } 
-            .platform-row { padding: 15px 20px; }
-            .platform-name { font-size: 1rem; }
-            .logo-tile { width: 50px; height: 50px; }
-            .features { grid-template-columns: 1fr; }
-        }
-    </style>
+    /* Steps */
+    .step-row { display:flex; gap:0; margin-bottom:28px; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+    .step-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:14px 8px; background:var(--bg3); border:none; border-right:1px solid var(--border); cursor:pointer; transition:all 0.2s; color:var(--text-dim); font-size:0.72rem; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; font-family:'DM Sans',sans-serif; }
+    .step-btn:last-child { border-right:none; }
+    .step-num { width:26px; height:26px; border-radius:50%; background:var(--bg); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; transition:all 0.2s; }
+    .step-btn.active { background:rgba(229,9,20,0.08); color:#fff; }
+    .step-btn.active .step-num { background:var(--red); border-color:var(--red); color:#fff; }
+    .step-btn.done { background:rgba(34,197,94,0.05); color:var(--success); }
+    .step-btn.done .step-num { background:rgba(34,197,94,0.15); border-color:rgba(34,197,94,0.3); color:var(--success); }
+    .step-btn.done .step-num::after { content:'✓'; }
+    .step-btn.done .step-num-inner { display:none; }
+
+    /* Fields — YOUR custom border-radius preserved */
+    .field-label { font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); margin-bottom:7px; display:block; }
+    .field-input { width:100%; padding:13px 15px; background:var(--bg3); border:1px solid var(--border); border-radius:25px; color:#fff; font-family:'DM Sans',sans-serif; font-size:0.93rem; outline:none; transition:border-color 0.2s, box-shadow 0.2s; margin-bottom:13px; }
+    .field-input:focus { border-color:rgba(229,9,20,0.5); box-shadow:0 0 0 3px rgba(229,9,20,0.08); }
+    .field-input::placeholder { color:#3a3a42; }
+    .field-input.invalid { border-color:rgba(255,107,107,0.6); }
+    .field-input.valid   { border-color:rgba(34,197,94,0.4); }
+    .field-hint { font-size:0.74rem; color:var(--text-dim); margin-top:-9px; margin-bottom:13px; line-height:1.4; }
+    .field-hint.error { color:#ff6b6b; }
+
+    .tab-row { display:flex; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:4px; gap:4px; margin-bottom:18px; }
+    .tab-pill { flex:1; padding:9px; background:none; border:none; color:var(--text-dim); font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.83rem; border-radius:6px; cursor:pointer; transition:all 0.2s; }
+    .tab-pill.active { background:var(--red); color:#fff; }
+
+    /* Buttons — YOUR custom border-radius preserved */
+    .btn-primary { width:100%; padding:14px; background:var(--red); color:#fff; border:none; border-radius:25px; font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.97rem; cursor:pointer; transition:all 0.2s; margin-top:6px; }
+    .btn-primary:hover { background:#f40612; transform:translateY(-1px); box-shadow:0 6px 20px var(--red-glow); }
+    .btn-primary:disabled { opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none; }
+    .btn-secondary { width:100%; padding:13px; background:var(--bg3); color:var(--text-mid); border:1px solid var(--border); border-radius:25px; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.93rem; cursor:pointer; transition:all 0.2s; margin-top:8px; }
+    .btn-secondary:hover { border-color:rgba(255,255,255,0.2); color:#fff; }
+
+    .status-box { padding:13px 15px; border-radius:var(--radius-sm); font-size:0.88rem; line-height:1.5; display:none; margin-top:12px; font-weight:500; }
+    .status-box.success { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25); color:var(--success); }
+    .status-box.error   { background:rgba(229,9,20,0.1); border:1px solid var(--border-red); color:#ff6b6b; }
+    .status-box.info    { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-mid); }
+    .status-box.warning { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.25); color:var(--warning); }
+
+    .progress-wrap { height:4px; background:var(--bg); border-radius:4px; overflow:hidden; margin-top:16px; display:none; }
+    .progress-fill { height:100%; background:var(--red); box-shadow:0 0 8px var(--red-glow); width:0%; transition:width 0.4s ease; border-radius:4px; }
+
+    /* Playlist manager */
+    .playlist-section-title { font-size:0.68rem; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); font-weight:700; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+    .playlist-list { display:flex; flex-direction:column; gap:7px; margin-bottom:12px; }
+    .playlist-item { display:flex; align-items:center; gap:11px; padding:13px 15px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); transition:all 0.2s; }
+    .playlist-item:hover { border-color:rgba(255,255,255,0.14); }
+    .playlist-item.active-playlist { border-color:var(--border-red); background:rgba(229,9,20,0.05); }
+    .playlist-dot { width:7px; height:7px; border-radius:50%; background:var(--border); flex-shrink:0; transition:background 0.2s; }
+    .playlist-item.active-playlist .playlist-dot { background:var(--red); box-shadow:0 0 6px var(--red-glow); }
+    .playlist-info { flex:1; min-width:0; }
+    .playlist-name-text { font-weight:600; font-size:0.88rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .playlist-meta { font-size:0.72rem; color:var(--text-dim); margin-top:2px; }
+    .active-badge { font-size:0.62rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--red); background:rgba(229,9,20,0.12); padding:3px 7px; border-radius:50px; border:1px solid var(--border-red); flex-shrink:0; }
+    .playlist-actions { display:flex; gap:5px; flex-shrink:0; }
+    .pl-action-btn { width:28px; height:28px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text-dim); font-size:0.72rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+    .pl-action-btn:hover { color:#fff; border-color:rgba(255,255,255,0.2); }
+    .pl-action-btn.del:hover  { color:#ff6b6b; border-color:rgba(255,107,107,0.3); background:rgba(255,107,107,0.05); }
+    .pl-action-btn.edit:hover { color:var(--warning); border-color:rgba(245,158,11,0.3); }
+    .pl-action-btn.set-active:hover { color:var(--success); border-color:rgba(34,197,94,0.3); }
+    .btn-add-playlist { width:100%; padding:11px; background:none; border:1px dashed rgba(255,255,255,0.1); border-radius:var(--radius-sm); color:var(--text-dim); font-family:'DM Sans',sans-serif; font-size:0.83rem; font-weight:600; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:7px; }
+    .btn-add-playlist:hover { border-color:var(--border-red); color:var(--red); background:rgba(229,9,20,0.03); }
+    .playlist-edit-form { display:none; padding:14px; background:rgba(0,0,0,0.3); border:1px solid var(--border-red); border-radius:var(--radius-sm); margin-top:8px; animation:slideDown 0.2s ease; }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);} }
+    .edit-form-title { font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--red); margin-bottom:12px; }
+    .sync-success { display:none; padding:20px; background:rgba(34,197,94,0.05); border:1px solid rgba(34,197,94,0.2); border-radius:var(--radius-md); text-align:center; margin-top:14px; }
+    .sync-success-icon { font-size:2.2rem; margin-bottom:8px; }
+    .sync-success h4 { color:var(--success); font-size:0.97rem; margin-bottom:5px; }
+    .sync-success p  { font-size:0.82rem; color:var(--text-dim); }
+
+    /* Payment */
+    .price-card { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-md); padding:24px; text-align:center; margin-bottom:14px; }
+    .price-amount { font-family:'Bebas Neue',sans-serif; font-size:2.8rem; letter-spacing:2px; color:#fff; line-height:1; }
+    .price-currency { font-size:1.4rem; vertical-align:super; margin-right:3px; }
+    .price-period  { font-size:0.78rem; color:var(--text-dim); margin-top:4px; }
+    .price-features { margin-top:14px; display:flex; flex-direction:column; gap:7px; }
+    .price-feat { display:flex; align-items:center; gap:9px; font-size:0.83rem; color:var(--text-mid); }
+    .price-feat::before { content:'✓'; color:var(--success); font-weight:700; flex-shrink:0; }
+    .security-note { display:flex; align-items:flex-start; gap:9px; padding:11px 13px; background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.16); border-radius:var(--radius-sm); margin-bottom:13px; font-size:0.78rem; color:var(--text-dim); line-height:1.55; }
+    .security-note-icon { font-size:0.88rem; flex-shrink:0; margin-top:1px; }
+    #paypal-button-container { margin-top:14px; padding:16px; background:rgba(0,0,0,0.2); border:1px dashed rgba(255,255,255,0.08); border-radius:var(--radius-sm); min-height:50px; }
+
+    /* Confirm */
+    .confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px; }
+    .confirm-overlay.open { display:flex; }
+    .confirm-box { background:var(--bg2); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-lg); padding:28px; max-width:350px; width:100%; animation:modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+    .confirm-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:1.5px; margin-bottom:10px; }
+    .confirm-msg   { font-size:0.88rem; color:var(--text-dim); line-height:1.65; margin-bottom:22px; }
+    .confirm-btns  { display:flex; gap:10px; }
+    .confirm-btns .btn-primary   { margin-top:0; background:#dc2626; }
+    .confirm-btns .btn-secondary { margin-top:0; }
+
+    /* Privacy / ToS */
+    .privacy-body { font-size:0.88rem; line-height:1.8; color:var(--text-mid); }
+    .privacy-body h3 { color:#fff; margin-top:22px; margin-bottom:8px; font-size:0.97rem; font-weight:700; }
+    .privacy-body p  { margin-bottom:12px; }
+
+    /* Cookie */
+    .cookie-banner { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); width:calc(100% - 48px); max-width:640px; background:var(--bg2); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-md); padding:16px 22px; display:none; align-items:center; justify-content:space-between; gap:18px; z-index:2000; box-shadow:0 16px 48px rgba(0,0,0,0.8); backdrop-filter:blur(20px); }
+    .cookie-text { font-size:0.8rem; color:var(--text-dim); line-height:1.55; flex:1; }
+    .cookie-text a { color:var(--red); text-decoration:none; }
+    .btn-cookie { background:var(--red); color:#fff; border:none; padding:9px 22px; border-radius:6px; font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.8rem; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+
+    /* Sync handshake */
+    .sync-handshake { display:none; padding:18px 20px; border-radius:var(--radius-md); border:1px solid var(--border); background:var(--bg3); margin-top:14px; }
+    .sync-handshake.visible { display:block; }
+    .sync-phase { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:0.84rem; color:var(--text-dim); transition:color 0.3s; }
+    .sync-phase:last-child { border-bottom:none; padding-bottom:0; }
+    .sync-phase:first-child { padding-top:0; }
+    .sync-phase-icon { width:26px; height:26px; border-radius:50%; background:var(--bg); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.72rem; flex-shrink:0; transition:all 0.3s; }
+    .sync-phase.pending .sync-phase-icon { border-color:rgba(229,9,20,0.4); background:rgba(229,9,20,0.08); }
+    .sync-phase.pending .sync-phase-icon::after { content:''; display:inline-block; width:10px; height:10px; border:2px solid rgba(255,255,255,0.15); border-top-color:var(--red); border-radius:50%; animation:spin 0.7s linear infinite; }
+    .sync-phase.ok  .sync-phase-icon { border-color:rgba(34,197,94,0.4); background:rgba(34,197,94,0.1); }
+    .sync-phase.ok  .sync-phase-icon::after { content:'✓'; font-size:0.8rem; font-weight:700; color:var(--success); }
+    .sync-phase.err .sync-phase-icon { border-color:rgba(229,9,20,0.5); background:rgba(229,9,20,0.1); }
+    .sync-phase.err .sync-phase-icon::after { content:'✕'; font-size:0.75rem; font-weight:700; color:var(--red); }
+    .sync-phase.wait .sync-phase-icon::after { content:'–'; color:var(--text-dim); }
+    .sync-phase.ok  { color:var(--text-mid); }
+    .sync-phase.err { color:#ff6b6b; }
+    .sync-phase-label { flex:1; line-height:1.3; }
+    .sync-phase-sub   { font-size:0.72rem; color:var(--text-dim); margin-top:2px; }
+    .sync-phase.err .sync-phase-sub { color:#ff6b6b; opacity:0.8; }
+    .sync-tv-waiting { display:none; align-items:center; gap:10px; padding:14px 16px; background:rgba(229,9,20,0.05); border:1px solid var(--border-red); border-radius:var(--radius-sm); margin-top:14px; font-size:0.84rem; color:var(--text-mid); }
+    .sync-tv-waiting.visible { display:flex; }
+    .tv-pulse { width:8px; height:8px; border-radius:50%; background:var(--red); flex-shrink:0; animation:pulseDot 1.2s infinite; }
+
+    /* Footer */
+    footer { background:var(--bg); border-top:1px solid var(--border); padding:60px 6% 36px; }
+    .footer-inner { display:flex; justify-content:space-between; align-items:flex-start; gap:40px; flex-wrap:wrap; margin-bottom:48px; }
+    .footer-brand .footer-logo { font-family:'DM Sans',sans-serif; font-size:1.7rem; letter-spacing:2px; margin-bottom:10px; }
+    .footer-brand p { font-size:0.83rem; color:var(--text-dim); max-width:250px; line-height:1.65; }
+    .footer-links-col h4 { font-size:0.68rem; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); font-weight:700; margin-bottom:14px; }
+    .footer-links-col a { display:block; color:var(--text-mid); text-decoration:none; font-size:0.86rem; margin-bottom:9px; transition:color 0.2s; }
+    .footer-links-col a:hover { color:#fff; }
+    .footer-bottom { padding-top:22px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    .footer-copy    { font-size:0.78rem; color:var(--text-dim); }
+    .footer-version { font-size:0.72rem; color:#3a3a46; }
+
+    .divider { height:1px; background:var(--border); margin:22px 0; }
+    .spinner { display:inline-block; width:15px; height:15px; border:2px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:7px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ═══════════════════════ REDUCED MOTION ═══════════════════════ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+    }
+
+    /* ═══════════════════════ RESPONSIVE ═══════════════════════ */
+    @media (max-width:900px) { .reviews-grid { grid-template-columns:1fr; } }
+    @media (max-width:768px) {
+      .platforms-inner  { grid-template-columns:1fr; gap:40px; }
+      .features-grid    { grid-template-columns:1fr; }
+      .feat-card.wide   { grid-column:auto; }
+      .feat-wide-inner  { grid-template-columns:1fr; gap:28px; }
+      .modal-box        { border-radius:16px; }
+      .modal-header, .modal-body { padding-left:22px; padding-right:22px; }
+      .feat-card        { padding:36px 28px; }
+      footer .footer-inner { flex-direction:column; }
+      .toast-container  { bottom:16px; right:16px; left:16px; }
+      .toast            { max-width:100%; }
+      .hero-stats-bar   { display:none; }
+      .reviews-grid     { grid-template-columns:1fr 1fr; }
+      .af-grid          { grid-template-columns:repeat(2,1fr); }
+    }
+    @media (max-width:480px) {
+      .step-row  { gap:0; }
+      .step-btn  { font-size:0.62rem; padding:10px 4px; }
+      .reviews-grid { grid-template-columns:1fr; }
+      .af-grid  { grid-template-columns:1fr; }
+    }
+  </style>
+
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo" onclick="window.location.href='/'"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-        <button class="btn-main" style="padding: 12px 28px; font-size: 0.9rem;" onclick="openPortal()">Portal Access</button>
-    </nav>
+<!-- TOAST CONTAINER -->
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>The Ultimate IPTV Player for<br><span class="pal">Smart TVs</span></h1>
-            <p>Experience seamless streaming with the most advanced 3-layer player. Manage playlists remotely and activate your device instantly.</p>
-            <button class="btn-main" onclick="openPortal()">Sync & Manage Device</button>
-        </div>
-    </section>
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
-    <section class="platforms">
-        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 10px;">Supported Platforms</h2>
-        <p style="font-size: 1rem; color: var(--text-dim);">Find tivipal in your TV's official app store.</p>
-        
-        <div class="platforms-list">
-            <div class="platform-row">
-                <div class="platform-info">
-                    <div class="logo-tile">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Samsung_Orig_Wordmark_BLACK_RGB.png" class="store-badge" alt="Samsung">
-                    </div>
-                    <span class="platform-name">Smart TV (Tizen)</span>
-                </div>
-                <span class="badge-label">Available Now</span>
-            </div>
+<!-- CONFIRM DIALOG -->
 
-            <div class="platform-row coming-soon">
-                <div class="platform-info">
-                    <div class="logo-tile">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/LG_symbol.svg/3840px-LG_symbol.svg.png" class="store-badge" alt="LG">
-                    </div>
-                    <span class="platform-name">LG Smart TV (webOS)</span>
-                </div>
-                <span class="badge-label label-soon">Coming Soon</span>
-            </div>
+<div class="confirm-overlay" id="confirm-overlay" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirm-title">Are you sure?</div>
+    <div class="confirm-msg"   id="confirm-msg">This action cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="btn-primary"   id="confirm-ok"     style="margin-top:0;">Delete</button>
+      <button class="btn-secondary" id="confirm-cancel" style="margin-top:0;">Cancel</button>
+    </div>
+  </div>
+</div>
 
-            <div class="platform-row coming-soon">
-                <div class="platform-info">
-                    <div class="logo-tile">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Android_logo_2019_%28stacked%29.svg" class="store-badge" alt="Android">
-                    </div>
-                    <span class="platform-name">Android TV / Google TV</span>
-                </div>
-                <span class="badge-label label-soon">Coming Soon</span>
-            </div>
+<!-- HAMBURGER DRAWER BACKDROP -->
 
-            <div class="platform-row coming-soon">
-                <div class="platform-info">
-                    <div class="logo-tile">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1920px-Apple_logo_black.svg.png" class="store-badge" alt="Apple">
-                    </div>
-                    <span class="platform-name">Apple TV (tvOS)</span>
-                </div>
-                <span class="badge-label label-soon">Coming Soon</span>
-            </div>
-        </div>
-    </section>
+<div class="nav-backdrop" id="nav-backdrop"></div>
 
-    <section class="features">
-        <div class="feat-card">
-            <h3>QR Cloud Sync</h3>
-            <p>Scan the QR code on your TV to instantly load your Device ID on **tivipal.co.uk**. No manual typing required for playlist management.</p>
-        </div>
-        <div class="feat-card">
-            <h3>Layered Navigation</h3>
-            <p>Our unique 3-layer collapsible UI offers the fastest browsing experience, optimized specifically for fluid navigation with smart TV remotes.</p>
-        </div>
-        <div class="feat-card">
-            <h3>Modern & Sleek Design</h3>
-            <p>A premium dark-mode interface built for the modern living room. Experience smooth animations, high-fidelity graphics, and an ultra-responsive layout.</p>
-        </div>
-        <div class="feat-card">
-            <h3>Pure Performance</h3>
-            <p>Zero bloatware. We focus entirely on creating the most stable, high-performance player engine to ensure your streams load faster and stay buffer-free.</p>
-        </div>
-    </section>
+<!-- HAMBURGER DRAWER -->
 
-    <div id="portal-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModals()">✕</button>
-            <div class="logo" style="margin-bottom: 30px; text-align: center;"><span class="tivi" style="color:white">tivi</span><span class="pal">pal</span> Portal</div>
-            
-            <div class="section-title">Device Identification</div>
-            <input type="text" id="deviceId" placeholder="TP-XXXXXX">
-            <button class="btn-action bg-grey" onclick="checkStatus()">🔍 Check Activation</button>
-            <div id="statusBox" style="margin-top:15px; padding:18px; border-radius:14px; display:none; background:#0b0d11; border:1px solid #222; font-size:0.9rem; line-height: 1.5;"></div>
+<nav class="nav-drawer" id="nav-drawer" aria-label="Site navigation" aria-hidden="true">
+  <div class="nav-drawer-header">
+    <span class="nav-drawer-logo">
+      <span style="color:#fff">tivi</span><span style="color:var(--red)">pal</span>
+    </span>
+    <button class="nav-drawer-close" id="nav-drawer-close-btn" aria-label="Close menu">✕</button>
+  </div>
+  <div class="nav-drawer-body">
+    <div class="nav-drawer-section">
+      <div class="nav-drawer-section-label">Product</div>
+      <button class="nav-drawer-link" id="dl-portal">
+        <svg class="ndl-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        Portal Access
+      </button>
+      <button class="nav-drawer-link" id="dl-features">
+        <svg class="ndl-icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Features
+      </button>
+      <button class="nav-drawer-link" id="dl-all-features">
+        <svg class="ndl-icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        All Features
+      </button>
+      <button class="nav-drawer-link" id="dl-faq">
+        <svg class="ndl-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        FAQ
+      </button>
+    </div>
+    <div class="nav-drawer-section">
+      <div class="nav-drawer-section-label">Legal</div>
+      <button class="nav-drawer-link" id="dl-privacy">
+        <svg class="ndl-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Privacy Policy
+      </button>
+      <button class="nav-drawer-link" id="dl-tos">
+        <svg class="ndl-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Terms of Service
+      </button>
+      <button class="nav-drawer-link" id="dl-support">
+        <svg class="ndl-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Contact Support
+      </button>
+    </div>
+  </div>
+</nav>
 
-            <div class="section-title">Remote Playlist Sync</div>
-            <div class="tab-container">
-                <button id="tab-m3u" class="tab-btn active" onclick="switchTab('m3u')">M3U URL</button>
-                <button id="tab-xtream" class="tab-btn" onclick="switchTab('xtream')">Xtream Codes</button>
-            </div>
+<!-- NAVBAR -->
 
-            <div id="form-m3u">
-                <input type="text" id="m3uName" placeholder="Playlist Name (e.g., My List)">
-                <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
-            </div>
+<nav class="navbar" id="navbar">
+  <div class="nav-left">
+    <button class="hamburger" id="hamburger-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav-drawer">
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+    </button>
+    <a class="logo" id="logo-home" role="link" tabindex="0" aria-label="tivipal home">
+      <span class="tivi">tivi</span><span class="pal">pal</span>
+    </a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-portal" id="nav-manage-btn">Portal</button>
+  </div>
+</nav>
 
-            <div id="form-xtream" style="display: none;">
-                <input type="text" id="xtreamName" placeholder="Playlist Name (e.g., IPTV Pro)">
-                <input type="text" id="xtreamHost" placeholder="Server URL (e.g., http://dns.com:80)">
-                <input type="text" id="xtreamUser" placeholder="Username">
-                <input type="password" id="xtreamPass" placeholder="Password">
-            </div>
+<!-- HERO -->
 
-            <button id="updateBtn" class="btn-action bg-blue" onclick="uploadPlaylist()">Update TV App</button>
-
-            <div id="syncProgress"><div id="syncProgressBar"></div></div>
-
-            <div id="syncDashboard" class="sync-card">
-                <div class="sync-row">
-                    <span class="sync-label">📺 Connection Status</span>
-                    <span class="sync-value">Cloud Linked</span>
-                </div>
-                <div id="sync-status-msg" style="color: var(--success); font-size: 0.85rem; text-align: center; margin-top: 15px; font-weight: 600;">✅ Sync Complete! Continue on your TV App.</div>
-            </div>
-
-            <div class="section-title">License Activation</div>
-            <div id="pay-zone">
-                <p style="font-size: 0.9rem; color: #94a3b8; text-align: center; margin: 10px 0;">Lifetime Activation: £5.99</p>
-                <button id="show-pay-btn" class="btn-action bg-blue" onclick="showPayment()">Buy Lifetime License</button>
-                <div id="paypal-button-container" style="margin-top: 15px;"></div>
-            </div>
-        </div>
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-scanlines"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Now Available on Samsung Smart TV</div>
+    <h1>STREAM WITHOUT<br><span class="accent">LIMITS</span></h1>
+    <p class="hero-sub">The most advanced IPTV player for Smart TVs. QR cloud sync, multi-playlist management, and a cinema-grade interface engineered for your remote.</p>
+    <div class="hero-actions">
+      <button class="btn-hero-primary"   id="hero-manage-btn">Manage My Device</button>
+      <button class="btn-hero-secondary" id="hero-features-btn">See Features</button>
     </div>
 
-    <div id="privacy-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModals()">✕</button>
-            <h2 style="color:var(--primary); margin-bottom: 20px;">Privacy Policy</h2>
-            <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1; max-height: 60vh; overflow-y: auto;">
-                <p><strong>Last Updated: January 26, 2026</strong></p>
-                <p>We collect Device IDs and playlist credentials provided by you solely for remote synchronization with your TV. We do not host, store, or transmit any media content.</p>
+```
+<!-- TV MOCKUP -->
+<div class="hero-mockup" aria-hidden="true">
+  <div class="tv-frame">
+    <div class="tv-screen">
+      <div class="tv-screen-inner">
+        <div class="sim-topbar">
+          <div class="sim-logo"><span class="tivi">tivi</span><span class="pal">pal</span></div>
+          <div class="sim-clock">21:47</div>
+        </div>
+        <div class="sim-nav">
+          <div class="sim-nav-item active">Home</div>
+          <div class="sim-nav-item">Live TV</div>
+          <div class="sim-nav-item">Movies</div>
+          <div class="sim-nav-item">Series</div>
+          <div class="sim-nav-item">Search</div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
+          <div>
+            <div class="sim-row-label">Continue Watching</div>
+            <div class="sim-cards">
+              <div class="sim-card focus" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1a1a2e,#16213e);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(229,9,20,0.7)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:62%"></div></div><div class="sim-card-label">Action Film</div></div>
+              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1e1a2e,#160e2e);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(150,150,200,0.5)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:28%"></div></div><div class="sim-card-label">Drama S2E4</div></div>
+              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1e2a1a,#0e2010);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(100,200,100,0.5)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:85%"></div></div><div class="sim-card-label">Thriller</div></div>
+              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#2e1a1a,#2a1010);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(229,100,100,0.5)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:15%"></div></div><div class="sim-card-label">Sci-Fi</div></div>
             </div>
+          </div>
+          <div>
+            <div class="sim-row-label">Live TV</div>
+            <div class="sim-cards">
+              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1a2e2a,#0e2020);aspect-ratio:16/9;height:42px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(100,200,200,0.5)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="sim-card-label">News 24</div></div>
+              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#2a1e1e,#201010);aspect-ratio:16/9;height:42px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(229,9,20,0.5)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg></div><div class="sim-card-label">Sports HD</div></div>
+              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1e1e2e,#101028);aspect-ratio:16/9;height:42px;"></div><div class="sim-card-label">Cinema 4K</div></div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
+  <div class="tv-stand-neck"></div>
+  <div class="tv-stand-base"></div>
+</div>
 
-    <div id="cookie-banner" class="cookie-banner">
-        <div class="cookie-text">
-            We use essential cookies for portal functionality. By using tivipal, you agree to our <a href="javascript:void(0)" onclick="openPrivacy()" style="color:var(--primary); text-decoration: underline;">Privacy Policy</a>.
-        </div>
-        <button class="btn-cookie" onclick="acceptCookies()">Accept</button>
+<div class="hero-stats-bar">
+  <div class="stat-item"><div class="stat-num">4<span>K</span></div><div class="stat-label">Ready</div></div>
+  <div class="stat-item"><div class="stat-num">10<span>K+</span></div><div class="stat-label">Channels</div></div>
+  <div class="stat-item"><div class="stat-num">£<span>5</span>.99</div><div class="stat-label">Lifetime</div></div>
+  <div class="stat-item"><div class="stat-num">&lt;2<span>s</span></div><div class="stat-label">Load Time</div></div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- PLATFORMS -->
+
+<section class="platforms-section">
+  <div class="platforms-inner">
+    <div>
+      <div class="section-label">Availability</div>
+      <h2 class="section-title">YOUR TV.<br>YOUR PLAYER.</h2>
+      <p class="section-sub">tivipal is built from the ground up for TV remotes. No mouse. No keyboard. Just seamless navigation you can feel.</p>
     </div>
+    <div class="platform-list">
+      <div class="platform-item active">
+        <div class="platform-logo"><img src="https://upload.wikimedia.org/wikipedia/commons/0/00/Samsung_Orig_Wordmark_BLACK_RGB.png" alt="Samsung" loading="lazy"></div>
+        <div><div class="platform-name">Samsung Smart TV</div><div class="platform-sub">Tizen OS — All models</div></div>
+        <span class="platform-badge badge-live">Live</span>
+      </div>
+      <div class="platform-item">
+        <div class="platform-logo dim"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/LG_symbol.svg/3840px-LG_symbol.svg.png" alt="LG" loading="lazy"></div>
+        <div><div class="platform-name">LG Smart TV</div><div class="platform-sub">webOS</div></div>
+        <span class="platform-badge badge-soon">Soon</span>
+      </div>
+      <div class="platform-item">
+        <div class="platform-logo dim"><img src="https://upload.wikimedia.org/wikipedia/commons/6/64/Android_logo_2019_%28stacked%29.svg" alt="Android TV" loading="lazy"></div>
+        <div><div class="platform-name">Android TV / Google TV</div><div class="platform-sub">Android 9+</div></div>
+        <span class="platform-badge badge-soon">Soon</span>
+      </div>
+      <div class="platform-item">
+        <div class="platform-logo dim"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/1920px-Apple_logo_black.svg.png" alt="Apple TV" loading="lazy"></div>
+        <div><div class="platform-name">Apple TV</div><div class="platform-sub">tvOS</div></div>
+        <span class="platform-badge badge-soon">Soon</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <footer>
-        <div class="logo" style="margin-bottom: 15px; font-size: 1.5rem;"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-        <p>&copy; 2026 tivipal | The ultimate IPTV player for Smart TVs.</p>
-        <div class="footer-links">
-            <a href="javascript:void(0)" onclick="openPrivacy()">Privacy Policy</a>
-            <a href="javascript:void(0)" onclick="contactSupport()">Contact Support</a>
+<!-- FEATURES -->
+
+<section class="features-section" id="features">
+  <div style="text-align:center;">
+    <div class="section-label" style="display:flex;justify-content:center;">Why tivipal</div>
+    <h2 class="section-title">BUILT DIFFERENT</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon-wrap"><svg class="feat-icon-svg" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+      <h3>QR Cloud Sync</h3>
+      <p>Scan the QR code on your TV with your phone. Your Device ID loads instantly on tivipal.co.uk — push playlist changes directly to your TV without touching the remote.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap"><svg class="feat-icon-svg" viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg></div>
+      <h3>Multi-Playlist Manager</h3>
+      <p>Add and switch between multiple playlists — M3U or Xtream Codes. Set an active playlist, rename them, delete old ones. Full control from your phone or browser.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap"><svg class="feat-icon-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <h3>Pure Performance</h3>
+      <p>Zero bloatware. Every line of code is optimised for Samsung Tizen. Streams load in under 2 seconds, stay buffer-free, and the UI never stutters — even on older hardware.</p>
+    </div>
+    <div class="feat-card wide">
+      <div class="feat-wide-inner">
+        <div>
+          <div class="feat-icon-wrap"><svg class="feat-icon-svg" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+          <h3>3-Layer Remote Navigation</h3>
+          <p>Our unique collapsible 3-layer UI is engineered purely for TV remote navigation. Browse thousands of channels, movies, and series at full speed — no lag, no compromise. Every interaction mapped to D-pad, OK, and back.</p>
+          <div class="feat-wide-pills">
+            <span class="feat-pill">D-pad Native</span>
+            <span class="feat-pill">EPG Guide</span>
+            <span class="feat-pill">Watch History</span>
+            <span class="feat-pill">Subtitle Tracks</span>
+            <span class="feat-pill">Audio Selection</span>
+          </div>
         </div>
-    </footer>
+        <div aria-hidden="true" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px;">
+            <div style="font-size:0.6rem;color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">Navigation Layers</div>
+            <div style="display:flex;gap:6px;align-items:center;"><div style="width:8px;height:8px;border-radius:2px;background:var(--red);flex-shrink:0;"></div><div style="flex:1;height:28px;background:rgba(229,9,20,0.08);border:1px solid var(--border-red);border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:0.65rem;color:rgba(255,255,255,0.6);">Categories</div></div>
+            <div style="display:flex;gap:6px;align-items:center;padding-left:14px;"><div style="width:8px;height:8px;border-radius:2px;background:#4a4a5a;flex-shrink:0;"></div><div style="flex:1;height:28px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:0.65rem;color:rgba(255,255,255,0.4);">Channels / Content</div></div>
+            <div style="display:flex;gap:6px;align-items:center;padding-left:28px;"><div style="width:8px;height:8px;border-radius:2px;background:#3a3a4a;flex-shrink:0;"></div><div style="flex:1;height:28px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:0.65rem;color:rgba(255,255,255,0.3);">Player Controls</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<!-- ALL FEATURES SHOWCASE -->
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAx4WCxuXMgXqUp1CxwjHx9Ydd5s8IQTiQ",
-            authDomain: "tivipal-cee03.firebaseapp.com",
-            projectId: "tivipal-cee03",
-            storageBucket: "tivipal-cee03.firebasestorage.app",
-            messagingSenderId: "991826954037",
-            appId: "1:991826954037:web:8f9a61754dc2c6e4746e7c"
-        };
+<section class="all-features-section" id="all-features">
+  <div style="text-align:center;">
+    <div class="section-label" style="display:flex;justify-content:center;">Everything Included</div>
+    <h2 class="section-title">PACKED WITH POWER</h2>
+    <p class="section-sub" style="margin:0 auto;text-align:center;">Every feature you'd expect from a premium player — and several you won't find anywhere else on Samsung TV.</p>
+  </div>
+  <div class="af-grid">
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div><div class="af-title">Ratings &amp; Descriptions</div><div class="af-desc">Every movie and series displays its IMDb rating, genre tags, and full synopsis so you know exactly what you're watching before you press play.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="af-title">YouTube Trailers</div><div class="af-desc">Watch the official trailer for any movie or series directly on your TV before committing. One button, full-screen — no switching apps.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="af-title">Favourites List</div><div class="af-desc">Mark any channel, movie, or series as a favourite. Your personal list is always one click away — curated exactly the way you like it.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div><div class="af-title">Series Episodes &amp; Descriptions</div><div class="af-desc">Browse every season and episode with individual descriptions, air dates, and episode numbers. Never lose your place in a series again.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="af-title">Lightning-Fast Search</div><div class="af-desc">Find any channel, movie, or series in milliseconds. Our indexed, multi-layer search works across your entire library with instant, accurate results.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="af-title">Recently Added</div><div class="af-desc">A dedicated "New" row surfaces the latest movies and content added by your IPTV provider so you never miss fresh releases.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div class="af-title">Built-In Optimised Player</div><div class="af-desc">Our native player is tuned specifically for Samsung Tizen. Hardware-accelerated decoding, adaptive buffering, and audio/subtitle track selection built in.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg></div><div class="af-title">Catchup &amp; Replay</div><div class="af-desc">Missed something? Rewind and replay live TV from earlier in the day. Full catchup support for any channel your provider enables it on.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="af-title">EPG Programme Guide</div><div class="af-desc">A full Electronic Programme Guide shows what's on now, what's coming up, and lets you browse schedules hours ahead — all on your remote.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg></div><div class="af-title">M3U &amp; Xtream Codes</div><div class="af-desc">Full support for both M3U / M3U8 playlist URLs and Xtream Codes API. Works with virtually every IPTV provider on the market.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="af-title">Multiple Portals &amp; Subscriptions</div><div class="af-desc">Manage up to 10 different IPTV subscriptions and switch between them instantly. Ideal for households with more than one provider.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div class="af-title">Parental Controls</div><div class="af-desc">Set a 4-digit PIN to restrict access to adult channels and content categories. Keep your TV safe for the whole family.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="af-title">Subscription Expiry Notice</div><div class="af-desc">tivipal reads your Xtream account's expiry date and displays a clear countdown notice so you're never caught off guard by a lapsed subscription.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="af-title">Active Connection Counter</div><div class="af-desc">See how many simultaneous connections your IPTV account is using in real time — useful for shared accounts with connection limits.</div></div>
+    <div class="af-card"><div class="af-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></div><div class="af-title">Reload &amp; Refresh Content</div><div class="af-desc">Force-refresh your playlist at any time to pick up new channels, updated EPG data, or corrected stream URLs — without re-entering your credentials.</div></div>
+  </div>
+</section>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        let activeTab = 'm3u';
+<!-- SOCIAL PROOF / REVIEWS -->
 
-        window.openPortal = () => {
-            document.getElementById('portal-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            document.getElementById('syncDashboard').style.display = 'none';
-            document.getElementById('syncProgress').style.display = 'none';
-        };
+<section class="social-section">
+  <div style="text-align:center;">
+    <div class="section-label" style="display:flex;justify-content:center;">Verified Users</div>
+    <h2 class="section-title">WHAT VIEWERS SAY</h2>
+  </div>
+  <div class="reviews-grid">
+    <div class="review-card"><div class="review-stars">★★★★★</div><p class="review-text">"Finally an IPTV player that actually feels designed for a TV. The QR sync is genius — updated my playlist from my phone in seconds."</p><div class="review-author"><div class="review-avatar">MK</div><div><div class="review-name">Mohammed K.</div><div class="review-device">Samsung QE55 · Tizen 7</div></div></div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><p class="review-text">"I've tried every IPTV app on Samsung. tivipal is the only one that doesn't stutter, doesn't crash, and has a UI that actually makes sense on a remote."</p><div class="review-author"><div class="review-avatar">ST</div><div><div class="review-name">Sarah T.</div><div class="review-device">Samsung Frame TV · Tizen 9</div></div></div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><p class="review-text">"£5.99 for lifetime? That's less than one month of a streaming service. Absolutely worth it. Been running it flawlessly for 4 months."</p><div class="review-author"><div class="review-avatar">JR</div><div><div class="review-name">James R.</div><div class="review-device">Samsung UE65 · Tizen 6</div></div></div></div>
+  </div>
+</section>
 
-        window.closeModals = () => {
-            document.getElementById('portal-modal').style.display = 'none';
-            document.getElementById('privacy-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        };
+<!-- FAQ -->
 
-        window.switchTab = (mode) => {
-            activeTab = mode;
-            document.getElementById('form-m3u').style.display = mode === 'm3u' ? 'block' : 'none';
-            document.getElementById('form-xtream').style.display = mode === 'xtream' ? 'block' : 'none';
-            document.getElementById('tab-m3u').classList.toggle('active', mode === 'm3u');
-            document.getElementById('tab-xtream').classList.toggle('active', mode === 'xtream');
-        };
+<section class="faq-section">
+  <div style="text-align:center;">
+    <div class="section-label" style="display:flex;justify-content:center;">Help</div>
+    <h2 class="section-title">COMMON QUESTIONS</h2>
+  </div>
+  <div class="faq-list" role="list">
+    <div class="faq-item" role="listitem"><button class="faq-q" aria-expanded="false">What is a Device ID and where do I find it?<svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button><div class="faq-a">Your Device ID is a unique identifier derived from your Samsung TV's hardware (format: TP-XXXXXXXX). It is generated automatically the first time you open tivipal and is permanently tied to your physical TV. You can find it in the app's Settings screen, or by scanning the QR code shown at startup. It looks like <strong style="color:#fff;">TP-1A2B3C4D</strong>.</div></div>
+    <div class="faq-item" role="listitem"><button class="faq-q" aria-expanded="false">Does tivipal include TV channels or content?<svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button><div class="faq-a">No — tivipal is a <em>player</em>, not a content provider. You bring your own IPTV subscription (M3U URL or Xtream Codes credentials) from any IPTV provider of your choice. tivipal never hosts, stores, or transmits any media content.</div></div>
+    <div class="faq-item" role="listitem"><button class="faq-q" aria-expanded="false">What playlist formats are supported?<svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button><div class="faq-a">tivipal supports both <strong style="color:#fff;">M3U / M3U8 URLs</strong> and <strong style="color:#fff;">Xtream Codes API</strong> (server URL + username + password). You can store multiple playlists and switch between them at any time.</div></div>
+    <div class="faq-item" role="listitem"><button class="faq-q" aria-expanded="false">Is this a subscription or a one-time payment?<svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button><div class="faq-a">It's a <strong style="color:#fff;">one-time payment of £5.99</strong> for lifetime access. No recurring charges, no subscription. All future updates are included for free on your registered device.</div></div>
+    <div class="faq-item" role="listitem"><button class="faq-q" aria-expanded="false">Which Samsung TV models are supported?<svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button><div class="faq-a">tivipal runs on all Samsung Smart TVs powered by <strong style="color:#fff;">Tizen OS</strong> (Tizen 5 and above). This covers most Samsung Smart TV models from 2018 onwards. If your TV has the Samsung app store, it will run tivipal.</div></div>
+    <div class="faq-item" role="listitem"><button class="faq-q" aria-expanded="false">What is your refund policy?<svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button><div class="faq-a">We offer a <strong style="color:#fff;">7-day refund</strong> if tivipal doesn't work on your device. Contact us at <a href="mailto:support@tivipal.co.uk" style="color:var(--red);">support@tivipal.co.uk</a> with your Device ID and order reference within 7 days of purchase.</div></div>
+    <div class="faq-item" role="listitem"><button class="faq-q" aria-expanded="false">Is my playlist data secure?<svg class="faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button><div class="faq-a">Your playlist credentials are stored in Google Firebase (Firestore) and are only accessible by your registered Device ID. We never share your data with third parties. For full details, see our Privacy Policy. You can request deletion of all your data at any time by emailing us with your Device ID.</div></div>
+  </div>
+</section>
 
-        window.checkStatus = async () => {
-            const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            const box = document.getElementById('statusBox');
-            if (!id) return;
-            box.style.display = 'block'; box.innerHTML = "Checking database...";
-            try {
-                const docSnap = await getDoc(doc(db, "playlists", id));
-                if (docSnap.exists()) {
-                    if (docSnap.data().isPaid) {
-                        box.style.color = "#00c853"; 
-                        box.innerHTML = "✅ Lifetime License Active";
-                        document.getElementById('pay-zone').style.display = 'none';
-                    } else {
-                        box.style.color = "#ffcc00"; 
-                        box.innerHTML = "⏳ Trial Active / Activation Required";
-                    }
-                } else {
-                    box.style.color = "#ffcc00";
-                    box.innerHTML = "ℹ️ ID not found. Enter your playlist below to register.";
-                }
-            } catch (e) { 
-                box.style.color = "#ff4d4d";
-                box.innerHTML = "❌ Connection Refused.";
-            }
-        };
+<!-- PORTAL MODAL -->
 
-        window.uploadPlaylist = async () => {
-            const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            const btn = document.getElementById('updateBtn');
-            const dash = document.getElementById('syncDashboard');
-            const bar = document.getElementById('syncProgress');
-            const barFill = document.getElementById('syncProgressBar');
-            
-            if (!id) return alert("Please enter a Device ID.");
+<div class="modal-overlay" id="portal-modal" role="dialog" aria-modal="true" aria-labelledby="portal-modal-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="portal-modal-title"><span style="color:#fff">tivi</span><span style="color:var(--red)">pal</span> PORTAL</div>
+      <button class="modal-close" id="portal-close-btn" aria-label="Close portal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="step-row" role="tablist">
+        <button class="step-btn active" id="step-btn-1" role="tab" aria-selected="true" aria-controls="step-1"><span class="step-num" aria-hidden="true"><span class="step-num-inner">1</span></span>Device</button>
+        <button class="step-btn" id="step-btn-2" role="tab" aria-selected="false" aria-controls="step-2"><span class="step-num" aria-hidden="true"><span class="step-num-inner">2</span></span>Playlists</button>
+        <button class="step-btn" id="step-btn-3" role="tab" aria-selected="false" aria-controls="step-3"><span class="step-num" aria-hidden="true"><span class="step-num-inner">3</span></span>Activate</button>
+      </div>
+      <!-- STEP 1 -->
+      <div id="step-1" role="tabpanel">
+        <label class="field-label" for="deviceId">Device ID</label>
+        <input class="field-input" id="deviceId" placeholder="TP-XXXXXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <div class="field-hint" id="deviceId-hint">Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)</div>
+        <button class="btn-primary" id="step1-continue-btn">Continue →</button>
+        <div class="status-box" id="device-status" role="status"></div>
+        <div class="divider"></div>
+        <p style="font-size:0.78rem;color:var(--text-dim);text-align:center;line-height:1.7;">The easiest way: <strong style="color:var(--text-mid);">scan the QR code</strong> shown on your TV —<br>it opens this page with your Device ID already filled in.<br>Or find it manually in the tivipal app Settings screen.</p>
+      </div>
+      <!-- STEP 2 -->
+      <div id="step-2" style="display:none;" role="tabpanel">
+        <div class="playlist-section-title">Your Playlists</div>
+        <div class="playlist-list" id="playlist-list" role="list"></div>
+        <button class="btn-add-playlist" id="add-playlist-btn"><span aria-hidden="true">＋</span> Add New Playlist</button>
+        <div class="playlist-edit-form" id="add-edit-form" aria-live="polite">
+          <div class="edit-form-title" id="form-mode-label">Add New Playlist</div>
+          <input type="hidden" id="edit-playlist-id">
+          <label class="field-label" for="pl-name">Playlist Name</label>
+          <input class="field-input" id="pl-name" placeholder="e.g. My IPTV" maxlength="60">
+          <div class="tab-row" role="tablist" aria-label="Playlist type">
+            <button class="tab-pill active" id="tab-m3u" role="tab" aria-selected="true">M3U URL</button>
+            <button class="tab-pill" id="tab-xtream" role="tab" aria-selected="false">Xtream Codes</button>
+          </div>
+          <div id="form-m3u">
+            <label class="field-label" for="pl-m3u-url">M3U URL</label>
+            <input class="field-input" id="pl-m3u-url" placeholder="https://example.com/playlist.m3u" type="url" autocomplete="off" spellcheck="false">
+            <div class="field-hint" id="m3u-url-hint"></div>
+          </div>
+          <div id="form-xtream" style="display:none;">
+            <label class="field-label" for="pl-xt-host">Server URL</label>
+            <input class="field-input" id="pl-xt-host" placeholder="http://dns.com:80" type="url" autocomplete="off" spellcheck="false">
+            <label class="field-label" for="pl-xt-user">Username</label>
+            <input class="field-input" id="pl-xt-user" placeholder="Username" autocomplete="off" spellcheck="false">
+            <label class="field-label" for="pl-xt-pass">Password</label>
+            <input class="field-input" id="pl-xt-pass" placeholder="Password" type="password" autocomplete="new-password">
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button class="btn-primary" style="margin-top:0;" id="save-playlist-btn">Save Playlist</button>
+            <button class="btn-secondary" style="margin-top:0;width:auto;padding:13px 18px;" id="cancel-form-btn">Cancel</button>
+          </div>
+        </div>
+        <div class="sync-handshake" id="sync-handshake" aria-live="polite" role="status">
+          <div class="sync-phase wait" id="phase-write"><div class="sync-phase-icon"></div><div class="sync-phase-label">Sending to cloud<div class="sync-phase-sub">Writing playlist data to Firestore</div></div></div>
+          <div class="sync-phase wait" id="phase-tv"><div class="sync-phase-icon"></div><div class="sync-phase-label">Waiting for TV<div class="sync-phase-sub" id="phase-tv-sub">TV app must be open and connected</div></div></div>
+          <div class="sync-phase wait" id="phase-validate"><div class="sync-phase-icon"></div><div class="sync-phase-label">Validating playlist<div class="sync-phase-sub" id="phase-validate-sub">TV checks the stream is reachable</div></div></div>
+        </div>
+        <div class="sync-tv-waiting" id="sync-tv-waiting"><div class="tv-pulse"></div><span id="sync-tv-waiting-msg">Waiting for your TV to respond… make sure tivipal is open.</span></div>
+        <div class="sync-success" id="sync-success" role="status" style="display:none;"><div class="sync-success-icon" aria-hidden="true">✅</div><h4>Verified &amp; Synced to TV</h4><p>Your playlist was confirmed by the TV. tivipal is applying the changes now.</p></div>
+        <div class="divider"></div>
+        <button class="btn-primary" id="sync-btn">Push to TV</button>
+        <button class="btn-secondary" id="goto-step3-btn">Next: Activate Licence →</button>
+      </div>
+      <!-- STEP 3 -->
+      <div id="step-3" style="display:none;" role="tabpanel">
+        <div id="license-paid" style="display:none;"><div class="sync-success" style="display:block;"><div class="sync-success-icon" aria-hidden="true">🏆</div><h4>Lifetime Licence Active</h4><p>Your device is fully activated. Enjoy tivipal with no limitations.</p></div></div>
+        <div id="license-unpaid">
+          <div class="price-card">
+            <div class="price-amount"><span class="price-currency">£</span>5.99</div>
+            <div class="price-period">One-time payment · Lifetime access · No subscription</div>
+            <div class="price-features">
+              <div class="price-feat">Unlimited playlists</div>
+              <div class="price-feat">All future updates included</div>
+              <div class="price-feat">7-day refund guarantee</div>
+              <div class="price-feat">All platforms when released</div>
+            </div>
+          </div>
+          <div class="security-note"><span class="security-note-icon">🔒</span><span>Payment is processed securely by PayPal. tivipal never sees your card details. Licence activation is verified server-side.</span></div>
+          <button class="btn-primary" id="show-pay-btn">Buy Lifetime Licence — £5.99</button>
+          <div id="paypal-button-container" style="display:none;"></div>
+          <p style="font-size:0.73rem;color:var(--text-dim);text-align:center;margin-top:12px;line-height:1.55;">By purchasing you agree to our <a href="javascript:void(0)" id="pay-privacy-link" style="color:var(--red);">Privacy Policy</a> and <a href="javascript:void(0)" id="pay-tos-link" style="color:var(--red);">Terms of Service</a>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-            let data = { 
-                updatedAt: Date.now(), 
-                mode: activeTab,
-                syncRequest: Math.random().toString(36).substring(7)
-            };
-            
-            btn.classList.add('sync-loading');
-            btn.innerText = "Syncing Cloud...";
-            dash.style.display = 'none';
-            bar.style.display = 'block';
-            barFill.style.width = '20%';
+<!-- PRIVACY MODAL -->
 
-            try {
-                if (activeTab === 'm3u') {
-                    const m3uUrl = document.getElementById('m3uUrl').value.trim();
-                    const m3uName = document.getElementById('m3uName').value.trim();
-                    if (!m3uUrl) throw new Error("M3U URL is required.");
-                    
-                    data.m3u_url = m3uUrl;
-                    data.playlistName = m3uName || "M3U Playlist";
-                    data.xtream = deleteField(); 
-                    barFill.style.width = '70%';
-                } else {
-                    const host = document.getElementById('xtreamHost').value.trim();
-                    const user = document.getElementById('xtreamUser').value.trim();
-                    const pass = document.getElementById('xtreamPass').value.trim();
-                    const xtName = document.getElementById('xtreamName').value.trim();
-                    
-                    if (!host || !user || !pass) throw new Error("All Xtream fields required.");
-                    
-                    data.xtream = { host, user, pass };
-                    data.playlistName = xtName || "Xtream Playlist";
-                    data.m3u_url = deleteField();
-                    barFill.style.width = '70%';
-                }
+<div class="modal-overlay" id="privacy-modal" role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title" id="privacy-modal-title">PRIVACY POLICY</div><button class="modal-close" id="privacy-close-btn" aria-label="Close privacy policy">✕</button></div>
+    <div class="modal-body">
+      <div class="privacy-body">
+        <p><strong style="color:#fff;">Last Updated: March 2026</strong></p>
+        <h3>What We Collect</h3><p>We collect Device IDs and playlist credentials (M3U URLs or Xtream Codes login details) provided by you solely for the purpose of remote synchronisation with your TV device via our cloud service (Google Firebase Firestore).</p>
+        <h3>How We Use It</h3><p>Your data is stored securely in Google Firebase and is used exclusively to deliver playlist updates to your registered TV device. We do not sell, share, or use your data for any advertising or analytics purposes.</p>
+        <h3>Media Content</h3><p>tivipal does not host, store, stream, or transmit any media content. All streaming is performed directly between your TV and your IPTV provider's servers.</p>
+        <h3>Payments</h3><p>Payment processing is handled entirely by PayPal. tivipal does not store any payment card information. We only record whether a device has an active licence.</p>
+        <h3>Cookies</h3><p>We use a single essential cookie to remember your cookie consent preference. No tracking or advertising cookies are used.</p>
+        <h3>Your Rights (UK GDPR)</h3><p>You have the right to request deletion of your data at any time. Contact us at <a href="mailto:support@tivipal.co.uk" style="color:var(--red);">support@tivipal.co.uk</a> with your Device ID and we will remove all associated data within 30 days.</p>
+        <h3>Contact</h3><p>For all privacy enquiries: <a href="mailto:support@tivipal.co.uk" style="color:var(--red);">support@tivipal.co.uk</a></p>
+      </div>
+    </div>
+  </div>
+</div>
 
-                await setDoc(doc(db, "playlists", id), data, { merge: true });
-                
-                barFill.style.width = '100%';
-                setTimeout(() => {
-                    bar.style.display = 'none';
-                    dash.style.display = 'block';
-                }, 600);
-                
-            } catch (e) { 
-                alert("Error: " + e.message); 
-                bar.style.display = 'none';
-            } finally {
-                btn.classList.remove('sync-loading');
-                btn.innerText = "Update TV App";
-            }
-        };
+<!-- TERMS OF SERVICE MODAL -->
 
-        window.showPayment = () => {
-            const id = document.getElementById('deviceId').value.trim().toUpperCase();
-            if (!id) return alert("Enter Device ID first to link payment.");
-            
-            document.getElementById('show-pay-btn').style.display = 'none';
-            
-            paypal.Buttons({
-                createOrder: (data, actions) => {
-                    return actions.order.create({
-                        purchase_units: [{
-                            amount: { value: '5.99' },
-                            description: `tivipal Lifetime: ${id}`
-                        }]
-                    });
-                },
-                onApprove: (data, actions) => {
-                    return actions.order.capture().then(async (details) => {
-                        try {
-                            await setDoc(doc(db, "playlists", id), { isPaid: true }, { merge: true });
-                            alert('Transaction completed! Your TV app is now activated.');
-                            window.location.reload();
-                        } catch (err) {
-                            alert("Payment recorded but database update failed. Please contact support.");
-                        }
-                    });
-                }
-            }).render('#paypal-button-container');
-        };
+<div class="modal-overlay" id="tos-modal" role="dialog" aria-modal="true" aria-labelledby="tos-modal-title">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title" id="tos-modal-title">TERMS OF SERVICE</div><button class="modal-close" id="tos-close-btn" aria-label="Close terms of service">✕</button></div>
+    <div class="modal-body">
+      <div class="privacy-body">
+        <p><strong style="color:#fff;">Last Updated: March 2026</strong></p>
+        <h3>1. Acceptance</h3><p>By using tivipal you agree to these Terms. If you do not agree, please do not use the software.</p>
+        <h3>2. Licence</h3><p>Upon purchasing a Lifetime Licence, tivipal grants you a personal, non-transferable, non-exclusive licence to use the tivipal application on the registered Samsung TV device.</p>
+        <h3>3. Permitted Use</h3><p>tivipal is a player application. You are solely responsible for ensuring that any IPTV content you stream complies with applicable copyright laws in your jurisdiction. tivipal does not endorse or facilitate access to unlicensed content.</p>
+        <h3>4. Prohibited Use</h3><p>You may not: reverse-engineer, redistribute, or resell the application; use it to stream content you do not have lawful rights to access; or circumvent any security or access controls.</p>
+        <h3>5. Refund Policy</h3><p>We offer a 7-day refund if tivipal is incompatible with your device. Contact <a href="mailto:support@tivipal.co.uk" style="color:var(--red);">support@tivipal.co.uk</a> within 7 days of purchase with your Device ID and PayPal order reference.</p>
+        <h3>6. Disclaimer</h3>
+        <p>tivipal is provided "as is" without warranties of any kind. We are not responsible for the availability, quality, or legality of any IPTV content accessed through the application.</p>
+        <p>All movie and series cover artwork, posters, and thumbnails displayed on the tivipal website are used for illustrative purposes only to demonstrate the capabilities of our media player interface. They are not intended to imply any affiliation with, endorsement by, or ownership of the intellectual property of the respective rights holders. tivipal does not host, distribute, or stream any of the content depicted.</p>
+        <h3>7. Governing Law</h3><p>These Terms are governed by the laws of England and Wales.</p>
+        <h3>Contact</h3><p><a href="mailto:support@tivipal.co.uk" style="color:var(--red);">support@tivipal.co.uk</a></p>
+      </div>
+    </div>
+  </div>
+</div>
 
-        window.acceptCookies = () => {
-            localStorage.setItem('cookiesAccepted', 'true');
-            document.getElementById('cookie-banner').style.display = 'none';
-        };
+<!-- COOKIE BANNER -->
 
-        window.openPrivacy = () => {
-            document.getElementById('privacy-modal').style.display = 'flex';
-        };
+<div class="cookie-banner" id="cookie-banner" role="region" aria-label="Cookie consent">
+  <div class="cookie-text">We use essential cookies for portal functionality. By using tivipal you agree to our <a href="javascript:void(0)" id="cookie-privacy-link">Privacy Policy</a>.</div>
+  <button class="btn-cookie" id="accept-cookies-btn">Accept</button>
+</div>
 
-        window.contactSupport = () => {
-            const id = document.getElementById('deviceId').value.trim().toUpperCase() || "NEW_ID";
-            window.location.href = `mailto:tivipalpro@gmail.com?subject=Support Request: ${id}`;
-        };
+<!-- FOOTER -->
 
-        window.addEventListener('load', () => {
-            if (!localStorage.getItem('cookiesAccepted')) {
-                document.getElementById('cookie-banner').style.display = 'flex';
-            }
-            const urlParams = new URLSearchParams(window.location.search);
-            const qrId = urlParams.get('id');
-            if (qrId) {
-                document.getElementById('deviceId').value = qrId.toUpperCase();
-                window.openPortal();
-                window.checkStatus();
-            }
-        });
-    </script>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo"><span style="color:#fff">tivi</span><span style="color:var(--red)">pal</span></div>
+      <p>The ultimate IPTV player for Smart TVs. Engineered for performance, designed for the living room.</p>
+    </div>
+    <div class="footer-links-col">
+      <h4>Product</h4>
+      <a href="javascript:void(0)" id="footer-portal">Portal Access</a>
+      <a href="javascript:void(0)" id="footer-features">Features</a>
+      <a href="javascript:void(0)" id="footer-all-features">All Features</a>
+      <a href="javascript:void(0)" id="footer-faq">FAQ</a>
+    </div>
+    <div class="footer-links-col">
+      <h4>Legal</h4>
+      <a href="javascript:void(0)" id="footer-privacy">Privacy Policy</a>
+      <a href="javascript:void(0)" id="footer-tos">Terms of Service</a>
+      <a href="javascript:void(0)" id="footer-support">Contact Support</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 tivipal. All rights reserved.</div>
+    <div class="footer-version">v1.0 · Samsung Tizen · March 2026</div>
+  </div>
+  <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);font-size:0.72rem;color:#3a3a50;line-height:1.6;text-align:center;">
+    All movie and series covers, posters, and artwork shown on this website are used for illustrative purposes only to demonstrate our media player interface. tivipal does not host, stream, or distribute any media content.
+  </div>
+</footer>
+
+<script type="module">
+  import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, deleteField, onSnapshot }
+                            from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyAx4WCxuXMgXqUp1CxwjHx9Ydd5s8IQTiQ",
+    authDomain:        "tivipal-cee03.firebaseapp.com",
+    projectId:         "tivipal-cee03",
+    storageBucket:     "tivipal-cee03.firebasestorage.app",
+    messagingSenderId: "991826954037",
+    appId:             "1:991826954037:web:8f9a61754dc2c6e4746e7c"
+  };
+  const PAYPAL_CLIENT_ID = "AZcDmimBoWyAxx2HZk61mJilTyOvgm4h1EiFCiuZi2DIuHPm3S7h_vdQoWXs73F1mL7X9EJke6Bt2wJ1";
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const db          = getFirestore(firebaseApp);
+
+  const DEVICE_ID_RE         = /^TP-[0-9A-F]{8}$/;
+  const FIRESTORE_TIMEOUT_MS = 9000;
+  const RATE_LIMIT_MS        = 3000;
+  const MAX_PLAYLISTS        = 10;
+  const SERVER_ONLY_FIELDS   = new Set(['isPaid']);
+  const ALLOWED_FIELDS       = new Set(['playlists','updatedAt','syncRequest','syncAt','syncStatus','playlistName','mode','m3u_url','xtream','deviceId']);
+
+  function isValidUrl(s) { try { const u = new URL(s); return ['http:','https:'].includes(u.protocol); } catch { return false; } }
+  function normaliseHost(h) { return h.replace(/\/+$/, ''); }
+  function withTimeout(p, ms = FIRESTORE_TIMEOUT_MS, label = 'Request') {
+    let t; const timeout = new Promise((_,rej) => { t = setTimeout(() => rej(new Error(`${label} timed out after ${ms/1000}s`)), ms); });
+    return Promise.race([p, timeout]).finally(() => clearTimeout(t));
+  }
+  function sanitisePayload(data) {
+    const clean = {};
+    for (const [k,v] of Object.entries(data)) {
+      if (SERVER_ONLY_FIELDS.has(k)) continue;
+      if (!ALLOWED_FIELDS.has(k) && v !== undefined) continue;
+      clean[k] = v;
+    }
+    return clean;
+  }
+  function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function escAttr(s) { return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+  function showStatus(el, type, html) { el.className='status-box '+type; el.innerHTML=html; el.style.display='block'; }
+
+  /* ── TOAST ── */
+  const TOAST_ICONS = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  function showToast(type, message, duration = 4500) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`; t.setAttribute('role','alert');
+    t.innerHTML = `<span class="toast-icon" aria-hidden="true">${TOAST_ICONS[type]||'ℹ️'}</span><span class="toast-msg">${escHtml(message)}</span><button class="toast-close" aria-label="Dismiss">✕</button>`;
+    t.querySelector('.toast-close').addEventListener('click', () => removeToast(t));
+    c.appendChild(t); t._tid = setTimeout(() => removeToast(t), duration);
+  }
+  function removeToast(t) { clearTimeout(t._tid); t.classList.add('removing'); t.addEventListener('animationend', () => t.remove(), {once:true}); }
+
+  /* ── CONFIRM ── */
+  function showConfirm(title, message, okLabel='Delete') {
+    return new Promise(resolve => {
+      const ov = document.getElementById('confirm-overlay');
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-msg').textContent   = message;
+      const ok = document.getElementById('confirm-ok');
+      const cn = document.getElementById('confirm-cancel');
+      ok.textContent = okLabel; ov.classList.add('open');
+      function cleanup(r) { ov.classList.remove('open'); ok.removeEventListener('click',onOk); cn.removeEventListener('click',onCn); resolve(r); }
+      const onOk = () => cleanup(true); const onCn = () => cleanup(false);
+      ok.addEventListener('click',onOk,{once:true}); cn.addEventListener('click',onCn,{once:true});
+      const onKey = e => { if(e.key==='Escape'){document.removeEventListener('keydown',onKey);cleanup(false);} };
+      document.addEventListener('keydown',onKey);
+    });
+  }
+
+  /* ── STATE ── */
+  let currentDeviceId = '', deviceData = null, playlists = {}, activeTab = 'm3u';
+  let editingId = null, currentStep = 1, paypalRendered = false, paypalLoading = false;
+  let lastLookupTime = 0, syncUnsubscribe = null, licenceUnsubscribe = null;
+
+  /* ── FOCUS TRAP ── */
+  function trapFocus(sel) {
+    const c = document.querySelector(sel); if(!c) return;
+    const els = c.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])');
+    if(!els.length) return; const first=els[0], last=els[els.length-1];
+    c._trap = e => { if(e.key!=='Tab')return; if(e.shiftKey){if(document.activeElement===first){e.preventDefault();last.focus();}} else{if(document.activeElement===last){e.preventDefault();first.focus();}} };
+    c.addEventListener('keydown',c._trap);
+  }
+  function releaseFocus(sel) { const c=document.querySelector(sel); if(c&&c._trap)c.removeEventListener('keydown',c._trap); }
+
+  /* ── HAMBURGER DRAWER ── */
+  function openDrawer() {
+    document.getElementById('nav-drawer').classList.add('open');
+    document.getElementById('nav-backdrop').classList.add('open');
+    document.getElementById('hamburger-btn').classList.add('open');
+    document.getElementById('hamburger-btn').setAttribute('aria-expanded','true');
+    document.getElementById('nav-drawer').setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      const first = document.querySelector('#nav-drawer .nav-drawer-link, #nav-drawer .nav-drawer-close');
+      if (first) first.focus();
+    }, 60);
+  }
+
+  function closeDrawer() {
+    document.getElementById('nav-drawer').classList.remove('open');
+    document.getElementById('nav-backdrop').classList.remove('open');
+    document.getElementById('hamburger-btn').classList.remove('open');
+    document.getElementById('hamburger-btn').setAttribute('aria-expanded','false');
+    document.getElementById('nav-drawer').setAttribute('aria-hidden','true');
+    if (!document.querySelector('.modal-overlay.open')) document.body.style.overflow = '';
+  }
+
+  function drawerThen(fn) { closeDrawer(); setTimeout(fn, 180); }
+
+  /* Wire up hamburger button */
+  document.getElementById('hamburger-btn').addEventListener('click', () => {
+    if (document.getElementById('nav-drawer').classList.contains('open')) closeDrawer();
+    else openDrawer();
+  });
+
+  /* Wire up drawer close button */
+  document.getElementById('nav-drawer-close-btn').addEventListener('click', closeDrawer);
+
+  /* Wire up backdrop */
+  document.getElementById('nav-backdrop').addEventListener('click', closeDrawer);
+
+  /* Wire up drawer links */
+  document.getElementById('dl-portal').addEventListener('click',       () => drawerThen(openPortal));
+  document.getElementById('dl-features').addEventListener('click',     () => drawerThen(() => document.getElementById('features').scrollIntoView({behavior:'smooth'})));
+  document.getElementById('dl-all-features').addEventListener('click', () => drawerThen(() => document.getElementById('all-features').scrollIntoView({behavior:'smooth'})));
+  document.getElementById('dl-faq').addEventListener('click',          () => drawerThen(() => document.querySelector('.faq-section').scrollIntoView({behavior:'smooth'})));
+  document.getElementById('dl-privacy').addEventListener('click',      () => drawerThen(openPrivacy));
+  document.getElementById('dl-tos').addEventListener('click',          () => drawerThen(openTos));
+  document.getElementById('dl-support').addEventListener('click',      () => drawerThen(contactSupport));
+
+  /* Close drawer on Escape */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('nav-drawer').classList.contains('open')) { closeDrawer(); return; }
+      if (document.querySelector('.modal-overlay.open')) closeAllModals();
+    }
+  });
+
+  /* ── MODALS ── */
+  function openPortal() {
+    document.getElementById('portal-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    goToStep(1);
+    setTimeout(() => { document.getElementById('deviceId').focus(); trapFocus('#portal-modal .modal-box'); }, 60);
+  }
+
+  function closeAllModals() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+    document.body.style.overflow = '';
+    ['#portal-modal .modal-box','#privacy-modal .modal-box','#tos-modal .modal-box'].forEach(releaseFocus);
+    cleanupSyncListener();
+    cleanupLicenceListener();
+  }
+
+  function openPrivacy() {
+    document.getElementById('privacy-modal').classList.add('open');
+    setTimeout(() => trapFocus('#privacy-modal .modal-box'), 60);
+  }
+
+  function openTos() {
+    document.getElementById('tos-modal').classList.add('open');
+    setTimeout(() => trapFocus('#tos-modal .modal-box'), 60);
+  }
+
+  function contactSupport() {
+    const id = currentDeviceId || 'NEW_DEVICE';
+    window.location.href = `mailto:support@tivipal.co.uk?subject=Support%3A%20${encodeURIComponent(id)}`;
+  }
+
+  /* Wire up all close buttons and backdrops */
+  document.getElementById('portal-close-btn').addEventListener('click',  closeAllModals);
+  document.getElementById('privacy-close-btn').addEventListener('click', closeAllModals);
+  document.getElementById('tos-close-btn').addEventListener('click',     closeAllModals);
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) closeAllModals(); });
+  });
+
+  /* ── NAVBAR ── */
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+
+  document.getElementById('logo-home').addEventListener('click',        () => window.scrollTo({top:0,behavior:'smooth'}));
+  document.getElementById('nav-manage-btn').addEventListener('click',   openPortal);
+  document.getElementById('hero-manage-btn').addEventListener('click',  openPortal);
+  document.getElementById('hero-features-btn').addEventListener('click',() => document.getElementById('features').scrollIntoView({behavior:'smooth'}));
+
+  /* Footer links */
+  document.getElementById('footer-portal').addEventListener('click',       openPortal);
+  document.getElementById('footer-features').addEventListener('click',     () => document.getElementById('features').scrollIntoView({behavior:'smooth'}));
+  document.getElementById('footer-all-features').addEventListener('click', () => document.getElementById('all-features').scrollIntoView({behavior:'smooth'}));
+  document.getElementById('footer-faq').addEventListener('click',          () => document.querySelector('.faq-section').scrollIntoView({behavior:'smooth'}));
+  document.getElementById('footer-privacy').addEventListener('click',      openPrivacy);
+  document.getElementById('footer-tos').addEventListener('click',          openTos);
+  document.getElementById('footer-support').addEventListener('click',      contactSupport);
+
+  /* Cookie banner & privacy links */
+  document.getElementById('accept-cookies-btn').addEventListener('click', () => {
+    localStorage.setItem('cookiesAccepted','1');
+    document.getElementById('cookie-banner').style.display = 'none';
+  });
+  document.getElementById('cookie-privacy-link').addEventListener('click', openPrivacy);
+  document.getElementById('pay-privacy-link').addEventListener('click',    openPrivacy);
+  document.getElementById('pay-tos-link').addEventListener('click',        openTos);
+
+  /* ── FAQ ── */
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const answer = btn.nextElementSibling;
+      const isOpen = btn.classList.contains('open');
+      document.querySelectorAll('.faq-q.open').forEach(q => {
+        q.classList.remove('open'); q.setAttribute('aria-expanded','false'); q.nextElementSibling.classList.remove('open');
+      });
+      if (!isOpen) { btn.classList.add('open'); btn.setAttribute('aria-expanded','true'); answer.classList.add('open'); }
+    });
+  });
+
+  /* ── STEPS ── */
+  function goToStep(n) {
+    currentStep = n;
+    [1,2,3].forEach(i => {
+      document.getElementById('step-'+i).style.display = i===n ? 'block' : 'none';
+      const btn = document.getElementById('step-btn-'+i);
+      btn.classList.remove('active','done');
+      btn.setAttribute('aria-selected', i===n ? 'true':'false');
+      if (i===n) btn.classList.add('active');
+      if (i<n)  btn.classList.add('done');
+    });
+    if (n===2) renderPlaylists();
+    if (n===3) {
+      const isPaid = deviceData && deviceData.isPaid;
+      document.getElementById('license-paid').style.display   = isPaid ? 'block' : 'none';
+      document.getElementById('license-unpaid').style.display = isPaid ? 'none'  : 'block';
+    }
+  }
+
+  document.getElementById('step-btn-1').addEventListener('click', () => goToStep(1));
+  document.getElementById('step-btn-2').addEventListener('click', () => goToStep(2));
+  document.getElementById('step-btn-3').addEventListener('click', () => goToStep(3));
+  document.getElementById('goto-step3-btn').addEventListener('click', () => goToStep(3));
+
+  /* ── STEP 1: DEVICE ID ── */
+  const deviceIdInput = document.getElementById('deviceId');
+
+  deviceIdInput.addEventListener('input', function() {
+    const raw   = this.value;
+    const upper = raw.toUpperCase();
+    const hint  = document.getElementById('deviceId-hint');
+
+    // Auto-uppercase what the user types without blocking any characters
+    // This preserves cursor position better than replacing the whole value
+    if (raw !== upper) {
+      const pos = this.selectionStart;
+      this.value = upper;
+      this.setSelectionRange(pos, pos);
+    }
+
+    const v     = this.value;
+    const valid = DEVICE_ID_RE.test(v);
+
+    if (!v.length) {
+      this.classList.remove('invalid', 'valid');
+      hint.textContent = 'Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)';
+      hint.classList.remove('error');
+    } else if (valid) {
+      this.classList.remove('invalid'); this.classList.add('valid');
+      hint.textContent = ''; hint.classList.remove('error');
+    } else {
+      // Show remaining count while typing but don't block or rewrite
+      this.classList.remove('valid', 'invalid');
+      hint.classList.remove('error');
+      hint.textContent = '';
+    }
+  });
+
+  // Validate format strictly only when the user leaves the field
+  deviceIdInput.addEventListener('blur', function() {
+    const v    = this.value.trim().toUpperCase();
+    const hint = document.getElementById('deviceId-hint');
+    this.value = v;
+    if (!v.length) {
+      this.classList.remove('invalid', 'valid');
+      hint.textContent = 'Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)';
+      hint.classList.remove('error');
+    } else if (DEVICE_ID_RE.test(v)) {
+      this.classList.remove('invalid'); this.classList.add('valid');
+      hint.textContent = ''; hint.classList.remove('error');
+    } else {
+      this.classList.remove('valid'); this.classList.add('invalid');
+      hint.textContent = 'Invalid format — expected TP- followed by exactly 8 characters (e.g. TP-1A2B3C4D)';
+      hint.classList.add('error');
+    }
+  });
+
+  deviceIdInput.addEventListener('keydown', e => { if (e.key==='Enter') checkDeviceAndProceed(); });
+
+  document.getElementById('step1-continue-btn').addEventListener('click', checkDeviceAndProceed);
+
+  async function checkDeviceAndProceed() {
+    const now = Date.now();
+    if (now - lastLookupTime < RATE_LIMIT_MS) { showToast('warning','Please wait a moment before trying again.'); return; }
+    const id  = deviceIdInput.value.trim().toUpperCase();
+    const box = document.getElementById('device-status');
+    if (!id) { showStatus(box,'error','Please enter your Device ID.'); deviceIdInput.focus(); return; }
+    if (!DEVICE_ID_RE.test(id)) {
+      showStatus(box,'error','Invalid Device ID format. Expected: TP- followed by 8 characters (e.g. TP-1A2B3C4D)');
+      deviceIdInput.classList.add('invalid'); deviceIdInput.focus(); return;
+    }
+    currentDeviceId = id; lastLookupTime = now;
+    const btn = document.getElementById('step1-continue-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Checking…';
+    showStatus(box,'info','<span class="spinner"></span>Checking device…');
+    try {
+      const snap = await withTimeout(getDoc(doc(db,'playlists',id)), FIRESTORE_TIMEOUT_MS, 'Device lookup');
+      if (snap.exists()) {
+        deviceData = snap.data(); playlists = deviceData.playlists || {};
+        if (!Object.keys(playlists).length) {
+          if (deviceData.m3u_url) playlists['pl_legacy'] = {name:deviceData.playlistName||'My Playlist',type:'m3u',url:deviceData.m3u_url,active:true};
+          else if (deviceData.xtream) playlists['pl_legacy'] = {name:deviceData.playlistName||'My Playlist',type:'xtream',xtream:deviceData.xtream,active:true};
+        }
+        showStatus(box, deviceData.isPaid?'success':'warning',
+          deviceData.isPaid ? '✅ Device found — Lifetime Licence Active' : '⏳ Device found — Trial / Activation required');
+      } else {
+        deviceData = {}; playlists = {};
+        showStatus(box,'info','ℹ️ New device — add your playlist below to register it.');
+      }
+      setTimeout(() => goToStep(2), 800);
+    } catch(e) {
+      showStatus(box,'error', e.message.includes('timed out') ? '⏱ Connection timed out. Check your internet and try again.' : '❌ Connection error. Please try again.');
+    } finally {
+      btn.disabled = false; btn.innerHTML = 'Continue →';
+    }
+  }
+
+  /* ── STEP 2: PLAYLIST MANAGER ── */
+  function genId() {
+    return 'pl_' + (typeof crypto!=='undefined'&&crypto.randomUUID
+      ? crypto.randomUUID().replace(/-/g,'').substring(0,12)
+      : Date.now().toString(36)+Math.random().toString(36).substring(2,7));
+  }
+
+  function renderPlaylists() {
+    const list = document.getElementById('playlist-list');
+    const ids  = Object.keys(playlists);
+    if (!ids.length) { list.innerHTML='<p style="font-size:0.83rem;color:var(--text-dim);text-align:center;padding:14px 0;" role="listitem">No playlists yet — add one below.</p>'; return; }
+    list.innerHTML = ids.map(id => {
+      const pl=playlists[id], isAct=pl.active;
+      const meta = pl.type==='m3u'
+        ? 'M3U · '+escHtml((pl.url||'—').substring(0,35))+(pl.url&&pl.url.length>35?'…':'')
+        : 'Xtream · '+escHtml(((pl.xtream&&pl.xtream.host)||'—').substring(0,30))+((pl.xtream&&pl.xtream.host&&pl.xtream.host.length>30)?'…':'');
+      return `<div class="playlist-item${isAct?' active-playlist':''}" data-id="${escAttr(id)}" role="listitem">
+        <div class="playlist-dot" aria-hidden="true"></div>
+        <div class="playlist-info"><div class="playlist-name-text">${escHtml(pl.name||'Untitled')}</div><div class="playlist-meta">${meta}</div></div>
+        ${isAct?'<span class="active-badge" aria-label="Active playlist">Active</span>':''}
+        <div class="playlist-actions">
+          ${!isAct?`<button class="pl-action-btn set-active" title="Set as active" onclick="setActivePlaylist('${escAttr(id)}')">▶</button>`:''}
+          <button class="pl-action-btn edit" title="Edit" onclick="editPlaylist('${escAttr(id)}')">✎</button>
+          <button class="pl-action-btn del"  title="Delete" onclick="deletePlaylist('${escAttr(id)}')">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('add-playlist-btn').addEventListener('click', () => {
+    if (Object.keys(playlists).length >= MAX_PLAYLISTS) { showToast('warning',`Maximum of ${MAX_PLAYLISTS} playlists reached.`); return; }
+    editingId = null;
+    document.getElementById('form-mode-label').textContent = 'Add New Playlist';
+    ['pl-name','pl-m3u-url','pl-xt-host','pl-xt-user','pl-xt-pass'].forEach(id => { const el=document.getElementById(id); el.value=''; el.classList.remove('invalid','valid'); });
+    document.getElementById('edit-playlist-id').value = '';
+    document.getElementById('m3u-url-hint').textContent = '';
+    switchTab('m3u');
+    document.getElementById('add-edit-form').style.display = 'block';
+    document.getElementById('pl-name').focus();
+  });
+
+  window.editPlaylist = (id) => {
+    const pl=playlists[id]; if(!pl) return; editingId=id;
+    document.getElementById('form-mode-label').textContent = 'Edit Playlist';
+    document.getElementById('edit-playlist-id').value = id;
+    document.getElementById('pl-name').value = pl.name||'';
+    if (pl.type==='m3u') { switchTab('m3u'); document.getElementById('pl-m3u-url').value=pl.url||''; }
+    else { switchTab('xtream'); document.getElementById('pl-xt-host').value=(pl.xtream&&pl.xtream.host)||''; document.getElementById('pl-xt-user').value=(pl.xtream&&pl.xtream.user)||''; document.getElementById('pl-xt-pass').value=(pl.xtream&&pl.xtream.pass)||''; }
+    document.getElementById('add-edit-form').style.display = 'block';
+    document.getElementById('pl-name').focus();
+  };
+
+  document.getElementById('cancel-form-btn').addEventListener('click', () => { document.getElementById('add-edit-form').style.display='none'; editingId=null; });
+
+  document.getElementById('save-playlist-btn').addEventListener('click', () => {
+    const nameEl=document.getElementById('pl-name'), name=nameEl.value.trim();
+    if (!name) { nameEl.classList.add('invalid'); showToast('error','Please enter a playlist name.'); nameEl.focus(); return; }
+    nameEl.classList.remove('invalid'); nameEl.classList.add('valid');
+    const id = editingId||genId();
+    const wasActive = !!(editingId&&playlists[editingId]&&playlists[editingId].active);
+    if (activeTab==='m3u') {
+      const urlEl=document.getElementById('pl-m3u-url'), url=urlEl.value.trim();
+      if (!url||!isValidUrl(url)) { urlEl.classList.add('invalid'); document.getElementById('m3u-url-hint').textContent='Please enter a valid http:// or https:// URL.'; document.getElementById('m3u-url-hint').classList.add('error'); showToast('error','Please enter a valid M3U URL.'); urlEl.focus(); return; }
+      urlEl.classList.remove('invalid'); urlEl.classList.add('valid'); document.getElementById('m3u-url-hint').textContent='';
+      playlists[id]={name,type:'m3u',url,active:wasActive};
+    } else {
+      const hostEl=document.getElementById('pl-xt-host'), userEl=document.getElementById('pl-xt-user'), passEl=document.getElementById('pl-xt-pass');
+      const host=normaliseHost(hostEl.value.trim()), user=userEl.value.trim(), pass=passEl.value.trim();
+      if (!host||!isValidUrl(host)) { hostEl.classList.add('invalid'); showToast('error','Please enter a valid server URL.'); hostEl.focus(); return; }
+      if (!user) { userEl.classList.add('invalid'); showToast('error','Username is required.'); userEl.focus(); return; }
+      if (!pass) { passEl.classList.add('invalid'); showToast('error','Password is required.'); passEl.focus(); return; }
+      [hostEl,userEl,passEl].forEach(el=>{el.classList.remove('invalid');el.classList.add('valid');});
+      playlists[id]={name,type:'xtream',xtream:{host,user,pass},active:wasActive};
+    }
+    if (Object.keys(playlists).length===1) playlists[id].active=true;
+    document.getElementById('add-edit-form').style.display='none'; editingId=null;
+    renderPlaylists(); showToast('success',`"${name}" saved. Don't forget to Push to TV.`);
+  });
+
+  window.deletePlaylist = async (id) => {
+    const pl=playlists[id], name=pl?(pl.name||'Untitled'):'this playlist';
+    const ok=await showConfirm('Delete Playlist',`Delete "${name}"? This can't be undone.`,'Delete');
+    if (!ok) return;
+    const wasActive=!!(playlists[id]&&playlists[id].active); delete playlists[id];
+    if (wasActive){const rem=Object.keys(playlists);if(rem.length)playlists[rem[0]].active=true;}
+    renderPlaylists(); showToast('info',`"${name}" removed.`);
+  };
+
+  window.setActivePlaylist = (id) => {
+    Object.keys(playlists).forEach(k=>{playlists[k].active=false;});
+    playlists[id].active=true; renderPlaylists();
+    showToast('success',`"${playlists[id].name||'Playlist'}" set as active.`);
+  };
+
+  function switchTab(mode) {
+    activeTab=mode;
+    document.getElementById('form-m3u').style.display    = mode==='m3u'    ? 'block':'none';
+    document.getElementById('form-xtream').style.display  = mode==='xtream' ? 'block':'none';
+    document.getElementById('tab-m3u').classList.toggle('active',    mode==='m3u');
+    document.getElementById('tab-xtream').classList.toggle('active', mode==='xtream');
+    document.getElementById('tab-m3u').setAttribute('aria-selected',    String(mode==='m3u'));
+    document.getElementById('tab-xtream').setAttribute('aria-selected', String(mode==='xtream'));
+  }
+  document.getElementById('tab-m3u').addEventListener('click',    () => switchTab('m3u'));
+  document.getElementById('tab-xtream').addEventListener('click', () => switchTab('xtream'));
+
+  /* ── SYNC HANDSHAKE ── */
+  const TV_RESPONSE_TIMEOUT_MS = 30000;
+  const SYNC_ERROR_MESSAGES = {
+    NO_PLAYLIST:'No active playlist found on device.',
+    M3U_UNREACHABLE:'The M3U URL is unreachable. Check the URL is correct and the server is online.',
+    M3U_EMPTY:'The M3U playlist loaded but contains no channels.',
+    XTREAM_AUTH_FAILED:'Xtream credentials were rejected by the server. Check your username and password.',
+    XTREAM_UNREACHABLE:'The Xtream server could not be reached. Check the server URL.',
+    FETCH_ERROR:'The TV could not connect to the playlist server.',
+    UNKNOWN:'The TV reported an unknown error. Check your playlist details.',
+  };
+  function setPhase(id,state,sub) { const el=document.getElementById(id); const s=el.querySelector('.sync-phase-sub'); el.className='sync-phase '+state; if(sub!==undefined&&s)s.textContent=sub; }
+  function cleanupSyncListener() { if(syncUnsubscribe){syncUnsubscribe();syncUnsubscribe=null;} }
+  function cleanupLicenceListener() { if(licenceUnsubscribe){licenceUnsubscribe();licenceUnsubscribe=null;} }
+
+  document.getElementById('sync-btn').addEventListener('click', async () => {
+    if (!currentDeviceId) { showToast('error','No Device ID set. Go back to Step 1.'); return; }
+    if (!Object.keys(playlists).length) { showToast('warning','Add at least one playlist before syncing.'); return; }
+    cleanupSyncListener();
+    const handshake=document.getElementById('sync-handshake'), tvWaiting=document.getElementById('sync-tv-waiting');
+    const tvWaitMsg=document.getElementById('sync-tv-waiting-msg'), successEl=document.getElementById('sync-success');
+    const btn=document.getElementById('sync-btn');
+    successEl.style.display='none'; handshake.classList.add('visible'); tvWaiting.classList.remove('visible');
+    setPhase('phase-write','wait'); setPhase('phase-tv','wait','TV app must be open and connected'); setPhase('phase-validate','wait','TV checks the stream is reachable');
+    btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Syncing…';
+    setPhase('phase-write','pending');
+    const activePl=Object.values(playlists).find(p=>p.active)||Object.values(playlists)[0];
+    const syncReqId=crypto.randomUUID();
+    const rawData={playlists,updatedAt:Date.now(),syncRequest:syncReqId,syncStatus:'pending',syncAt:Date.now()};
+    if(activePl){rawData.playlistName=activePl.name;if(activePl.type==='m3u'){rawData.mode='m3u';rawData.m3u_url=activePl.url;rawData.xtream=deleteField();}else{rawData.mode='xtream';rawData.xtream=activePl.xtream;rawData.m3u_url=deleteField();}}
+    const saveData=sanitisePayload(rawData);
+    try {
+      await withTimeout(setDoc(doc(db,'playlists',currentDeviceId),saveData,{merge:true}),FIRESTORE_TIMEOUT_MS,'Sync write');
+    } catch(e) {
+      setPhase('phase-write','err',e.message.includes('timed out')?'Connection timed out.':e.message);
+      showToast('error','Could not write to Firestore. Check your connection.');
+      btn.disabled=false; btn.innerHTML='Push to TV'; return;
+    }
+    setPhase('phase-write','ok','Data written to cloud successfully');
+    setPhase('phase-tv','pending','Waiting for TV app to receive the update…');
+    tvWaitMsg.textContent='Waiting for your TV to respond… make sure tivipal is open.';
+    tvWaiting.classList.add('visible');
+    const tvTimeoutId=setTimeout(()=>{
+      cleanupSyncListener(); setPhase('phase-tv','err','No response — is tivipal open on your TV?');
+      setPhase('phase-validate','wait','Could not reach TV'); tvWaiting.classList.remove('visible');
+      showToast('error','TV did not respond within 30 seconds. Make sure tivipal is open and connected.');
+      btn.disabled=false; btn.innerHTML='Push to TV';
+    },TV_RESPONSE_TIMEOUT_MS);
+    let waitSecs=0;
+    const tickerId=setInterval(()=>{waitSecs+=5;if(waitSecs<TV_RESPONSE_TIMEOUT_MS/1000)tvWaitMsg.textContent=`Waiting for TV… (${waitSecs}s). Make sure tivipal is open.`;},5000);
+    syncUnsubscribe=onSnapshot(doc(db,'playlists',currentDeviceId),(snap)=>{
+      if(!snap.exists())return; const data=snap.data();
+      if(data.syncRequest!==syncReqId)return;
+      if(!data.syncStatus||data.syncStatus==='pending')return;
+      clearTimeout(tvTimeoutId); clearInterval(tickerId); cleanupSyncListener(); tvWaiting.classList.remove('visible');
+      if(data.syncStatus==='error'&&data.syncError==='NO_PLAYLIST'){setPhase('phase-tv','err','TV could not find an active playlist.');setPhase('phase-validate','wait');showToast('error',SYNC_ERROR_MESSAGES['NO_PLAYLIST']);btn.disabled=false;btn.innerHTML='Push to TV';return;}
+      setPhase('phase-tv','ok','TV received the update'); setPhase('phase-validate','pending','TV is checking the stream…');
+      if(data.syncStatus==='confirmed'){setPhase('phase-validate','ok','Stream verified — playlist is live');successEl.style.display='block';showToast('success','Playlist verified and active on your TV.');}
+      else if(data.syncStatus==='error'){const code=data.syncError||'UNKNOWN';const msg=SYNC_ERROR_MESSAGES[code]||SYNC_ERROR_MESSAGES['UNKNOWN'];setPhase('phase-validate','err',msg);showToast('error',msg);}
+      btn.disabled=false; btn.innerHTML='Push to TV';
+    },(err)=>{clearTimeout(tvTimeoutId);clearInterval(tickerId);cleanupSyncListener();tvWaiting.classList.remove('visible');setPhase('phase-tv','err','Firestore listener error.');showToast('error','Lost connection while waiting for TV. Try again.');btn.disabled=false;btn.innerHTML='Push to TV';});
+  });
+
+  /* ── STEP 3: PAYMENT ── */
+  const LICENCE_POLL_TIMEOUT_MS = 60000;
+
+  document.getElementById('show-pay-btn').addEventListener('click', async () => {
+    if (!currentDeviceId) { showToast('error','Please complete Step 1 first.'); return; }
+    if (paypalRendered||paypalLoading) return;
+    paypalLoading=true;
+    const showPayBtn=document.getElementById('show-pay-btn'), container=document.getElementById('paypal-button-container');
+    showPayBtn.disabled=true; showPayBtn.innerHTML='<span class="spinner"></span>Loading PayPal…';
+    try {
+      await loadPayPalSDK(PAYPAL_CLIENT_ID);
+      showPayBtn.style.display='none'; container.style.display='block'; paypalRendered=true;
+      paypal.Buttons({
+        style:{layout:'vertical',color:'black',shape:'rect',label:'pay'},
+        createOrder:(data,actions)=>actions.order.create({purchase_units:[{amount:{value:'5.99',currency_code:'GBP'},description:`tivipal Lifetime Licence: ${currentDeviceId}`}]}),
+        onApprove:async(data,actions)=>{
+          await actions.order.capture();
+          showPayBtn.style.display='none';
+          container.innerHTML=`<div style="text-align:center;padding:20px 10px;"><span class="spinner" style="width:20px;height:20px;border-width:3px;display:block;margin:0 auto 12px;"></span><div style="font-size:0.88rem;color:var(--text-mid);line-height:1.6;">Payment received — activating your licence…<br><span style="font-size:0.78rem;color:var(--text-dim);">This usually takes 5–10 seconds.</span></div></div>`;
+          const timeoutId=setTimeout(()=>{
+            cleanupLicenceListener();
+            container.innerHTML=`<div style="padding:14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-sm);font-size:0.84rem;color:var(--warning);line-height:1.6;">⚠️ Activation is taking longer than expected.<br>Your payment was captured — please email <a href="mailto:support@tivipal.co.uk?subject=Licence%20Activation%3A%20${encodeURIComponent(currentDeviceId)}" style="color:var(--red);">support@tivipal.co.uk</a> with your Device ID <strong style="color:#fff;">${escHtml(currentDeviceId)}</strong> and we'll activate it manually within the hour.</div>`;
+            showToast('warning','Activation delayed — contact support@tivipal.co.uk');
+          },LICENCE_POLL_TIMEOUT_MS);
+          licenceUnsubscribe=onSnapshot(doc(db,'playlists',currentDeviceId),(snap)=>{
+            if(!snap.exists())return; const d=snap.data(); if(d.isPaid!==true)return;
+            clearTimeout(timeoutId); cleanupLicenceListener();
+            if(deviceData)deviceData.isPaid=true;
+            document.getElementById('license-paid').style.display='block';
+            document.getElementById('license-unpaid').style.display='none';
+            document.getElementById('step-btn-3').classList.add('done');
+            showToast('success','Licence activated! Your TV is now unlocked.');
+          },(err)=>{clearTimeout(timeoutId);cleanupLicenceListener();showToast('warning',`Could not confirm activation. Email support@tivipal.co.uk with Device ID: ${currentDeviceId}`);});
+        },
+        onError:(err)=>{console.error('PayPal error:',err);showToast('error','Payment could not be completed. Please try again.');paypalRendered=false;paypalLoading=false;showPayBtn.style.display='block';showPayBtn.disabled=false;showPayBtn.innerHTML='Buy Lifetime Licence — £5.99';container.style.display='none';},
+        onCancel:()=>{paypalRendered=false;paypalLoading=false;showPayBtn.style.display='block';showPayBtn.disabled=false;showPayBtn.innerHTML='Buy Lifetime Licence — £5.99';container.style.display='none';container.innerHTML='';}
+      }).render('#paypal-button-container');
+    } catch(err) {
+      console.error('PayPal SDK load error:',err); showToast('error','Could not load PayPal. Check your connection.');
+      paypalLoading=false; showPayBtn.disabled=false; showPayBtn.innerHTML='Buy Lifetime Licence — £5.99';
+    }
+  });
+
+  function loadPayPalSDK(clientId) {
+    return new Promise((resolve,reject)=>{
+      if(window.paypal){resolve();return;}
+      const s=document.createElement('script');
+      s.src=`https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=GBP`;
+      s.onload=resolve; s.onerror=()=>reject(new Error('PayPal SDK failed to load'));
+      document.head.appendChild(s);
+    });
+  }
+
+  /* ── INIT ── */
+  window.addEventListener('load', () => {
+    if (!localStorage.getItem('cookiesAccepted')) {
+      document.getElementById('cookie-banner').style.display = 'flex';
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const qrId   = params.get('id');
+    if (qrId) {
+      const upper = qrId.toUpperCase();
+      let sanitised = '';
+
+      if (upper.startsWith('TP-')) {
+        const hex = upper.slice(3).replace(/[^0-9A-F]/g, '').substring(0, 8);
+        sanitised = 'TP-' + hex;
+      } else if (upper.startsWith('TP')) {
+        const hex = upper.slice(2).replace(/[^0-9A-F]/g, '').substring(0, 8);
+        sanitised = 'TP-' + hex;
+      } else {
+        const hex = upper.replace(/[^0-9A-F]/g, '').substring(0, 8);
+        sanitised = 'TP-' + hex;
+      }
+
+      if (DEVICE_ID_RE.test(sanitised)) {
+        // Open the portal first, then set the value AFTER the modal is visible
+        // (setting before open causes some browsers to reset the field on modal show)
+        openPortal();
+        setTimeout(() => {
+          const field = document.getElementById('deviceId');
+          field.value = sanitised;
+          currentDeviceId = sanitised;
+          // Trigger visual validation state so the field shows green
+          field.classList.remove('invalid'); field.classList.add('valid');
+          document.getElementById('deviceId-hint').textContent = '';
+        }, 80);
+      }
+    }
+  });
+</script>
+
 </body>
 </html>
