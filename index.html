@@ -942,7 +942,7 @@
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
+<script type="module">
   import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc, deleteField, onSnapshot }
                             from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -965,7 +965,7 @@
   const RATE_LIMIT_MS        = 3000;
   const MAX_PLAYLISTS        = 10;
   const SERVER_ONLY_FIELDS   = new Set(['isPaid']);
-  const ALLOWED_FIELDS       = new Set(['playlists','updatedAt','syncRequest','syncAt','syncStatus','playlistName','mode','m3u_url','xtream','deviceId']);
+  const ALLOWED_FIELDS       = new Set(['playlists','updatedAt','syncRequest','syncAt','syncStatus','syncError','playlistName','mode','m3u_url','xtream','deviceId','status','registered','lastSeen','appVersion']);
 
   function isValidUrl(s) { try { const u = new URL(s); return ['http:','https:'].includes(u.protocol); } catch { return false; } }
   function normaliseHost(h) { return h.replace(/\/+$/, ''); }
@@ -1030,6 +1030,14 @@
   }
   function releaseFocus(sel) { const c=document.querySelector(sel); if(c&&c._trap)c.removeEventListener('keydown',c._trap); }
 
+  /* ── SAFE getElementById HELPER ── */
+  /* Prevents uncaught TypeError when a button ID is missing, logs it instead */
+  function wire(id, event, fn) {
+    const el = document.getElementById(id);
+    if (!el) { console.warn('[tivipal] element not found for wiring: #' + id); return; }
+    el.addEventListener(event, fn);
+  }
+
   /* ── HAMBURGER DRAWER ── */
   function openDrawer() {
     document.getElementById('nav-drawer').classList.add('open');
@@ -1055,28 +1063,20 @@
 
   function drawerThen(fn) { closeDrawer(); setTimeout(fn, 180); }
 
-  /* Wire up hamburger button */
-  document.getElementById('hamburger-btn').addEventListener('click', () => {
+  wire('hamburger-btn', 'click', () => {
     if (document.getElementById('nav-drawer').classList.contains('open')) closeDrawer();
     else openDrawer();
   });
+  wire('nav-drawer-close-btn', 'click', closeDrawer);
+  wire('nav-backdrop',         'click', closeDrawer);
+  wire('dl-portal',      'click', () => drawerThen(openPortal));
+  wire('dl-features',    'click', () => drawerThen(() => document.getElementById('features').scrollIntoView({behavior:'smooth'})));
+  wire('dl-all-features','click', () => drawerThen(() => document.getElementById('all-features').scrollIntoView({behavior:'smooth'})));
+  wire('dl-faq',         'click', () => drawerThen(() => document.querySelector('.faq-section').scrollIntoView({behavior:'smooth'})));
+  wire('dl-privacy',     'click', () => drawerThen(openPrivacy));
+  wire('dl-tos',         'click', () => drawerThen(openTos));
+  wire('dl-support',     'click', () => drawerThen(contactSupport));
 
-  /* Wire up drawer close button */
-  document.getElementById('nav-drawer-close-btn').addEventListener('click', closeDrawer);
-
-  /* Wire up backdrop */
-  document.getElementById('nav-backdrop').addEventListener('click', closeDrawer);
-
-  /* Wire up drawer links */
-  document.getElementById('dl-portal').addEventListener('click',       () => drawerThen(openPortal));
-  document.getElementById('dl-features').addEventListener('click',     () => drawerThen(() => document.getElementById('features').scrollIntoView({behavior:'smooth'})));
-  document.getElementById('dl-all-features').addEventListener('click', () => drawerThen(() => document.getElementById('all-features').scrollIntoView({behavior:'smooth'})));
-  document.getElementById('dl-faq').addEventListener('click',          () => drawerThen(() => document.querySelector('.faq-section').scrollIntoView({behavior:'smooth'})));
-  document.getElementById('dl-privacy').addEventListener('click',      () => drawerThen(openPrivacy));
-  document.getElementById('dl-tos').addEventListener('click',          () => drawerThen(openTos));
-  document.getElementById('dl-support').addEventListener('click',      () => drawerThen(contactSupport));
-
-  /* Close drawer on Escape */
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (document.getElementById('nav-drawer').classList.contains('open')) { closeDrawer(); return; }
@@ -1115,10 +1115,9 @@
     window.location.href = `mailto:support@tivipal.co.uk?subject=Support%3A%20${encodeURIComponent(id)}`;
   }
 
-  /* Wire up all close buttons and backdrops */
-  document.getElementById('portal-close-btn').addEventListener('click',  closeAllModals);
-  document.getElementById('privacy-close-btn').addEventListener('click', closeAllModals);
-  document.getElementById('tos-close-btn').addEventListener('click',     closeAllModals);
+  wire('portal-close-btn',  'click', closeAllModals);
+  wire('privacy-close-btn', 'click', closeAllModals);
+  wire('tos-close-btn',     'click', closeAllModals);
   document.querySelectorAll('.modal-overlay').forEach(o => {
     o.addEventListener('click', e => { if (e.target === o) closeAllModals(); });
   });
@@ -1128,28 +1127,26 @@
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
   }, { passive: true });
 
-  document.getElementById('logo-home').addEventListener('click',        () => window.scrollTo({top:0,behavior:'smooth'}));
-  document.getElementById('nav-manage-btn').addEventListener('click',   openPortal);
-  document.getElementById('hero-manage-btn').addEventListener('click',  openPortal);
-  document.getElementById('hero-features-btn').addEventListener('click',() => document.getElementById('features').scrollIntoView({behavior:'smooth'}));
+  wire('logo-home',          'click', () => window.scrollTo({top:0,behavior:'smooth'}));
+  wire('nav-manage-btn',     'click', openPortal);
+  wire('hero-manage-btn',    'click', openPortal);
+  wire('hero-features-btn',  'click', () => document.getElementById('features').scrollIntoView({behavior:'smooth'}));
 
-  /* Footer links */
-  document.getElementById('footer-portal').addEventListener('click',       openPortal);
-  document.getElementById('footer-features').addEventListener('click',     () => document.getElementById('features').scrollIntoView({behavior:'smooth'}));
-  document.getElementById('footer-all-features').addEventListener('click', () => document.getElementById('all-features').scrollIntoView({behavior:'smooth'}));
-  document.getElementById('footer-faq').addEventListener('click',          () => document.querySelector('.faq-section').scrollIntoView({behavior:'smooth'}));
-  document.getElementById('footer-privacy').addEventListener('click',      openPrivacy);
-  document.getElementById('footer-tos').addEventListener('click',          openTos);
-  document.getElementById('footer-support').addEventListener('click',      contactSupport);
+  wire('footer-portal',      'click', openPortal);
+  wire('footer-features',    'click', () => document.getElementById('features').scrollIntoView({behavior:'smooth'}));
+  wire('footer-all-features','click', () => document.getElementById('all-features').scrollIntoView({behavior:'smooth'}));
+  wire('footer-faq',         'click', () => document.querySelector('.faq-section').scrollIntoView({behavior:'smooth'}));
+  wire('footer-privacy',     'click', openPrivacy);
+  wire('footer-tos',         'click', openTos);
+  wire('footer-support',     'click', contactSupport);
 
-  /* Cookie banner & privacy links */
-  document.getElementById('accept-cookies-btn').addEventListener('click', () => {
+  wire('accept-cookies-btn', 'click', () => {
     localStorage.setItem('cookiesAccepted','1');
     document.getElementById('cookie-banner').style.display = 'none';
   });
-  document.getElementById('cookie-privacy-link').addEventListener('click', openPrivacy);
-  document.getElementById('pay-privacy-link').addEventListener('click',    openPrivacy);
-  document.getElementById('pay-tos-link').addEventListener('click',        openTos);
+  wire('cookie-privacy-link','click', openPrivacy);
+  wire('pay-privacy-link',   'click', openPrivacy);
+  wire('pay-tos-link',       'click', openTos);
 
   /* ── FAQ ── */
   document.querySelectorAll('.faq-q').forEach(btn => {
@@ -1182,10 +1179,10 @@
     }
   }
 
-  document.getElementById('step-btn-1').addEventListener('click', () => goToStep(1));
-  document.getElementById('step-btn-2').addEventListener('click', () => goToStep(2));
-  document.getElementById('step-btn-3').addEventListener('click', () => goToStep(3));
-  document.getElementById('goto-step3-btn').addEventListener('click', () => goToStep(3));
+  wire('step-btn-1',    'click', () => goToStep(1));
+  wire('step-btn-2',    'click', () => goToStep(2));
+  wire('step-btn-3',    'click', () => goToStep(3));
+  wire('goto-step3-btn','click', () => goToStep(3));
 
   /* ── STEP 1: DEVICE ID ── */
   const deviceIdInput = document.getElementById('deviceId');
@@ -1194,18 +1191,13 @@
     const raw   = this.value;
     const upper = raw.toUpperCase();
     const hint  = document.getElementById('deviceId-hint');
-
-    // Auto-uppercase what the user types without blocking any characters
-    // This preserves cursor position better than replacing the whole value
     if (raw !== upper) {
       const pos = this.selectionStart;
       this.value = upper;
       this.setSelectionRange(pos, pos);
     }
-
     const v     = this.value;
     const valid = DEVICE_ID_RE.test(v);
-
     if (!v.length) {
       this.classList.remove('invalid', 'valid');
       hint.textContent = 'Format: TP- followed by 8 characters (e.g. TP-1A2B3C4D)';
@@ -1214,14 +1206,12 @@
       this.classList.remove('invalid'); this.classList.add('valid');
       hint.textContent = ''; hint.classList.remove('error');
     } else {
-      // Show remaining count while typing but don't block or rewrite
       this.classList.remove('valid', 'invalid');
       hint.classList.remove('error');
       hint.textContent = '';
     }
   });
 
-  // Validate format strictly only when the user leaves the field
   deviceIdInput.addEventListener('blur', function() {
     const v    = this.value.trim().toUpperCase();
     const hint = document.getElementById('deviceId-hint');
@@ -1241,8 +1231,7 @@
   });
 
   deviceIdInput.addEventListener('keydown', e => { if (e.key==='Enter') checkDeviceAndProceed(); });
-
-  document.getElementById('step1-continue-btn').addEventListener('click', checkDeviceAndProceed);
+  wire('step1-continue-btn', 'click', checkDeviceAndProceed);
 
   async function checkDeviceAndProceed() {
     const now = Date.now();
@@ -1309,7 +1298,7 @@
     }).join('');
   }
 
-  document.getElementById('add-playlist-btn').addEventListener('click', () => {
+  wire('add-playlist-btn', 'click', () => {
     if (Object.keys(playlists).length >= MAX_PLAYLISTS) { showToast('warning',`Maximum of ${MAX_PLAYLISTS} playlists reached.`); return; }
     editingId = null;
     document.getElementById('form-mode-label').textContent = 'Add New Playlist';
@@ -1332,9 +1321,9 @@
     document.getElementById('pl-name').focus();
   };
 
-  document.getElementById('cancel-form-btn').addEventListener('click', () => { document.getElementById('add-edit-form').style.display='none'; editingId=null; });
+  wire('cancel-form-btn', 'click', () => { document.getElementById('add-edit-form').style.display='none'; editingId=null; });
 
-  document.getElementById('save-playlist-btn').addEventListener('click', () => {
+  wire('save-playlist-btn', 'click', () => {
     const nameEl=document.getElementById('pl-name'), name=nameEl.value.trim();
     if (!name) { nameEl.classList.add('invalid'); showToast('error','Please enter a playlist name.'); nameEl.focus(); return; }
     nameEl.classList.remove('invalid'); nameEl.classList.add('valid');
@@ -1383,25 +1372,25 @@
     document.getElementById('tab-m3u').setAttribute('aria-selected',    String(mode==='m3u'));
     document.getElementById('tab-xtream').setAttribute('aria-selected', String(mode==='xtream'));
   }
-  document.getElementById('tab-m3u').addEventListener('click',    () => switchTab('m3u'));
-  document.getElementById('tab-xtream').addEventListener('click', () => switchTab('xtream'));
+  wire('tab-m3u',    'click', () => switchTab('m3u'));
+  wire('tab-xtream', 'click', () => switchTab('xtream'));
 
   /* ── SYNC HANDSHAKE ── */
   const TV_RESPONSE_TIMEOUT_MS = 30000;
   const SYNC_ERROR_MESSAGES = {
-    NO_PLAYLIST:'No active playlist found on device.',
-    M3U_UNREACHABLE:'The M3U URL is unreachable. Check the URL is correct and the server is online.',
-    M3U_EMPTY:'The M3U playlist loaded but contains no channels.',
+    NO_PLAYLIST:       'No active playlist found on device.',
+    M3U_UNREACHABLE:   'The M3U URL is unreachable. Check the URL is correct and the server is online.',
+    M3U_EMPTY:         'The M3U playlist loaded but contains no channels.',
     XTREAM_AUTH_FAILED:'Xtream credentials were rejected by the server. Check your username and password.',
     XTREAM_UNREACHABLE:'The Xtream server could not be reached. Check the server URL.',
-    FETCH_ERROR:'The TV could not connect to the playlist server.',
-    UNKNOWN:'The TV reported an unknown error. Check your playlist details.',
+    FETCH_ERROR:       'The TV could not connect to the playlist server.',
+    UNKNOWN:           'The TV reported an unknown error. Check your playlist details.',
   };
   function setPhase(id,state,sub) { const el=document.getElementById(id); const s=el.querySelector('.sync-phase-sub'); el.className='sync-phase '+state; if(sub!==undefined&&s)s.textContent=sub; }
-  function cleanupSyncListener() { if(syncUnsubscribe){syncUnsubscribe();syncUnsubscribe=null;} }
+  function cleanupSyncListener()    { if(syncUnsubscribe){syncUnsubscribe();syncUnsubscribe=null;} }
   function cleanupLicenceListener() { if(licenceUnsubscribe){licenceUnsubscribe();licenceUnsubscribe=null;} }
 
-  document.getElementById('sync-btn').addEventListener('click', async () => {
+  wire('sync-btn', 'click', async () => {
     if (!currentDeviceId) { showToast('error','No Device ID set. Go back to Step 1.'); return; }
     if (!Object.keys(playlists).length) { showToast('warning','Add at least one playlist before syncing.'); return; }
     cleanupSyncListener();
@@ -1452,10 +1441,9 @@
   /* ── STEP 3: PAYMENT ── */
   const LICENCE_POLL_TIMEOUT_MS = 60000;
 
-  document.getElementById('show-pay-btn').addEventListener('click', async () => {
+  wire('show-pay-btn', 'click', async () => {
     if (!currentDeviceId) { showToast('error','Please complete Step 1 first.'); return; }
     if (paypalRendered) return;
-    // Reset loading flag if user clicks again after a previous hang
     if (paypalLoading) { paypalLoading = false; }
     paypalLoading = true;
     const showPayBtn = document.getElementById('show-pay-btn');
@@ -1463,7 +1451,6 @@
     showPayBtn.disabled = true;
     showPayBtn.innerHTML = '<span class="spinner"></span>Loading PayPal…';
 
-    // Safety: if PayPal hangs for more than 12s, reset the button so user can retry
     const loadTimeoutId = setTimeout(() => {
       if (!paypalRendered) {
         paypalLoading = false;
@@ -1476,11 +1463,9 @@
     try {
       await loadPayPalSDK(PAYPAL_CLIENT_ID);
       clearTimeout(loadTimeoutId);
-
       showPayBtn.style.display = 'none';
       container.style.display  = 'block';
       paypalRendered = true;
-
       paypal.Buttons({
         style: { layout:'vertical', color:'black', shape:'rect', label:'pay' },
         createOrder: (data, actions) => actions.order.create({
@@ -1523,7 +1508,6 @@
           container.style.display = 'none'; container.innerHTML = '';
         }
       }).render('#paypal-button-container');
-
     } catch(err) {
       clearTimeout(loadTimeoutId);
       console.error('PayPal SDK load error:', err);
@@ -1538,12 +1522,8 @@
     return new Promise((resolve, reject) => {
       if (window.paypal) { resolve(); return; }
       const s = document.createElement('script');
-      // disable-funding prevents PayPal loading funding eligibility XHRs
-      // that are blocked by some ad blockers and cause silent hangs
       s.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=GBP&disable-funding=credit,card`;
-      s.onload  = resolve;
       s.onerror = () => reject(new Error('PayPal SDK failed to load'));
-      // Explicit 10s timeout on the script tag itself
       const t = setTimeout(() => reject(new Error('PayPal SDK timed out')), 10000);
       s.onload = () => { clearTimeout(t); resolve(); };
       document.head.appendChild(s);
@@ -1555,16 +1535,33 @@
     if (!localStorage.getItem('cookiesAccepted')) {
       document.getElementById('cookie-banner').style.display = 'flex';
     }
-
     const params = new URLSearchParams(window.location.search);
     const qrId   = params.get('id');
     if (qrId) {
       const upper = qrId.toUpperCase();
       let sanitised = '';
-
       if (upper.startsWith('TP-')) {
         const hex = upper.slice(3).replace(/[^0-9A-F]/g, '').substring(0, 8);
         sanitised = 'TP-' + hex;
       } else if (upper.startsWith('TP')) {
         const hex = upper.slice(2).replace(/[^0-9A-F]/g, '').substring(0, 8);
-        sanitised = 'TP-'
+        sanitised = 'TP-' + hex;
+      } else {
+        const hex = upper.replace(/[^0-9A-F]/g, '').substring(0, 8);
+        sanitised = 'TP-' + hex;
+      }
+      if (DEVICE_ID_RE.test(sanitised)) {
+        openPortal();
+        setTimeout(() => {
+          const field = document.getElementById('deviceId');
+          field.value = sanitised;
+          currentDeviceId = sanitised;
+          field.classList.remove('invalid'); field.classList.add('valid');
+          document.getElementById('deviceId-hint').textContent = '';
+        }, 80);
+      }
+    }
+  });
+</script>
+</body>
+</html>
