@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -489,16 +488,13 @@
       .af-grid  { grid-template-columns:1fr; }
     }
   </style>
-
 </head>
 <body>
 
 <!-- TOAST CONTAINER -->
-
 <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
 <!-- CONFIRM DIALOG -->
-
 <div class="confirm-overlay" id="confirm-overlay" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
   <div class="confirm-box">
     <div class="confirm-title" id="confirm-title">Are you sure?</div>
@@ -511,11 +507,9 @@
 </div>
 
 <!-- HAMBURGER DRAWER BACKDROP -->
-
 <div class="nav-backdrop" id="nav-backdrop"></div>
 
 <!-- HAMBURGER DRAWER -->
-
 <nav class="nav-drawer" id="nav-drawer" aria-label="Site navigation" aria-hidden="true">
   <div class="nav-drawer-header">
     <span class="nav-drawer-logo">
@@ -562,7 +556,6 @@
 </nav>
 
 <!-- NAVBAR -->
-
 <nav class="navbar" id="navbar">
   <div class="nav-left">
     <button class="hamburger" id="hamburger-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav-drawer">
@@ -575,12 +568,11 @@
     </a>
   </div>
   <div class="nav-right">
-    <button class="btn-portal" id="nav-manage-btn">Portal</button>
+    <button class="btn-portal" id="nav-manage-btn">Manage Device</button>
   </div>
 </nav>
 
 <!-- HERO -->
-
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
@@ -594,62 +586,58 @@
       <button class="btn-hero-secondary" id="hero-features-btn">See Features</button>
     </div>
 
-```
-<!-- TV MOCKUP -->
-<div class="hero-mockup" aria-hidden="true">
-  <div class="tv-frame">
-    <div class="tv-screen">
-      <div class="tv-screen-inner">
-        <div class="sim-topbar">
-          <div class="sim-logo"><span class="tivi">tivi</span><span class="pal">pal</span></div>
-          <div class="sim-clock">21:47</div>
-        </div>
-        <div class="sim-nav">
-          <div class="sim-nav-item active">Home</div>
-          <div class="sim-nav-item">Live TV</div>
-          <div class="sim-nav-item">Movies</div>
-          <div class="sim-nav-item">Series</div>
-          <div class="sim-nav-item">Search</div>
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
-          <div>
-            <div class="sim-row-label">Continue Watching</div>
-            <div class="sim-cards">
-              <div class="sim-card focus" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1a1a2e,#16213e);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(229,9,20,0.7)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:62%"></div></div><div class="sim-card-label">Action Film</div></div>
-              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1e1a2e,#160e2e);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(150,150,200,0.5)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:28%"></div></div><div class="sim-card-label">Drama S2E4</div></div>
-              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1e2a1a,#0e2010);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(100,200,100,0.5)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:85%"></div></div><div class="sim-card-label">Thriller</div></div>
-              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#2e1a1a,#2a1010);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(229,100,100,0.5)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:15%"></div></div><div class="sim-card-label">Sci-Fi</div></div>
+    <!-- TV MOCKUP -->
+    <div class="hero-mockup" aria-hidden="true">
+      <div class="tv-frame">
+        <div class="tv-screen">
+          <div class="tv-screen-inner">
+            <div class="sim-topbar">
+              <div class="sim-logo"><span class="tivi">tivi</span><span class="pal">pal</span></div>
+              <div class="sim-clock">21:47</div>
             </div>
-          </div>
-          <div>
-            <div class="sim-row-label">Live TV</div>
-            <div class="sim-cards">
-              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1a2e2a,#0e2020);aspect-ratio:16/9;height:42px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(100,200,200,0.5)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="sim-card-label">News 24</div></div>
-              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#2a1e1e,#201010);aspect-ratio:16/9;height:42px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(229,9,20,0.5)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg></div><div class="sim-card-label">Sports HD</div></div>
-              <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1e1e2e,#101028);aspect-ratio:16/9;height:42px;"></div><div class="sim-card-label">Cinema 4K</div></div>
+            <div class="sim-nav">
+              <div class="sim-nav-item active">Home</div>
+              <div class="sim-nav-item">Live TV</div>
+              <div class="sim-nav-item">Movies</div>
+              <div class="sim-nav-item">Series</div>
+              <div class="sim-nav-item">Search</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
+              <div>
+                <div class="sim-row-label">Continue Watching</div>
+                <div class="sim-cards">
+                  <div class="sim-card focus" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1a1a2e,#16213e);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(229,9,20,0.7)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:62%"></div></div><div class="sim-card-label">Action Film</div></div>
+                  <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1e1a2e,#160e2e);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(150,150,200,0.5)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:28%"></div></div><div class="sim-card-label">Drama S2E4</div></div>
+                  <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1e2a1a,#0e2010);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(100,200,100,0.5)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:85%"></div></div><div class="sim-card-label">Thriller</div></div>
+                  <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#2e1a1a,#2a1010);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(229,100,100,0.5)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="sim-card-bar"><div class="fill" style="width:15%"></div></div><div class="sim-card-label">Sci-Fi</div></div>
+                </div>
+              </div>
+              <div>
+                <div class="sim-row-label">Live TV</div>
+                <div class="sim-cards">
+                  <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1a2e2a,#0e2020);aspect-ratio:16/9;height:42px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(100,200,200,0.5)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="sim-card-label">News 24</div></div>
+                  <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#2a1e1e,#201010);aspect-ratio:16/9;height:42px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(229,9,20,0.5)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg></div><div class="sim-card-label">Sports HD</div></div>
+                  <div class="sim-card" style="width:80px;"><div class="sim-card-poster" style="background:linear-gradient(160deg,#1e1e2e,#101028);aspect-ratio:16/9;height:42px;"></div><div class="sim-card-label">Cinema 4K</div></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <div class="tv-stand-neck"></div>
+      <div class="tv-stand-base"></div>
     </div>
-  </div>
-  <div class="tv-stand-neck"></div>
-  <div class="tv-stand-base"></div>
-</div>
 
-<div class="hero-stats-bar">
-  <div class="stat-item"><div class="stat-num">4<span>K</span></div><div class="stat-label">Ready</div></div>
-  <div class="stat-item"><div class="stat-num">10<span>K+</span></div><div class="stat-label">Channels</div></div>
-  <div class="stat-item"><div class="stat-num">£<span>5</span>.99</div><div class="stat-label">Lifetime</div></div>
-  <div class="stat-item"><div class="stat-num">&lt;2<span>s</span></div><div class="stat-label">Load Time</div></div>
-</div>
-```
-
+    <div class="hero-stats-bar">
+      <div class="stat-item"><div class="stat-num">4<span>K</span></div><div class="stat-label">Ready</div></div>
+      <div class="stat-item"><div class="stat-num">10<span>K+</span></div><div class="stat-label">Channels</div></div>
+      <div class="stat-item"><div class="stat-num">£<span>5</span>.99</div><div class="stat-label">Lifetime</div></div>
+      <div class="stat-item"><div class="stat-num">&lt;2<span>s</span></div><div class="stat-label">Load Time</div></div>
+    </div>
   </div>
 </section>
 
 <!-- PLATFORMS -->
-
 <section class="platforms-section">
   <div class="platforms-inner">
     <div>
@@ -683,7 +671,6 @@
 </section>
 
 <!-- FEATURES -->
-
 <section class="features-section" id="features">
   <div style="text-align:center;">
     <div class="section-label" style="display:flex;justify-content:center;">Why tivipal</div>
@@ -733,7 +720,6 @@
 </section>
 
 <!-- ALL FEATURES SHOWCASE -->
-
 <section class="all-features-section" id="all-features">
   <div style="text-align:center;">
     <div class="section-label" style="display:flex;justify-content:center;">Everything Included</div>
@@ -760,7 +746,6 @@
 </section>
 
 <!-- SOCIAL PROOF / REVIEWS -->
-
 <section class="social-section">
   <div style="text-align:center;">
     <div class="section-label" style="display:flex;justify-content:center;">Verified Users</div>
@@ -774,7 +759,6 @@
 </section>
 
 <!-- FAQ -->
-
 <section class="faq-section">
   <div style="text-align:center;">
     <div class="section-label" style="display:flex;justify-content:center;">Help</div>
@@ -792,7 +776,6 @@
 </section>
 
 <!-- PORTAL MODAL -->
-
 <div class="modal-overlay" id="portal-modal" role="dialog" aria-modal="true" aria-labelledby="portal-modal-title">
   <div class="modal-box">
     <div class="modal-header">
@@ -883,7 +866,6 @@
 </div>
 
 <!-- PRIVACY MODAL -->
-
 <div class="modal-overlay" id="privacy-modal" role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title" id="privacy-modal-title">PRIVACY POLICY</div><button class="modal-close" id="privacy-close-btn" aria-label="Close privacy policy">✕</button></div>
@@ -903,7 +885,6 @@
 </div>
 
 <!-- TERMS OF SERVICE MODAL -->
-
 <div class="modal-overlay" id="tos-modal" role="dialog" aria-modal="true" aria-labelledby="tos-modal-title">
   <div class="modal-box">
     <div class="modal-header"><div class="modal-title" id="tos-modal-title">TERMS OF SERVICE</div><button class="modal-close" id="tos-close-btn" aria-label="Close terms of service">✕</button></div>
@@ -926,14 +907,12 @@
 </div>
 
 <!-- COOKIE BANNER -->
-
 <div class="cookie-banner" id="cookie-banner" role="region" aria-label="Cookie consent">
   <div class="cookie-text">We use essential cookies for portal functionality. By using tivipal you agree to our <a href="javascript:void(0)" id="cookie-privacy-link">Privacy Policy</a>.</div>
   <button class="btn-cookie" id="accept-cookies-btn">Accept</button>
 </div>
 
 <!-- FOOTER -->
-
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
@@ -976,7 +955,7 @@
     messagingSenderId: "991826954037",
     appId:             "1:991826954037:web:8f9a61754dc2c6e4746e7c"
   };
-  const PAYPAL_CLIENT_ID = "ATbd3yb16l5ioRNM_70mb-OOImWjL8E9YCu2B9NPs4uoKxG6b2VcNcuva7zlp0axCqSaB65a9VhOa3zS";
+  const PAYPAL_CLIENT_ID = "AZcDmimBoWyAxx2HZk61mJilTyOvgm4h1EiFCiuZi2DIuHPm3S7h_vdQoWXs73F1mL7X9EJke6Bt2wJ1";
 
   const firebaseApp = initializeApp(firebaseConfig);
   const db          = getFirestore(firebaseApp);
@@ -1381,13 +1360,30 @@
     const wasActive=!!(playlists[id]&&playlists[id].active); delete playlists[id];
     if (wasActive){const rem=Object.keys(playlists);if(rem.length)playlists[rem[0]].active=true;}
     renderPlaylists(); showToast('info',`"${name}" removed.`);
+    // Immediately persist the deletion to Firestore.
+    // IMPORTANT: must use setDoc WITHOUT merge:true here so Firestore replaces
+    // the entire playlists map rather than merging — merge:true never removes keys.
+    _persistPlaylists();
   };
 
   window.setActivePlaylist = (id) => {
     Object.keys(playlists).forEach(k=>{playlists[k].active=false;});
     playlists[id].active=true; renderPlaylists();
     showToast('success',`"${playlists[id].name||'Playlist'}" set as active.`);
+    // Persist the active-flag change immediately so it survives a reload
+    _persistPlaylists();
   };
+
+  // Write the current in-memory playlists object to Firestore immediately.
+  // Uses setDoc with mergeFields so we only overwrite the playlists map and
+  // updatedAt — all other fields (isPaid, lastSeen, etc.) are left untouched.
+  // This is what makes deletions and active-flag changes durable across sessions.
+  function _persistPlaylists() {
+    if (!currentDeviceId) return;
+    const payload = sanitisePayload({ playlists: playlists, updatedAt: Date.now() });
+    setDoc(doc(db, 'playlists', currentDeviceId), payload, { mergeFields: ['playlists', 'updatedAt'] })
+      .catch(function(e) { console.warn('[tivipal] Background playlist save failed:', e); });
+  }
 
   function switchTab(mode) {
     activeTab=mode;
@@ -1433,7 +1429,10 @@
     if(activePl){rawData.playlistName=activePl.name;if(activePl.type==='m3u'){rawData.mode='m3u';rawData.m3u_url=activePl.url;rawData.xtream=deleteField();}else{rawData.mode='xtream';rawData.xtream=activePl.xtream;rawData.m3u_url=deleteField();}}
     const saveData=sanitisePayload(rawData);
     try {
-      await withTimeout(setDoc(doc(db,'playlists',currentDeviceId),saveData,{merge:true}),FIRESTORE_TIMEOUT_MS,'Sync write');
+      // Use mergeFields (not merge:true) so we replace the entire playlists map.
+      // merge:true does a deep merge and never removes existing keys — meaning
+      // playlists deleted by the user would silently reappear after a Push to TV.
+      await withTimeout(setDoc(doc(db,'playlists',currentDeviceId),saveData,{mergeFields:Object.keys(saveData)}),FIRESTORE_TIMEOUT_MS,'Sync write');
     } catch(e) {
       setPhase('phase-write','err',e.message.includes('timed out')?'Connection timed out.':e.message);
       showToast('error','Could not write to Firestore. Check your connection.');
@@ -1612,6 +1611,5 @@
     }
   });
 </script>
-
 </body>
 </html>
