@@ -1139,7 +1139,6 @@
   function releaseFocus(sel) { const c=document.querySelector(sel); if(c&&c._trap)c.removeEventListener('keydown',c._trap); }
 
   /* ── SAFE getElementById HELPER ── */
-  /* Prevents uncaught TypeError when a button ID is missing, logs it instead */
   function wire(id, event, fn) {
     const el = document.getElementById(id);
     if (!el) { console.warn('[tivipal] element not found for wiring: #' + id); return; }
@@ -1284,10 +1283,6 @@
       const isPaid = deviceData && deviceData.isPaid;
       document.getElementById('license-paid').style.display   = isPaid ? 'block' : 'none';
       document.getElementById('license-unpaid').style.display = isPaid ? 'none'  : 'block';
-      // Pre-load PayPal SDK silently the moment Step 3 is shown.
-      // This ensures window.paypal exists BEFORE the user clicks Pay,
-      // so .render() is synchronous inside the click handler and the
-      // browser's user-gesture token is intact when PayPal calls window.open().
       if (!window.paypal && !isPaid) { loadPayPalSDK(PAYPAL_CLIENT_ID).catch(function(){}); }
     }
   }
@@ -1363,10 +1358,18 @@
     try {
       const snap = await withTimeout(getDoc(doc(db,'playlists',id)), FIRESTORE_TIMEOUT_MS, 'Device lookup');
       if (snap.exists()) {
-        deviceData = snap.data(); playlists = deviceData.playlists || {};
-        if (!Object.keys(playlists).length) {
-          if (deviceData.m3u_url) playlists['pl_legacy'] = {name:deviceData.playlistName||'My Playlist',type:'m3u',url:deviceData.m3u_url,active:true};
-          else if (deviceData.xtream) playlists['pl_legacy'] = {name:deviceData.playlistName||'My Playlist',type:'xtream',xtream:deviceData.xtream,active:true};
+        deviceData = snap.data();
+        // ── FIX 1: Only load playlists from Firestore on first lookup for this
+        // device. If we already have in-memory playlists for the same device
+        // (e.g. user navigated back to Step 1 and re-confirmed), keep the
+        // current in-memory state so a pending _persistPlaylists() write is
+        // not overwritten by a stale Firestore read.
+        if (currentDeviceId !== id || Object.keys(playlists).length === 0) {
+          playlists = deviceData.playlists || {};
+          if (!Object.keys(playlists).length) {
+            if (deviceData.m3u_url) playlists['pl_legacy'] = {name:deviceData.playlistName||'My Playlist',type:'m3u',url:deviceData.m3u_url,active:true};
+            else if (deviceData.xtream) playlists['pl_legacy'] = {name:deviceData.playlistName||'My Playlist',type:'xtream',xtream:deviceData.xtream,active:true};
+          }
         }
         showStatus(box, deviceData.isPaid?'success':'warning',
           deviceData.isPaid ? '✅ Device found — Lifetime Licence Active' : '⏳ Device found — Trial / Activation required');
@@ -1461,36 +1464,89 @@
     renderPlaylists(); showToast('success',`"${name}" saved. Don't forget to Push to TV.`);
   });
 
+  // ── FIX 2: deletePlaylist now awaits _persistPlaylists() and then pushes
+  // the deletion to the TV automatically (same write the sync button does)
+  // so the TV app picks it up via its own onSnapshot without needing a manual
+  // "Push to TV". The active playlist is updated in the same atomic write.
   window.deletePlaylist = async (id) => {
     const pl=playlists[id], name=pl?(pl.name||'Untitled'):'this playlist';
     const ok=await showConfirm('Delete Playlist',`Delete "${name}"? This can't be undone.`,'Delete');
     if (!ok) return;
-    const wasActive=!!(playlists[id]&&playlists[id].active); delete playlists[id];
-    if (wasActive){const rem=Object.keys(playlists);if(rem.length)playlists[rem[0]].active=true;}
-    renderPlaylists(); showToast('info',`"${name}" removed.`);
-    // Immediately persist the deletion to Firestore.
-    // IMPORTANT: must use setDoc WITHOUT merge:true here so Firestore replaces
-    // the entire playlists map rather than merging — merge:true never removes keys.
-    _persistPlaylists();
+    const wasActive=!!(playlists[id]&&playlists[id].active);
+    delete playlists[id];
+    if (wasActive) { const rem=Object.keys(playlists); if(rem.length) playlists[rem[0]].active=true; }
+    renderPlaylists();
+    try {
+      await _persistPlaylists();
+      // After persisting the new playlists map, push a sync payload so the TV
+      // app's onSnapshot fires and it reloads immediately — no manual push needed.
+      await _pushDeletionToTV();
+      showToast('info',`"${name}" deleted and removed from TV.`);
+    } catch(e) {
+      console.warn('[tivipal] Delete persist failed:', e);
+      showToast('warning',`"${name}" removed locally but cloud save failed. Try Push to TV.`);
+    }
   };
 
   window.setActivePlaylist = (id) => {
     Object.keys(playlists).forEach(k=>{playlists[k].active=false;});
     playlists[id].active=true; renderPlaylists();
     showToast('success',`"${playlists[id].name||'Playlist'}" set as active.`);
-    // Persist the active-flag change immediately so it survives a reload
-    _persistPlaylists();
+    _persistPlaylists().catch(e => console.warn('[tivipal] setActive persist failed:', e));
   };
 
-  // Write the current in-memory playlists object to Firestore immediately.
-  // Uses setDoc with mergeFields so we only overwrite the playlists map and
-  // updatedAt — all other fields (isPaid, lastSeen, etc.) are left untouched.
-  // This is what makes deletions and active-flag changes durable across sessions.
+  // ── FIX 3: _persistPlaylists now returns the Promise so callers can await it.
+  // Uses setDoc with mergeFields: ['playlists','updatedAt'] which replaces the
+  // entire playlists map field (not a deep merge) — deleted keys are removed.
   function _persistPlaylists() {
-    if (!currentDeviceId) return;
+    if (!currentDeviceId) return Promise.resolve();
     const payload = sanitisePayload({ playlists: playlists, updatedAt: Date.now() });
-    setDoc(doc(db, 'playlists', currentDeviceId), payload, { mergeFields: ['playlists', 'updatedAt'] })
-      .catch(function(e) { console.warn('[tivipal] Background playlist save failed:', e); });
+    return withTimeout(
+      setDoc(doc(db, 'playlists', currentDeviceId), payload, { mergeFields: ['playlists', 'updatedAt'] }),
+      FIRESTORE_TIMEOUT_MS,
+      'Playlist persist'
+    );
+  }
+
+  // ── FIX 4: After a delete, write a lightweight sync payload so the TV app's
+  // onSnapshot fires and it reloads the updated playlist list automatically.
+  // We use a fresh syncReqId so the TV treats it as a new sync event.
+  // We do NOT start the sync handshake UI here — this is a silent background push.
+  async function _pushDeletionToTV() {
+    if (!currentDeviceId) return;
+    const activePl = Object.values(playlists).find(p=>p.active) || Object.values(playlists)[0];
+    const syncReqId = crypto.randomUUID();
+    const rawData = {
+      playlists,
+      updatedAt: Date.now(),
+      syncRequest: syncReqId,
+      syncStatus: 'pending',
+      syncAt: Date.now()
+    };
+    if (activePl) {
+      rawData.playlistName = activePl.name;
+      if (activePl.type === 'm3u') {
+        rawData.mode = 'm3u';
+        rawData.m3u_url = activePl.url;
+        rawData.xtream = deleteField();
+      } else {
+        rawData.mode = 'xtream';
+        rawData.xtream = activePl.xtream;
+        rawData.m3u_url = deleteField();
+      }
+    } else {
+      // No playlists left — clear the active playlist fields on the TV doc
+      rawData.mode = deleteField();
+      rawData.m3u_url = deleteField();
+      rawData.xtream = deleteField();
+      rawData.playlistName = deleteField();
+    }
+    const saveData = sanitisePayload(rawData);
+    await withTimeout(
+      setDoc(doc(db, 'playlists', currentDeviceId), saveData, { mergeFields: Object.keys(saveData) }),
+      FIRESTORE_TIMEOUT_MS,
+      'Delete TV push'
+    );
   }
 
   function switchTab(mode) {
@@ -1537,9 +1593,6 @@
     if(activePl){rawData.playlistName=activePl.name;if(activePl.type==='m3u'){rawData.mode='m3u';rawData.m3u_url=activePl.url;rawData.xtream=deleteField();}else{rawData.mode='xtream';rawData.xtream=activePl.xtream;rawData.m3u_url=deleteField();}}
     const saveData=sanitisePayload(rawData);
     try {
-      // Use mergeFields (not merge:true) so we replace the entire playlists map.
-      // merge:true does a deep merge and never removes existing keys — meaning
-      // playlists deleted by the user would silently reappear after a Push to TV.
       await withTimeout(setDoc(doc(db,'playlists',currentDeviceId),saveData,{mergeFields:Object.keys(saveData)}),FIRESTORE_TIMEOUT_MS,'Sync write');
     } catch(e) {
       setPhase('phase-write','err',e.message.includes('timed out')?'Connection timed out.':e.message);
@@ -1582,18 +1635,11 @@
     const showPayBtn = document.getElementById('show-pay-btn');
     const container  = document.getElementById('paypal-button-container');
 
-    // If SDK already pre-loaded (the normal path because goToStep(3) pre-loads it),
-    // render synchronously inside this click handler so the user-gesture token
-    // is still live when PayPal calls window.open(). An async gap (await) would
-    // expire the gesture and force PayPal into the inline card overlay instead
-    // of opening its proper login popup.
     if (window.paypal) {
       _renderPayPalButtons(showPayBtn, container);
       return;
     }
 
-    // Fallback: SDK not yet loaded — load it now (spinner shown, popup may be
-    // blocked on first try but user can click again once SDK is ready)
     paypalLoading = true;
     showPayBtn.disabled = true;
     showPayBtn.innerHTML = '<span class="spinner"></span>Loading PayPal…';
