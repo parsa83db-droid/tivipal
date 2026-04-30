@@ -1075,9 +1075,8 @@
   const FIRESTORE_TIMEOUT_MS = 9000;
   const RATE_LIMIT_MS        = 3000;
   const MAX_PLAYLISTS        = 10;
-  const SERVER_ONLY_FIELDS   = new Set(['isPaid']);
-  const ALLOWED_FIELDS       = new Set(['playlists','updatedAt','syncRequest','syncAt','syncStatus','syncError','playlistName','mode','m3u_url','xtream','deviceId','status','registered','lastSeen','appVersion']);
-
+  const SERVER_ONLY_FIELDS = new Set(['isPaid','paidAt','paypalOrderId','paypalCaptureId','paypalEmail','licenceType','licenseKey','licenseStatus','licenseActivatedAt','licenseRevokedAt','refundReason']);
+  const ALLOWED_FIELDS = new Set(['playlists','updatedAt','syncRequest','syncAt','syncStatus','syncError','playlistName','mode','m3u_url','xtream','deviceId','status','registered','lastSeen','appVersion','trialStartDate']);
   function isValidUrl(s) { try { const u = new URL(s); return ['http:','https:'].includes(u.protocol); } catch { return false; } }
   function normaliseHost(h) { return h.replace(/\/+$/, ''); }
   function withTimeout(p, ms = FIRESTORE_TIMEOUT_MS, label = 'Request') {
