@@ -1065,6 +1065,9 @@
   };
   const PAYPAL_CLIENT_ID = "ATbd3yb16l5ioRNM_70mb-OOImWjL8E9YCu2B9NPs4uoKxG6b2VcNcuva7zlp0axCqSaB65a9VhOa3zS";
 
+  // ── Cloud Functions ──
+  const PAYPAL_CAPTURE_URL = "https://paypalcapture-jbjn6inviq-uc.a.run.app";
+
   const firebaseApp = initializeApp(firebaseConfig);
   const db          = getFirestore(firebaseApp);
 
@@ -1359,11 +1362,6 @@
       const snap = await withTimeout(getDoc(doc(db,'playlists',id)), FIRESTORE_TIMEOUT_MS, 'Device lookup');
       if (snap.exists()) {
         deviceData = snap.data();
-        // ── FIX 1: Only load playlists from Firestore on first lookup for this
-        // device. If we already have in-memory playlists for the same device
-        // (e.g. user navigated back to Step 1 and re-confirmed), keep the
-        // current in-memory state so a pending _persistPlaylists() write is
-        // not overwritten by a stale Firestore read.
         if (currentDeviceId !== id || Object.keys(playlists).length === 0) {
           playlists = deviceData.playlists || {};
           if (!Object.keys(playlists).length) {
@@ -1464,10 +1462,6 @@
     renderPlaylists(); showToast('success',`"${name}" saved. Don't forget to Push to TV.`);
   });
 
-  // ── FIX 2: deletePlaylist now awaits _persistPlaylists() and then pushes
-  // the deletion to the TV automatically (same write the sync button does)
-  // so the TV app picks it up via its own onSnapshot without needing a manual
-  // "Push to TV". The active playlist is updated in the same atomic write.
   window.deletePlaylist = async (id) => {
     const pl=playlists[id], name=pl?(pl.name||'Untitled'):'this playlist';
     const ok=await showConfirm('Delete Playlist',`Delete "${name}"? This can't be undone.`,'Delete');
@@ -1478,8 +1472,6 @@
     renderPlaylists();
     try {
       await _persistPlaylists();
-      // After persisting the new playlists map, push a sync payload so the TV
-      // app's onSnapshot fires and it reloads immediately — no manual push needed.
       await _pushDeletionToTV();
       showToast('info',`"${name}" deleted and removed from TV.`);
     } catch(e) {
@@ -1495,9 +1487,6 @@
     _persistPlaylists().catch(e => console.warn('[tivipal] setActive persist failed:', e));
   };
 
-  // ── FIX 3: _persistPlaylists now returns the Promise so callers can await it.
-  // Uses setDoc with mergeFields: ['playlists','updatedAt'] which replaces the
-  // entire playlists map field (not a deep merge) — deleted keys are removed.
   function _persistPlaylists() {
     if (!currentDeviceId) return Promise.resolve();
     const payload = sanitisePayload({ playlists: playlists, updatedAt: Date.now() });
@@ -1508,10 +1497,6 @@
     );
   }
 
-  // ── FIX 4: After a delete, write a lightweight sync payload so the TV app's
-  // onSnapshot fires and it reloads the updated playlist list automatically.
-  // We use a fresh syncReqId so the TV treats it as a new sync event.
-  // We do NOT start the sync handshake UI here — this is a silent background push.
   async function _pushDeletionToTV() {
     if (!currentDeviceId) return;
     const activePl = Object.values(playlists).find(p=>p.active) || Object.values(playlists)[0];
@@ -1535,7 +1520,6 @@
         rawData.m3u_url = deleteField();
       }
     } else {
-      // No playlists left — clear the active playlist fields on the TV doc
       rawData.mode = deleteField();
       rawData.m3u_url = deleteField();
       rawData.xtream = deleteField();
@@ -1682,14 +1666,54 @@
         });
       },
       onApprove: async function(data, actions) {
-        await actions.order.capture();
+        // ── Capture the order client-side ──
+        let captureResult;
+        try {
+          captureResult = await actions.order.capture();
+        } catch (err) {
+          console.error('PayPal capture error:', err);
+          showToast('error', 'Payment capture failed. Please try again.');
+          paypalRendered = false;
+          showPayBtn.style.display = 'block'; showPayBtn.disabled = false;
+          showPayBtn.innerHTML = 'Buy Lifetime Licence — £5.99';
+          container.style.display = 'none';
+          return;
+        }
+
+        const orderId = (captureResult && captureResult.id) || data.orderID;
+
         showPayBtn.style.display = 'none';
         container.innerHTML = '<div style="text-align:center;padding:20px 10px;"><span class="spinner" style="width:20px;height:20px;border-width:3px;display:block;margin:0 auto 12px;"></span><div style="font-size:0.88rem;color:var(--text-mid);line-height:1.6;">Payment received — activating your licence…<br><span style="font-size:0.78rem;color:var(--text-dim);">This usually takes 5–10 seconds.</span></div></div>';
+
+        // ── Call our Cloud Function to verify the order server-side and unlock the device ──
+        // We do not block on the response; the Firestore listener below will fire as soon
+        // as the function writes isPaid: true. This way, if onApprove finishes before
+        // the function does, the listener still picks up the activation.
+        fetch(PAYPAL_CAPTURE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: orderId, deviceId: currentDeviceId })
+        }).then(function(res) {
+          return res.json().then(function(json) { return { ok: res.ok, json: json }; });
+        }).then(function(out) {
+          if (!out.ok) {
+            console.error('paypalCapture error:', out.json);
+            // Don't show an error to the user yet — the webhook is a safety net and may still activate.
+            // The 60s timeout below will catch true failures.
+          } else {
+            console.log('paypalCapture success:', out.json);
+          }
+        }).catch(function(err) {
+          console.error('paypalCapture network error:', err);
+          // Same as above — the webhook may still come through.
+        });
+
         const timeoutId = setTimeout(function() {
           cleanupLicenceListener();
-          container.innerHTML = '<div style="padding:14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-sm);font-size:0.84rem;color:var(--warning);line-height:1.6;">⚠️ Activation is taking longer than expected.<br>Your payment was captured — please email <a href="mailto:support@tivipal.co.uk?subject=Licence%20Activation%3A%20' + encodeURIComponent(currentDeviceId) + '" style="color:var(--red);">support@tivipal.co.uk</a> with your Device ID <strong style="color:#fff;">' + escHtml(currentDeviceId) + '</strong> and we\'ll activate it manually within the hour.</div>';
-          showToast('warning', 'Activation delayed — contact support@tivipal.co.uk');
+          container.innerHTML = '<div style="padding:14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-sm);font-size:0.84rem;color:var(--warning);line-height:1.6;">⚠️ Activation is taking longer than expected.<br>Your payment was captured — please email <a href="mailto:tivipalpro@gmail.com?subject=Licence%20Activation%3A%20' + encodeURIComponent(currentDeviceId) + '" style="color:var(--red);">tivipalpro@gmail.com</a> with your Device ID <strong style="color:#fff;">' + escHtml(currentDeviceId) + '</strong> and we\'ll activate it manually within the hour.</div>';
+          showToast('warning', 'Activation delayed — contact tivipalpro@gmail.com');
         }, LICENCE_POLL_TIMEOUT_MS);
+
         licenceUnsubscribe = onSnapshot(doc(db,'playlists',currentDeviceId), function(snap) {
           if (!snap.exists()) return; const d = snap.data(); if (d.isPaid !== true) return;
           clearTimeout(timeoutId); cleanupLicenceListener();
@@ -1700,7 +1724,7 @@
           showToast('success', 'Licence activated! Your TV is now unlocked.');
         }, function(err) {
           clearTimeout(timeoutId); cleanupLicenceListener();
-          showToast('warning', 'Could not confirm activation. Email support@tivipal.co.uk with Device ID: ' + currentDeviceId);
+          showToast('warning', 'Could not confirm activation. Email tivipalpro@gmail.com with Device ID: ' + currentDeviceId);
         });
       },
       onError: function(err) {
@@ -1810,7 +1834,9 @@
       document.getElementById('cookie-banner').style.display = 'flex';
     }
     const params = new URLSearchParams(window.location.search);
-    const qrId   = params.get('id');
+    // Accept either ?id=... or ?device=... so the QR code from the TV app
+    // (which uses ?device=) auto-fills the portal field.
+    const qrId   = params.get('id') || params.get('device');
     if (qrId) {
       const upper = qrId.toUpperCase();
       let sanitised = '';
