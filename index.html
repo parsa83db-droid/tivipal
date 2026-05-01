@@ -1075,8 +1075,17 @@
   const FIRESTORE_TIMEOUT_MS = 9000;
   const RATE_LIMIT_MS        = 3000;
   const MAX_PLAYLISTS        = 10;
-  const SERVER_ONLY_FIELDS = new Set(['isPaid','paidAt','paypalOrderId','paypalCaptureId','paypalEmail','licenceType','licenseKey','licenseStatus','licenseActivatedAt','licenseRevokedAt','refundReason']);
-  const ALLOWED_FIELDS = new Set(['playlists','updatedAt','syncRequest','syncAt','syncStatus','syncError','playlistName','mode','m3u_url','xtream','deviceId','status','registered','lastSeen','appVersion','trialStartDate']);
+  const SERVER_ONLY_FIELDS   = new Set([
+    'isPaid','paidAt','paypalOrderId','paypalCaptureId','paypalEmail',
+    'licenceType','licenseKey','licenseStatus','licenseActivatedAt',
+    'licenseRevokedAt','refundReason'
+  ]);
+  const ALLOWED_FIELDS = new Set([
+    'playlists','updatedAt','syncRequest','syncAt','syncStatus','syncError',
+    'playlistName','mode','m3u_url','xtream','deviceId','status','registered',
+    'lastSeen','appVersion','trialStartDate'
+  ]);
+
   function isValidUrl(s) { try { const u = new URL(s); return ['http:','https:'].includes(u.protocol); } catch { return false; } }
   function normaliseHost(h) { return h.replace(/\/+$/, ''); }
   function withTimeout(p, ms = FIRESTORE_TIMEOUT_MS, label = 'Request') {
@@ -1496,32 +1505,36 @@
     );
   }
 
+  // ── Push a deletion to the TV silently in the background ──
+  // Writes a lightweight sync payload so the TV's onSnapshot fires and reloads
+  // the updated playlist list automatically — no manual "Push to TV" needed.
   async function _pushDeletionToTV() {
     if (!currentDeviceId) return;
     const activePl = Object.values(playlists).find(p=>p.active) || Object.values(playlists)[0];
     const syncReqId = crypto.randomUUID();
     const rawData = {
       playlists,
-      updatedAt: Date.now(),
+      updatedAt:   Date.now(),
       syncRequest: syncReqId,
-      syncStatus: 'pending',
-      syncAt: Date.now()
+      syncStatus:  'pending',
+      syncError:   null,           // ← item 6: clear any stale error on new sync
+      syncAt:      Date.now()
     };
     if (activePl) {
       rawData.playlistName = activePl.name;
       if (activePl.type === 'm3u') {
-        rawData.mode = 'm3u';
+        rawData.mode    = 'm3u';
         rawData.m3u_url = activePl.url;
-        rawData.xtream = deleteField();
+        rawData.xtream  = deleteField();
       } else {
-        rawData.mode = 'xtream';
-        rawData.xtream = activePl.xtream;
+        rawData.mode    = 'xtream';
+        rawData.xtream  = activePl.xtream;
         rawData.m3u_url = deleteField();
       }
     } else {
-      rawData.mode = deleteField();
-      rawData.m3u_url = deleteField();
-      rawData.xtream = deleteField();
+      rawData.mode        = deleteField();
+      rawData.m3u_url     = deleteField();
+      rawData.xtream      = deleteField();
       rawData.playlistName = deleteField();
     }
     const saveData = sanitisePayload(rawData);
@@ -1563,22 +1576,50 @@
     if (!currentDeviceId) { showToast('error','No Device ID set. Go back to Step 1.'); return; }
     if (!Object.keys(playlists).length) { showToast('warning','Add at least one playlist before syncing.'); return; }
     cleanupSyncListener();
-    const handshake=document.getElementById('sync-handshake'), tvWaiting=document.getElementById('sync-tv-waiting');
-    const tvWaitMsg=document.getElementById('sync-tv-waiting-msg'), successEl=document.getElementById('sync-success');
-    const btn=document.getElementById('sync-btn');
+    const handshake  = document.getElementById('sync-handshake');
+    const tvWaiting  = document.getElementById('sync-tv-waiting');
+    const tvWaitMsg  = document.getElementById('sync-tv-waiting-msg');
+    const successEl  = document.getElementById('sync-success');
+    const btn        = document.getElementById('sync-btn');
     successEl.style.display='none'; handshake.classList.add('visible'); tvWaiting.classList.remove('visible');
-    setPhase('phase-write','wait'); setPhase('phase-tv','wait','TV app must be open and connected'); setPhase('phase-validate','wait','TV checks the stream is reachable');
+    setPhase('phase-write','wait');
+    setPhase('phase-tv','wait','TV app must be open and connected');
+    setPhase('phase-validate','wait','TV checks the stream is reachable');
     btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Syncing…';
     setPhase('phase-write','pending');
-    const activePl=Object.values(playlists).find(p=>p.active)||Object.values(playlists)[0];
-    const syncReqId=crypto.randomUUID();
-    const rawData={playlists,updatedAt:Date.now(),syncRequest:syncReqId,syncStatus:'pending',syncAt:Date.now()};
-    if(activePl){rawData.playlistName=activePl.name;if(activePl.type==='m3u'){rawData.mode='m3u';rawData.m3u_url=activePl.url;rawData.xtream=deleteField();}else{rawData.mode='xtream';rawData.xtream=activePl.xtream;rawData.m3u_url=deleteField();}}
-    const saveData=sanitisePayload(rawData);
+
+    const activePl  = Object.values(playlists).find(p=>p.active) || Object.values(playlists)[0];
+    const syncReqId = crypto.randomUUID();
+
+    // ── item 6: syncError cleared to null at the start of every sync ──
+    const rawData = {
+      playlists,
+      updatedAt:   Date.now(),
+      syncRequest: syncReqId,
+      syncStatus:  'pending',
+      syncError:   null,
+      syncAt:      Date.now()
+    };
+    if (activePl) {
+      rawData.playlistName = activePl.name;
+      if (activePl.type==='m3u') {
+        rawData.mode    = 'm3u';
+        rawData.m3u_url = activePl.url;
+        rawData.xtream  = deleteField();
+      } else {
+        rawData.mode    = 'xtream';
+        rawData.xtream  = activePl.xtream;
+        rawData.m3u_url = deleteField();
+      }
+    }
+    const saveData = sanitisePayload(rawData);
     try {
-      await withTimeout(setDoc(doc(db,'playlists',currentDeviceId),saveData,{mergeFields:Object.keys(saveData)}),FIRESTORE_TIMEOUT_MS,'Sync write');
+      await withTimeout(
+        setDoc(doc(db,'playlists',currentDeviceId), saveData, {mergeFields:Object.keys(saveData)}),
+        FIRESTORE_TIMEOUT_MS, 'Sync write'
+      );
     } catch(e) {
-      setPhase('phase-write','err',e.message.includes('timed out')?'Connection timed out.':e.message);
+      setPhase('phase-write','err', e.message.includes('timed out') ? 'Connection timed out.' : e.message);
       showToast('error','Could not write to Firestore. Check your connection.');
       btn.disabled=false; btn.innerHTML='Push to TV'; return;
     }
@@ -1586,25 +1627,56 @@
     setPhase('phase-tv','pending','Waiting for TV app to receive the update…');
     tvWaitMsg.textContent='Waiting for your TV to respond… make sure tivipal is open.';
     tvWaiting.classList.add('visible');
-    const tvTimeoutId=setTimeout(()=>{
-      cleanupSyncListener(); setPhase('phase-tv','err','No response — is tivipal open on your TV?');
-      setPhase('phase-validate','wait','Could not reach TV'); tvWaiting.classList.remove('visible');
+
+    const tvTimeoutId = setTimeout(() => {
+      cleanupSyncListener();
+      setPhase('phase-tv','err','No response — is tivipal open on your TV?');
+      setPhase('phase-validate','wait','Could not reach TV');
+      tvWaiting.classList.remove('visible');
       showToast('error','TV did not respond within 30 seconds. Make sure tivipal is open and connected.');
       btn.disabled=false; btn.innerHTML='Push to TV';
-    },TV_RESPONSE_TIMEOUT_MS);
-    let waitSecs=0;
-    const tickerId=setInterval(()=>{waitSecs+=5;if(waitSecs<TV_RESPONSE_TIMEOUT_MS/1000)tvWaitMsg.textContent=`Waiting for TV… (${waitSecs}s). Make sure tivipal is open.`;},5000);
-    syncUnsubscribe=onSnapshot(doc(db,'playlists',currentDeviceId),(snap)=>{
-      if(!snap.exists())return; const data=snap.data();
-      if(data.syncRequest!==syncReqId)return;
-      if(!data.syncStatus||data.syncStatus==='pending')return;
-      clearTimeout(tvTimeoutId); clearInterval(tickerId); cleanupSyncListener(); tvWaiting.classList.remove('visible');
-      if(data.syncStatus==='error'&&data.syncError==='NO_PLAYLIST'){setPhase('phase-tv','err','TV could not find an active playlist.');setPhase('phase-validate','wait');showToast('error',SYNC_ERROR_MESSAGES['NO_PLAYLIST']);btn.disabled=false;btn.innerHTML='Push to TV';return;}
-      setPhase('phase-tv','ok','TV received the update'); setPhase('phase-validate','pending','TV is checking the stream…');
-      if(data.syncStatus==='confirmed'){setPhase('phase-validate','ok','Stream verified — playlist is live');successEl.style.display='block';showToast('success','Playlist verified and active on your TV.');}
-      else if(data.syncStatus==='error'){const code=data.syncError||'UNKNOWN';const msg=SYNC_ERROR_MESSAGES[code]||SYNC_ERROR_MESSAGES['UNKNOWN'];setPhase('phase-validate','err',msg);showToast('error',msg);}
+    }, TV_RESPONSE_TIMEOUT_MS);
+
+    let waitSecs = 0;
+    const tickerId = setInterval(() => {
+      waitSecs += 5;
+      if (waitSecs < TV_RESPONSE_TIMEOUT_MS/1000)
+        tvWaitMsg.textContent = `Waiting for TV… (${waitSecs}s). Make sure tivipal is open.`;
+    }, 5000);
+
+    syncUnsubscribe = onSnapshot(doc(db,'playlists',currentDeviceId), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      if (data.syncRequest !== syncReqId) return;
+      if (!data.syncStatus || data.syncStatus === 'pending') return;
+      clearTimeout(tvTimeoutId); clearInterval(tickerId);
+      cleanupSyncListener(); tvWaiting.classList.remove('visible');
+      if (data.syncStatus==='error' && data.syncError==='NO_PLAYLIST') {
+        setPhase('phase-tv','err','TV could not find an active playlist.');
+        setPhase('phase-validate','wait');
+        showToast('error', SYNC_ERROR_MESSAGES['NO_PLAYLIST']);
+        btn.disabled=false; btn.innerHTML='Push to TV'; return;
+      }
+      setPhase('phase-tv','ok','TV received the update');
+      setPhase('phase-validate','pending','TV is checking the stream…');
+      if (data.syncStatus==='confirmed') {
+        setPhase('phase-validate','ok','Stream verified — playlist is live');
+        successEl.style.display='block';
+        showToast('success','Playlist verified and active on your TV.');
+      } else if (data.syncStatus==='error') {
+        const code = data.syncError || 'UNKNOWN';
+        const msg  = SYNC_ERROR_MESSAGES[code] || SYNC_ERROR_MESSAGES['UNKNOWN'];
+        setPhase('phase-validate','err', msg);
+        showToast('error', msg);
+      }
       btn.disabled=false; btn.innerHTML='Push to TV';
-    },(err)=>{clearTimeout(tvTimeoutId);clearInterval(tickerId);cleanupSyncListener();tvWaiting.classList.remove('visible');setPhase('phase-tv','err','Firestore listener error.');showToast('error','Lost connection while waiting for TV. Try again.');btn.disabled=false;btn.innerHTML='Push to TV';});
+    }, (err) => {
+      clearTimeout(tvTimeoutId); clearInterval(tickerId);
+      cleanupSyncListener(); tvWaiting.classList.remove('visible');
+      setPhase('phase-tv','err','Firestore listener error.');
+      showToast('error','Lost connection while waiting for TV. Try again.');
+      btn.disabled=false; btn.innerHTML='Push to TV';
+    });
   });
 
   /* ── STEP 3: PAYMENT ── */
@@ -1618,10 +1690,7 @@
     const showPayBtn = document.getElementById('show-pay-btn');
     const container  = document.getElementById('paypal-button-container');
 
-    if (window.paypal) {
-      _renderPayPalButtons(showPayBtn, container);
-      return;
-    }
+    if (window.paypal) { _renderPayPalButtons(showPayBtn, container); return; }
 
     paypalLoading = true;
     showPayBtn.disabled = true;
@@ -1661,11 +1730,13 @@
       style: { layout:'vertical', color:'black', shape:'rect', label:'pay' },
       createOrder: function(data, actions) {
         return actions.order.create({
-          purchase_units: [{ amount: { value:'5.99', currency_code:'GBP' }, description:'tivipal Lifetime Licence: ' + currentDeviceId }]
+          purchase_units: [{
+            amount: { value:'5.99', currency_code:'GBP' },
+            description: 'tivipal Lifetime Licence: ' + currentDeviceId
+          }]
         });
       },
       onApprove: async function(data, actions) {
-        // ── Capture the order client-side ──
         let captureResult;
         try {
           captureResult = await actions.order.capture();
@@ -1682,42 +1753,51 @@
         const orderId = (captureResult && captureResult.id) || data.orderID;
 
         showPayBtn.style.display = 'none';
-        container.innerHTML = '<div style="text-align:center;padding:20px 10px;"><span class="spinner" style="width:20px;height:20px;border-width:3px;display:block;margin:0 auto 12px;"></span><div style="font-size:0.88rem;color:var(--text-mid);line-height:1.6;">Payment received — activating your licence…<br><span style="font-size:0.78rem;color:var(--text-dim);">This usually takes 5–10 seconds.</span></div></div>';
+        container.innerHTML =
+          '<div style="text-align:center;padding:20px 10px;">' +
+          '<span class="spinner" style="width:20px;height:20px;border-width:3px;display:block;margin:0 auto 12px;"></span>' +
+          '<div style="font-size:0.88rem;color:var(--text-mid);line-height:1.6;">Payment received — activating your licence…<br>' +
+          '<span style="font-size:0.78rem;color:var(--text-dim);">This usually takes 5–10 seconds.</span></div></div>';
 
-        // ── Call our Cloud Function to verify the order server-side and unlock the device ──
-        // We do not block on the response; the Firestore listener below will fire as soon
-        // as the function writes isPaid: true. This way, if onApprove finishes before
-        // the function does, the listener still picks up the activation.
+        // ── Call Cloud Function to verify server-side and write license to Firestore ──
+        // Fire-and-forget — the Firestore listener below will react as soon as isPaid is written.
+        // The 60s timeout catches any case where both the function AND the webhook are slow.
         fetch(PAYPAL_CAPTURE_URL, {
-          method: 'POST',
+          method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: orderId, deviceId: currentDeviceId })
+          body:    JSON.stringify({ orderId: orderId, deviceId: currentDeviceId })
         }).then(function(res) {
           return res.json().then(function(json) { return { ok: res.ok, json: json }; });
         }).then(function(out) {
-          if (!out.ok) {
-            console.error('paypalCapture error:', out.json);
-            // Don't show an error to the user yet — the webhook is a safety net and may still activate.
-            // The 60s timeout below will catch true failures.
-          } else {
-            console.log('paypalCapture success:', out.json);
-          }
+          if (!out.ok) console.error('paypalCapture error:', out.json);
+          else         console.log('paypalCapture success:', out.json);
         }).catch(function(err) {
           console.error('paypalCapture network error:', err);
-          // Same as above — the webhook may still come through.
         });
 
+        // ── 60s safety-net timeout ──
         const timeoutId = setTimeout(function() {
           cleanupLicenceListener();
-          container.innerHTML = '<div style="padding:14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-sm);font-size:0.84rem;color:var(--warning);line-height:1.6;">⚠️ Activation is taking longer than expected.<br>Your payment was captured — please email <a href="mailto:tivipalpro@gmail.com?subject=Licence%20Activation%3A%20' + encodeURIComponent(currentDeviceId) + '" style="color:var(--red);">tivipalpro@gmail.com</a> with your Device ID <strong style="color:#fff;">' + escHtml(currentDeviceId) + '</strong> and we\'ll activate it manually within the hour.</div>';
+          container.innerHTML =
+            '<div style="padding:14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);' +
+            'border-radius:var(--radius-sm);font-size:0.84rem;color:var(--warning);line-height:1.6;">' +
+            '⚠️ Activation is taking longer than expected.<br>' +
+            'Your payment was captured — please email ' +
+            '<a href="mailto:tivipalpro@gmail.com?subject=Licence%20Activation%3A%20' + encodeURIComponent(currentDeviceId) +
+            '" style="color:var(--red);">tivipalpro@gmail.com</a> with your Device ID ' +
+            '<strong style="color:#fff;">' + escHtml(currentDeviceId) + '</strong> ' +
+            'and we\'ll activate it manually within the hour.</div>';
           showToast('warning', 'Activation delayed — contact tivipalpro@gmail.com');
         }, LICENCE_POLL_TIMEOUT_MS);
 
+        // ── Firestore listener: fires as soon as paypalCapture (or webhook) writes isPaid:true ──
         licenceUnsubscribe = onSnapshot(doc(db,'playlists',currentDeviceId), function(snap) {
-          if (!snap.exists()) return; const d = snap.data(); if (d.isPaid !== true) return;
+          if (!snap.exists()) return;
+          const d = snap.data();
+          if (d.isPaid !== true) return;
           clearTimeout(timeoutId); cleanupLicenceListener();
           if (deviceData) deviceData.isPaid = true;
-          document.getElementById('license-paid').style.display  = 'block';
+          document.getElementById('license-paid').style.display   = 'block';
           document.getElementById('license-unpaid').style.display = 'none';
           document.getElementById('step-btn-3').classList.add('done');
           showToast('success', 'Licence activated! Your TV is now unlocked.');
@@ -1757,9 +1837,9 @@
 
   /* ── SCREENSHOT SLIDESHOW ── */
   (function() {
-    var SLIDE_COUNT    = 4;
-    var INTERVAL_MS    = 4500;
-    var PROGRESS_STEP  = 80;
+    var SLIDE_COUNT   = 4;
+    var INTERVAL_MS   = 4500;
+    var PROGRESS_STEP = 80;
 
     var track    = document.getElementById('ss-track');
     var progress = document.getElementById('ss-progress');
@@ -1769,10 +1849,10 @@
 
     if (!track) return;
 
-    var current  = 0;
-    var elapsed  = 0;
+    var current   = 0;
+    var elapsed   = 0;
     var progTimer = null;
-    var paused   = false;
+    var paused    = false;
 
     function goTo(idx) {
       current = ((idx % SLIDE_COUNT) + SLIDE_COUNT) % SLIDE_COUNT;
@@ -1809,19 +1889,19 @@
 
     var wrapper = document.getElementById('ss-wrapper');
     if (wrapper) {
-      wrapper.addEventListener('mouseenter', function() { paused = true; clearInterval(progTimer); });
+      wrapper.addEventListener('mouseenter', function() { paused = true;  clearInterval(progTimer); });
       wrapper.addEventListener('mouseleave', function() { paused = false; startProgress(); });
     }
 
     var touchStartX = 0;
     if (track) {
-      track.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; paused = true; clearInterval(progTimer); }, { passive: true });
+      track.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; paused = true;  clearInterval(progTimer); }, { passive: true });
       track.addEventListener('touchend',   function(e) { var dx = e.changedTouches[0].clientX - touchStartX; if (Math.abs(dx) > 40) goTo(dx < 0 ? current + 1 : current - 1); paused = false; startProgress(); }, { passive: true });
     }
 
     document.addEventListener('visibilitychange', function() {
-      if (document.hidden) { paused = true; clearInterval(progTimer); }
-      else { paused = false; startProgress(); }
+      if (document.hidden) { paused = true;  clearInterval(progTimer); }
+      else                 { paused = false; startProgress(); }
     });
 
     goTo(0);
@@ -1833,9 +1913,8 @@
       document.getElementById('cookie-banner').style.display = 'flex';
     }
     const params = new URLSearchParams(window.location.search);
-    // Accept either ?id=... or ?device=... so the QR code from the TV app
-    // (which uses ?device=) auto-fills the portal field.
-    const qrId   = params.get('id') || params.get('device');
+    // Accept ?id= (website standard) or ?device= (TV QR code) interchangeably
+    const qrId = params.get('id') || params.get('device');
     if (qrId) {
       const upper = qrId.toUpperCase();
       let sanitised = '';
