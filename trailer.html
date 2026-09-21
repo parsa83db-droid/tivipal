@@ -3,234 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer-when-downgrade">
-    <title>Trailer - tivipal</title>
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Trailer Player - tivipal</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
-
-        #player-wrap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #player      { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        #player {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
         #error {
             display: none;
             position: absolute;
-            top: 50%; left: 50%;
-            -webkit-transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
             color: #fff;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             text-align: center;
             padding: 40px;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0, 0, 0, 0.8);
             border-radius: 12px;
-            z-index: 10;
         }
-        #error h2    { font-size: 26px; margin-bottom: 14px; }
-        #error p     { font-size: 18px; opacity: 0.7; }
-        #error-code  { font-size: 13px; opacity: 0.4; margin-top: 10px; }
-
-        #spinner {
-            position: absolute;
-            top: 50%; left: 50%;
-            -webkit-transform: translate(-50%, -50%);
-            transform: translate(-50%, -50%);
-            width: 60px; height: 60px;
-            border: 5px solid rgba(255,255,255,0.15);
-            border-top-color: #fff;
-            border-radius: 50%;
-            -webkit-animation: spin 0.8s linear infinite;
-            animation: spin 0.8s linear infinite;
+        
+        #error h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
         }
-        @-webkit-keyframes spin {
-            to { -webkit-transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+        
+        #error p {
+            font-size: 16px;
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
-    <div id="spinner"></div>
-    <div id="player-wrap"><div id="player"></div></div>
+    <div id="player"></div>
     <div id="error">
-        <h2>⚠️ Trailer Unavailable</h2>
-        <p id="error-msg">This video cannot be played on this device</p>
-        <div id="error-code"></div>
+        <h2>Trailer Unavailable</h2>
+        <p>This video cannot be played</p>
     </div>
 
     <script>
-        var urlParams   = new URLSearchParams(window.location.search);
-        var videoId     = urlParams.get('v');
-        var spinner     = document.getElementById('spinner');
-        var errorEl     = document.getElementById('error');
-        var errorMsg    = document.getElementById('error-msg');
-        var errorCode   = document.getElementById('error-code');
-        var player;
-        var playerReady = false;
-        var unmuted     = false;
-
-        function showError(msg, code) {
-            spinner.style.display = 'none';
-            errorMsg.textContent  = msg || 'This video cannot be played';
-            errorCode.textContent = code ? 'Error code: ' + code : '';
-            errorEl.style.display = 'block';
-            // Notify parent of error
-            try { window.parent.postMessage({ type: 'trailer-error', msg: msg }, '*'); } catch(e) {}
-        }
+        // Extract videoId from URL parameter
+        var urlParams = new URLSearchParams(window.location.search);
+        var videoId = urlParams.get('v');
+        // Set by the app on older Tizen TVs (see _showTrailerOverlay in app.js).
+        var lowPower = urlParams.get('lp') === '1';
+        // Starting quality chosen by the app (YouTube names: hd2160/hd1080/hd720/large).
+        var startQuality = urlParams.get('ql') || 'hd720';
+        
+        // Tells the app this page can report stalls, so it is safe to start at a high
+        // quality level (an older hosted copy stays silent and the app falls back to 720p).
+        try { window.parent.postMessage({ type: 'trailer-bridge', v: 2 }, '*'); } catch (e) {}
 
         if (!videoId) {
-            showError('No video ID provided');
+            document.getElementById('error').style.display = 'block';
         } else {
-            var safetyTimer = setTimeout(function() {
-                if (!playerReady) showError('Player took too long to load. Check network.');
-            }, 12000);
-
+            // Load YouTube IFrame Player API
             var tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
-            tag.onerror = function() {
-                clearTimeout(safetyTimer);
-                showError('Could not load YouTube player (network error)');
-            };
-            document.getElementsByTagName('script')[0].parentNode.insertBefore(tag, document.getElementsByTagName('script')[0]);
-
+            var firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            
+            // YouTube player instance
+            var player;
+            
+            // ✅ Professional METHOD: Force origin handshake for Tizen compatibility
             window.onYouTubeIframeAPIReady = function() {
-                clearTimeout(safetyTimer);
                 player = new YT.Player('player', {
                     videoId: videoId,
-                    host: 'https://www.youtube-nocookie.com',
                     playerVars: {
-                        'origin':          'https://tivipal.co.uk',
-                        'widget_referrer': 'https://tivipal.co.uk',
-                        'enablejsapi':     1,
-                        'autoplay':        1,
-                        'mute':            1,
-                        'controls':        0,   // hide YouTube controls — we use our own
-                        'modestbranding':  1,
-                        'rel':             0,
-                        'playsinline':     1,
-                        'iv_load_policy':  3,
-                        'fs':              0,
-                        'cc_load_policy':  0,
-                        'hl':             'en'
+                        'origin': 'https://www.youtube.com',              // Force handshake trust
+                        'widget_referrer': 'https://tivipal.co.uk',       // Your registered domain
+                        'enablejsapi': 1,
+                        'autoplay': 1,
+                        'controls': lowPower ? 0 : 1,
+                        'modestbranding': 1,
+                        'rel': 0,
+                        'playsinline': 1,
+                        'iv_load_policy': 3,
+                        'fs': 1
                     },
                     events: {
-                        onReady:       onPlayerReady,
-                        onError:       onPlayerError,
-                        onStateChange: onPlayerStateChange
+                        onReady: onPlayerReady,
+                        onError: onPlayerError,
+                        onStateChange: onPlayerStateChange,
+                        onPlaybackQualityChange: onQualityChange
                     }
                 });
             };
-
+            
             function onPlayerReady(event) {
-                playerReady = true;
-                spinner.style.display = 'none';
-                // Notify parent that player is ready with duration
-                try {
-                    window.parent.postMessage({
-                        type:     'trailer-ready',
-                        duration: player.getDuration() || 0
-                    }, '*');
-                } catch(e) {}
+                console.log('✅ YouTube player ready');
+                if (lowPower) applyQuality(startQuality);
+                event.target.playVideo();
             }
 
+            // Caps the stream at `q` (adaptive streaming may still pick lower). YouTube
+            // has deprecated both calls and may ignore them; the app also sizes the
+            // iframe to the level, which is the lever that reliably steers the choice.
+            function applyQuality(q) {
+                if (!player) return;
+                try { if (player.setPlaybackQualityRange) player.setPlaybackQualityRange('tiny', q); } catch (e) {}
+                try { if (player.setPlaybackQuality) player.setPlaybackQuality(q); } catch (e) {}
+            }
+
+            // Tells the app what YouTube is really delivering (shown in the overlay).
+            function onQualityChange(event) {
+                window.parent.postMessage({ type: 'trailer-quality', q: event.data }, '*');
+            }
+
+            // ── Stall detection (older TVs only) ──────────────────────────────
+            // Two rebuffers within 8 s, after playback has settled and not caused by
+            // a seek, means the current quality is too heavy for this TV.
+            var _playStartedAt = 0, _stalls = [], _cooldownUntil = 0, _seekedAt = 0;
+            function noteBuffering() {
+                if (!lowPower || !_playStartedAt) return;
+                var n = Date.now();
+                if (n - _playStartedAt < 3000 || n < _cooldownUntil || n - _seekedAt < 4000) return;
+                _stalls.push(n);
+                while (_stalls.length && n - _stalls[0] > 8000) _stalls.shift();
+                if (_stalls.length >= 2) {
+                    var count = _stalls.length;
+                    _stalls = [];
+                    _cooldownUntil = n + 15000;   // give the new level time to settle before judging it
+                    window.parent.postMessage({ type: 'trailer-stall', count: count }, '*');
+                }
+            }
+            
             function onPlayerError(event) {
-                var code = event.data;
-                var msg =
-                    code === 2   ? 'Invalid video ID' :
-                    code === 5   ? 'HTML5 player error on this device' :
-                    code === 100 ? 'Video not found or private' :
-                    (code === 101 || code === 150) ? 'Video owner has disabled embedding' :
-                    code === 153 ? 'DRM error — video restricted on this device' :
-                    'Playback error (' + code + ')';
-                showError(msg, code);
+                console.error('❌ YouTube player error:', event.data);
+                document.getElementById('error').style.display = 'block';
+                
+                var errorMsg = 'This video cannot be played';
+                if (event.data === 100) {
+                    errorMsg = 'Video not found';
+                } else if (event.data === 101 || event.data === 150 || event.data === 153) {
+                    errorMsg = 'Video owner has disabled embedding';
+                }
+                document.getElementById('error').querySelector('p').textContent = errorMsg;
+                window.parent.postMessage({ type: 'trailer-error', code: event.data }, '*');
             }
 
+            // ── Tick interval: sends current time to parent overlay ───────────
+            var _tickInterval = null;
+            function _startTick() {
+                _stopTick();
+                _tickInterval = setInterval(function() {
+                    if (!player || !player.getCurrentTime) return;
+                    var t   = player.getCurrentTime()  || 0;
+                    var dur = player.getDuration()      || 0;
+                    window.parent.postMessage({ type: 'trailer-tick', time: t, duration: dur }, '*');
+                }, 500);
+            }
+            function _stopTick() {
+                if (_tickInterval) { clearInterval(_tickInterval); _tickInterval = null; }
+            }
+
+            var _readySent = false;
             function onPlayerStateChange(event) {
-                var state = event.data;
+                var dur = (player && player.getDuration) ? (player.getDuration() || 0) : 0;
+                var t   = (player && player.getCurrentTime) ? (player.getCurrentTime() || 0) : 0;
 
-                // Unmute once playback actually starts
-                if (state === YT.PlayerState.PLAYING && !unmuted) {
-                    unmuted = true;
-                    setTimeout(function() {
-                        if (player && player.unMute) {
-                            player.unMute();
-                            player.setVolume(100);
-                        }
-                    }, 250);
+                if (event.data === YT.PlayerState.BUFFERING) noteBuffering();
+                if (event.data === YT.PlayerState.PLAYING) {
+                    if (!_playStartedAt) _playStartedAt = Date.now();
+                    window.parent.postMessage({ type: 'trailer-state', state: 'playing', time: t, duration: dur }, '*');
+                    _startTick();
+                } else if (event.data === YT.PlayerState.PAUSED) {
+                    window.parent.postMessage({ type: 'trailer-state', state: 'paused',  time: t, duration: dur }, '*');
+                    _stopTick();
+                } else if (event.data === YT.PlayerState.ENDED) {
+                    console.log('🏁 Video ended');
+                    _stopTick();
+                    window.parent.postMessage({ type: 'trailer-ended' }, '*');
                 }
+                // BUFFERING is deliberately NOT reported: it used to be sent as
+                // 'paused', which made every rebuffer flip the parent overlay's
+                // play/pause icon and re-show its controls — a stalling stream
+                // looked like it was pausing and resuming every second.
 
-                // Notify parent of state change so controls UI can update
-                var stateMap = {
-                    '-1': 'unstarted',
-                    '0':  'ended',
-                    '1':  'playing',
-                    '2':  'paused',
-                    '3':  'buffering',
-                    '5':  'cued'
-                };
-                try {
-                    window.parent.postMessage({
-                        type:     'trailer-state',
-                        state:    stateMap[String(state)] || state,
-                        time:     player ? player.getCurrentTime() : 0,
-                        duration: player ? player.getDuration()    : 0
-                    }, '*');
-                } catch(e) {}
-
-                if (state === YT.PlayerState.ENDED) {
-                    try { window.parent.postMessage({ type: 'trailer-ended' }, '*'); } catch(e) {}
+                // Send ready on the FIRST PLAYING state only, so the overlay learns
+                // the duration once — re-sending it after every rebuffer made the
+                // overlay re-show its controls each time playback recovered.
+                if (event.data === YT.PlayerState.PLAYING && dur > 0 && !_readySent) {
+                    _readySent = true;
+                    window.parent.postMessage({ type: 'trailer-ready', duration: dur }, '*');
                 }
             }
 
-            // ── Time ticker — sends current time to parent every 500ms for progress bar ──
-            setInterval(function() {
-                if (!player || !playerReady) return;
-                var state = player.getPlayerState();
-                if (state !== YT.PlayerState.PLAYING) return;
-                try {
-                    window.parent.postMessage({
-                        type:     'trailer-tick',
-                        time:     player.getCurrentTime(),
-                        duration: player.getDuration()
-                    }, '*');
-                } catch(e) {}
-            }, 500);
-        }
-
-        // ── Listen for commands from parent overlay ────────────────────────────
-        window.addEventListener('message', function(ev) {
-            if (!player || !playerReady) return;
-            var msg = ev.data;
-            if (!msg || typeof msg !== 'object') return;
-
-            switch (msg.cmd) {
-                case 'play':
-                    player.unMute(); player.setVolume(100);
-                    player.playVideo();
-                    break;
-                case 'pause':
-                    player.pauseVideo();
-                    break;
-                case 'seek':
+            // ── Receive commands from parent overlay ──────────────────────────
+            window.addEventListener('message', function(ev) {
+                var msg = ev.data;
+                if (!msg || typeof msg !== 'object' || !player) return;
+                if (msg.cmd === 'play')  { player.playVideo();  }
+                if (msg.cmd === 'pause') { player.pauseVideo(); }
+                if (msg.cmd === 'seek' && msg.time !== undefined) {
+                    _seekedAt = Date.now();
                     player.seekTo(msg.time, true);
-                    break;
-                case 'volume':
-                    player.setVolume(msg.value);
-                    if (msg.value === 0) player.mute(); else player.unMute();
-                    break;
-                case 'getState':
-                    try {
-                        window.parent.postMessage({
-                            type:     'trailer-state',
-                            state:    player.getPlayerState(),
-                            time:     player.getCurrentTime(),
-                            duration: player.getDuration()
-                        }, '*');
-                    } catch(e) {}
-                    break;
-            }
-        });
+                }
+                if (msg.cmd === 'quality' && msg.value) {
+                    _stalls = [];
+                    _cooldownUntil = Date.now() + 15000;
+                    applyQuality(msg.value);
+                }
+            });
+            
+            // Samsung Tizen TV remote control support
+            // NOTE: Play/Pause, seek and BACK are handled by the parent overlay
+            // via postMessage commands. This handler only closes the page when
+            // the overlay is NOT present (e.g. direct URL access).
+            document.addEventListener('keydown', function(e) {
+                var keyCode = e.keyCode;
+
+                // BACK (10009) or ESC (27) - signal parent to close
+                if (keyCode === 10009 || keyCode === 27) {
+                    e.preventDefault();
+                    // Try to notify parent first; fall back to window.close()
+                    try { window.parent.postMessage({ type: 'trailer-close' }, '*'); } catch(ex) {}
+                    if (window.parent === window) {
+                        // No parent — standalone mode
+                        if (player && player.stopVideo) player.stopVideo();
+                        window.close();
+                    }
+                }
+                // All other keys (Play/Pause/seek) are handled by parent overlay keydown handler
+            });
+        }
     </script>
 </body>
 </html>
