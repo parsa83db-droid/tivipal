@@ -1014,8 +1014,8 @@
         <h3>Media Content</h3><p>tivipal does not host, store, stream, or transmit any media content. All streaming is performed directly between your device and your IPTV provider's servers.</p>
         <h3>Payments</h3><p>Payment processing is handled entirely by PayPal. tivipal does not store any payment card information. We only record whether a device has an active licence.</p>
         <h3>Cookies</h3><p>We use a single essential cookie to remember your cookie consent preference. No tracking or advertising cookies are used.</p>
-        <h3>Your Rights (UK GDPR)</h3><p>You have the right to request deletion of your data at any time. Contact us at <a href="mailto:support@tivipal.co.uk" style="color:var(--red-hi);">support@tivipal.co.uk</a> with your Device ID and we will remove all associated data within 30 days.</p>
-        <h3>Contact</h3><p>For all privacy enquiries: <a href="mailto:support@tivipal.co.uk" style="color:var(--red-hi);">support@tivipal.co.uk</a></p>
+        <h3>Your Rights (UK GDPR)</h3><p>You have the right to request deletion of your data at any time. Contact us at <a href="mailto:tivipalpro@gmail.com" style="color:var(--red-hi);">tivipalpro@gmail.com</a> with your Device ID and we will remove all associated data within 30 days.</p>
+        <h3>Contact</h3><p>For all privacy enquiries: <a href="mailto:tivipalpro@gmail.com" style="color:var(--red-hi);">tivipalpro@gmail.com</a></p>
       </div>
     </div>
   </div>
@@ -1280,6 +1280,13 @@
     document.getElementById('privacy-modal').classList.add('open'); lockScroll();
     setTimeout(() => trapFocus('#privacy-modal .modal-box'), 60);
   }
+
+  // Direct links: https://www.tivipal.co.uk/#privacy and /#terms open the policy (used by app-store listings)
+  window.addEventListener('load', () => {
+    const h = location.hash.toLowerCase();
+    if (h === '#privacy') setTimeout(openPrivacy, 400);
+    else if (h === '#terms') setTimeout(openTos, 400);
+  });
 
   function openTos() {
     if (!document.querySelector('.modal-overlay.open')) lastTrigger = document.activeElement;
